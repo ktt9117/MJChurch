@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.mukdongjeil.mjchurch" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:debuggable="true"
         android:allowBackup="true"

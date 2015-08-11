@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.mukdongjeil.mjchurch.R;
+import org.mukdongjeil.mjchurch.common.util.Logger;
 
 public class MenuListFragment extends ListFragment {
 
@@ -18,6 +19,8 @@ public class MenuListFragment extends ListFragment {
 
 	public static final int MENU_TYPE_INTRODUCE = 0;
 	public static final int MENU_TYPE_WORSHIP = 1;
+
+	private static final String TAG = MenuListFragment.class.getSimpleName();
 
 	private static final String[] introduceMenus = {"연혁", "찾아오시는 길", "예배시간안내", "동역자"};
 	private static final String[] worshipMenus = {"주일예배", "3부예배", "수요예배"};
@@ -29,17 +32,23 @@ public class MenuListFragment extends ListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		Bundle args = getArguments();
-		int menuType = args.getInt(ARGUMENT_MENU);
+		if (args != null) {
+			int menuType = args.getInt(ARGUMENT_MENU);
 
-		SampleAdapter adapter = new SampleAdapter(getActivity());
-		for (int i = 0; i < 5; i++) {
+			SampleAdapter adapter = new SampleAdapter(getActivity());
 			if (menuType == MENU_TYPE_INTRODUCE) {
-				adapter.add(new MenuItem(introduceMenus[i], android.R.drawable.ic_menu_search));
+				for (int i = 0; i < introduceMenus.length; i++) {
+					adapter.add(new MenuItem(introduceMenus[i], android.R.drawable.ic_menu_search));
+				}
 			} else if (menuType == MENU_TYPE_WORSHIP) {
-				adapter.add(new MenuItem(worshipMenus[i], android.R.drawable.ic_menu_search));
+				for (int i = 0; i < worshipMenus.length; i++) {
+					adapter.add(new MenuItem(worshipMenus[i], android.R.drawable.ic_menu_search));
+				}
 			}
+			setListAdapter(adapter);
+		} else {
+			Logger.d(TAG, "there is no arguments. just return onActivityCreated()");
 		}
-		setListAdapter(adapter);
 	}
 
 	private class MenuItem {

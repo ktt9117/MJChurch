@@ -2,19 +2,21 @@ package org.mukdongjeil.mjchurch.common.adapter;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
+import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
+import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
  */
 public class MenuPagerAdapter extends FragmentPagerAdapter {
     private static final String[] MENUS = new String[] {"Introduce", "Worship", "Training", "Groups", "Board"};
-    private SlidingFragmentActivity mParent;
 
     public MenuPagerAdapter(FragmentManager fm) {
         super(fm);
@@ -33,13 +35,10 @@ public class MenuPagerAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int i) {
         Fragment fragment = new IntroduceFragment();
-        Bundle args = new Bundle();
-        args.putInt(IntroduceFragment.TAG, i + 1);
-        fragment.setArguments(args);
-        return fragment;
-    }
+        if (i == Const.WORSHIP_PAGE) {
+            fragment = new WorshipFragment();
+        }
 
-    public void setParent(SlidingFragmentActivity parent) {
-        mParent = parent;
+        return fragment;
     }
 }

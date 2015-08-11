@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.mukdongjeil.mjchurch.R;
@@ -18,8 +19,8 @@ public class WorshipFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_introduce, container, false);
-        Bundle args = getArguments();
-        ((TextView) rootView.findViewById(R.id.textView)).setText(Integer.toString(args.getInt(TAG)));
+        ImageView imgView = (ImageView) rootView.findViewById(R.id.imgView);
+        imgView.setImageResource(R.mipmap.worship_time_table);
         return rootView;
     }
 }
