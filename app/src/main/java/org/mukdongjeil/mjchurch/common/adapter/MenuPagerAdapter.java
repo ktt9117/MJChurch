@@ -1,12 +1,8 @@
 package org.mukdongjeil.mjchurch.common.adapter;
 
-import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-
-import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
@@ -35,7 +31,7 @@ public class MenuPagerAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int i) {
         Fragment fragment = new IntroduceFragment();
-        if (i == Const.WORSHIP_PAGE) {
+        if (i == Const.WORSHIP_PAGE_INDEX) {
             fragment = new WorshipFragment();
         }
 

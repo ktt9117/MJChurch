@@ -20,7 +20,7 @@ public class WorshipFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_introduce, container, false);
         ImageView imgView = (ImageView) rootView.findViewById(R.id.imgView);
-        imgView.setImageResource(R.mipmap.worship_time_table);
+        //imgView.setImageResource(R.mipmap.worship_time_table);
         return rootView;
     }
 }

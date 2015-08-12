@@ -1,44 +1,45 @@
 package org.mukdongjeil.mjchurch.introduce;
 
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.ImageView;
-import android.widget.TextView;
-import net.htmlparser.jericho.Element;
-import net.htmlparser.jericho.EndTag;
-import net.htmlparser.jericho.HTMLElementName;
-import net.htmlparser.jericho.HTMLElements;
-import net.htmlparser.jericho.Source;
-import net.htmlparser.jericho.StartTag;
 
-import org.mukdongjeil.mjchurch.R;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+
+import net.htmlparser.jericho.Element;
+import net.htmlparser.jericho.HTMLElementName;
+import net.htmlparser.jericho.Source;
+
+import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
+import org.mukdongjeil.mjchurch.common.util.DisplayUtil;
+import org.mukdongjeil.mjchurch.common.util.ImageUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
+import org.mukdongjeil.mjchurch.common.view.ImageBaseFragment;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
  */
-public class IntroduceFragment extends Fragment {
+public class IntroduceFragment extends ImageBaseFragment {
     private static final String TAG = IntroduceFragment.class.getSimpleName();
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_introduce, container, false);
-        ImageView imgView = (ImageView) rootView.findViewById(R.id.imgView);
-        imgView.setImageResource(R.mipmap.introduce_contents);
-        return rootView;
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (savedInstanceState == null) {
+            new RequestTask().execute(Const.INTRODUCE_URL);
+        } else {
+            Logger.d(TAG, "do not request again. caused by savedInstanceState is not null");
+        }
     }
 
     private class RequestTask extends AsyncTask<String, Void, Source> {
@@ -64,40 +65,36 @@ public class IntroduceFragment extends Fragment {
         protected void onPostExecute(Source source) {
             super.onPostExecute(source);
             if (source != null) {
-                //Logger.i(TAG, "source : " + source);
-                StringBuffer sb = new StringBuffer();
-                List<Element> elements = source.getAllElements();
-                boolean pass = false;
-                for (Element element : elements) {
-                    StartTag sTag = element.getStartTag();
-                    //Logger.i(TAG, "start tag : " + tag.toString());
-                    if (sTag != null && sTag.toString().contains(HTMLElementName.DIV)) {
-                        if (sTag.toString().contains("sub_top_menu_01")
-                                || sTag.toString().contains("sub_top_menu_02")
-                                || sTag.toString().contains("sub_top_menu_03")
-                                || sTag.toString().contains("h2_box")
-                                || sTag.toString().contains("footer")) {
-                            pass = true;
+                Element tab1 = source.getElementById("tab1");
+                if (tab1 != null) {
+                    Element imgElement = tab1.getFirstElement(HTMLElementName.IMG);
+                    String src = imgElement.getAttributeValue("src");
+                    src = src.replaceAll("&amp;", "&");
+                    ImageLoader.getInstance().loadImage(Const.BASE_URL + src, new ImageLoadingListener() {
+                        @Override
+                        public void onLoadingStarted(String s, View view) {
+
                         }
-                    }
 
-                    if (pass == false) {
-                        sb.append(element.toString());
-                    } else {
-                        Logger.i(TAG, "pass elements : " + element.toString());
-                    }
+                        @Override
+                        public void onLoadingFailed(String s, View view, FailReason failReason) {
 
-
-                    EndTag eTag = element.getEndTag();
-                    if (eTag != null && eTag.toString().contains(HTMLElementName.DIV)) {
-                        if (sTag.toString().contains("sub_top_menu_01")
-                                || sTag.toString().contains("sub_top_menu_02")
-                                || sTag.toString().contains("sub_top_menu_03")
-                                || sTag.toString().contains("h2_box")
-                                || sTag.toString().contains("footer")) {
-                            pass = false;
                         }
-                    }
+
+                        @Override
+                        public void onLoadingComplete(String s, View view, Bitmap bitmap) {
+                            Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage(bitmap, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
+                            getImageView().setImageBitmap(resizedBitmap);
+                            new PhotoViewAttacher(getImageView());
+                        }
+
+                        @Override
+                        public void onLoadingCancelled(String s, View view) {
+
+                        }
+                    });
+                } else {
+                    Logger.e(TAG, "tab1 element is null");
                 }
             }
         }

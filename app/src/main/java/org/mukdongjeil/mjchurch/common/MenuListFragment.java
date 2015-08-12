@@ -22,7 +22,7 @@ public class MenuListFragment extends ListFragment {
 
 	private static final String TAG = MenuListFragment.class.getSimpleName();
 
-	private static final String[] introduceMenus = {"연혁", "찾아오시는 길", "예배시간안내", "동역자"};
+	private static final String[] introduceMenus = {"교회소개", "연혁", "찾아오시는 길", "예배시간안내", "동역자"};
 	private static final String[] worshipMenus = {"주일예배", "3부예배", "수요예배"};
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -35,7 +35,7 @@ public class MenuListFragment extends ListFragment {
 		if (args != null) {
 			int menuType = args.getInt(ARGUMENT_MENU);
 
-			SampleAdapter adapter = new SampleAdapter(getActivity());
+			MenuListAdapter adapter = new MenuListAdapter(getActivity());
 			if (menuType == MENU_TYPE_INTRODUCE) {
 				for (int i = 0; i < introduceMenus.length; i++) {
 					adapter.add(new MenuItem(introduceMenus[i], android.R.drawable.ic_menu_search));
@@ -60,9 +60,9 @@ public class MenuListFragment extends ListFragment {
 		}
 	}
 
-	public class SampleAdapter extends ArrayAdapter<MenuItem> {
+	public class MenuListAdapter extends ArrayAdapter<MenuItem> {
 
-		public SampleAdapter(Context context) {
+		public MenuListAdapter(Context context) {
 			super(context, 0);
 		}
 
