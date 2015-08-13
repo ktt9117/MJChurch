@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.mukdongjeil.mjchurch.common.view;
+package org.mukdongjeil.mjchurch.common.ext_view;
 
 import android.content.Context;
 import android.graphics.Typeface;

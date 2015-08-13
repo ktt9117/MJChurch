@@ -4,6 +4,11 @@ package org.mukdongjeil.mjchurch.common;
  * Created by Kim SungJoong on 2015-08-11.
  */
 public class Const {
+
+    public static boolean DEBUG_MODE = true;
+
+    public static final String[] PAGER_MENUS = new String[] {"Introduce", "Worship", "Training", "Groups", "Board"};
+
     public static final int INTRODUCE_PAGE_INDEX = 0;
     public static final int WORSHIP_PAGE_INDEX = 1;
 

@@ -13,13 +13,15 @@ import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
 
+import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
 import org.mukdongjeil.mjchurch.common.util.DisplayUtil;
 import org.mukdongjeil.mjchurch.common.util.ImageUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
-import org.mukdongjeil.mjchurch.common.view.ImageBaseFragment;
+import org.mukdongjeil.mjchurch.common.ext_fragment.ImageBaseFragment;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -35,11 +37,41 @@ public class IntroduceFragment extends ImageBaseFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if (savedInstanceState == null) {
-            new RequestTask().execute(Const.INTRODUCE_URL);
-        } else {
-            Logger.d(TAG, "do not request again. caused by savedInstanceState is not null");
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).showLoadingDialog();
         }
+
+        String requestUrl;
+
+        Bundle args = getArguments();
+        if (args == null) {
+            Logger.e(TAG, "arguments is null");
+            requestUrl = Const.INTRODUCE_URL;
+        } else {
+            int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
+            Logger.i(TAG, "selected sliding menu index : " + selectedMenuIndex);
+
+            switch(selectedMenuIndex) {
+                case 0:
+                default:
+                    requestUrl = Const.INTRODUCE_URL;
+                    break;
+                case 1:
+                    requestUrl = Const.HISTROY_URL;
+                    break;
+                case 2:
+                    requestUrl = Const.FIND_MAP_URL;
+                    break;
+                case 3:
+                    requestUrl = Const.TIME_TABLE_URL;
+                    break;
+                case 4:
+                    requestUrl = Const.WORKER_URL;
+                    break;
+            }
+        }
+
+        new RequestTask().execute(requestUrl);
     }
 
     private class RequestTask extends AsyncTask<String, Void, Source> {
@@ -72,17 +104,21 @@ public class IntroduceFragment extends ImageBaseFragment {
                     src = src.replaceAll("&amp;", "&");
                     ImageLoader.getInstance().loadImage(Const.BASE_URL + src, new ImageLoadingListener() {
                         @Override
-                        public void onLoadingStarted(String s, View view) {
-
-                        }
+                        public void onLoadingStarted(String s, View view) {}
 
                         @Override
                         public void onLoadingFailed(String s, View view, FailReason failReason) {
+                            if (getActivity() instanceof MainActivity) {
+                                ((MainActivity) getActivity()).hideLoadingDialog();
+                            }
 
                         }
 
                         @Override
                         public void onLoadingComplete(String s, View view, Bitmap bitmap) {
+                            if (getActivity() instanceof MainActivity) {
+                                ((MainActivity) getActivity()).hideLoadingDialog();
+                            }
                             Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage(bitmap, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
                             getImageView().setImageBitmap(resizedBitmap);
                             new PhotoViewAttacher(getImageView());
@@ -90,6 +126,9 @@ public class IntroduceFragment extends ImageBaseFragment {
 
                         @Override
                         public void onLoadingCancelled(String s, View view) {
+                            if (getActivity() instanceof MainActivity) {
+                                ((MainActivity) getActivity()).hideLoadingDialog();
+                            }
 
                         }
                     });
