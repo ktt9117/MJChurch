@@ -22,8 +22,8 @@ public class Const {
     public static final String WORKER_URL       = BASE_URL + "/m/html/index.mo?menuId=1752&topMenuId=1&menuType=27&newMenuAt=false&tPage=1";
 
     //worship pages url
-    private static final String WORSHIP_LIST_URL        = BASE_URL + "/board/index.mo?menuId=10004043&topMenuId=2&menuType=1&newMenuAt=true&tPage=";
-    private static final String WORSHIP_CONTENT_URL     = BASE_URL + "/board/view.mo?menuId=10004043&topMenuId=2&menuType=1&newMenuAt=true&tPage=";
+    private static final String WORSHIP_LIST_URL        = BASE_URL + "/m/board/index.mo?menuId=10004043&topMenuId=2&menuType=1&newMenuAt=true&tPage=";
+    private static final String WORSHIP_CONTENT_URL     = BASE_URL + "/m/board/view.mo?menuId=10004043&topMenuId=2&menuType=1&newMenuAt=true&tPage=";
     private static final String WORSHIP_CONTENT_EXT_URL = "&sPage=1&ssPage=1&topSubId=null&pageNow=1&bbsNo=";
 
     public static final String getWorshipListURL(int pageNo) {

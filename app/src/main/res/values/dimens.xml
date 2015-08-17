@@ -7,6 +7,14 @@
     <dimen name="slidingmenu_offset">130dp</dimen>
     <dimen name="shadow_width">15dp</dimen>
 
+    <!-- Sermon List -->
+    <dimen name="sermon_row_padding">10dp</dimen>
+
+    <dimen name="sermon_row_image_width">100dp</dimen>
+    <dimen name="sermon_row_image_height">100dp</dimen>
+
+    <dimen name="sermon_row_content_height">200dp</dimen>
+
     <!-- Not used
     <dimen name="list_padding">10dp</dimen>
     -->

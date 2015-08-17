@@ -24,4 +24,5 @@ dependencies {
     compile project(':SlidingMenu')
     compile files('libs/jericho-html-3.3.jar')
     compile files('libs/universal-image-loader-1.9.4.jar')
+    compile files('libs/gson-2.3.1.jar')
 }
