@@ -31,8 +31,15 @@ public class MenuListAdapter extends ArrayAdapter<MenuItem> {
         MenuItem item = getItem(position);
 
         ImageView icon = (ImageView) convertView.findViewById(R.id.row_icon);
-        icon.setImageResource(item.iconRes);
         TextView title = (TextView) convertView.findViewById(R.id.row_title);
+
+        if (item.menuType == MenuItem.MENU_TYPE_GROUP) {
+            icon.setVisibility(View.GONE);
+        } else {
+            icon.setVisibility(View.VISIBLE);
+            icon.setImageResource(item.iconRes);
+        }
+
         title.setText(item.title);
 
         if (selectedItemPosition == position) {
@@ -44,8 +51,8 @@ public class MenuListAdapter extends ArrayAdapter<MenuItem> {
         return convertView;
     }
 
-    public void selectedItemPositionChanged(int position) {
+    public void notifySelectedItemChanged(int position) {
         selectedItemPosition = position;
-        this.notifyDataSetInvalidated();
+        notifyDataSetInvalidated();
     }
 }

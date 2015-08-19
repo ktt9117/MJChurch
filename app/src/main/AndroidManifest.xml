@@ -23,7 +23,7 @@
         </activity>
 
         <service
-            android:name=".common.MediaService" />
+            android:name=".service.MediaService" />
 
     </application>
 

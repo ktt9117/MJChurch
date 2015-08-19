@@ -8,8 +8,6 @@ import android.os.PersistableBundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
 import android.view.ViewGroup;
 
@@ -31,20 +29,11 @@ import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
-import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
 public class MainActivity extends SlidingFragmentActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    private static final String SAVED_INSTANCE_STATE_POSITION = "position";
-
-    private static final int HANDLE_MSG_SHOW_SLIDING_TAB_LAYOUT = 1;
-    private static final int HANDLE_MSG_HIDE_SLIDING_TAB_LAYOUT = 2;
-
-    private SlidingTabLayout mSlidingTabLayout;
-    private ExViewPager mViewPager;
 
     private CycleProgressDialog mLoadingDialog;
 
@@ -55,22 +44,21 @@ public class MainActivity extends SlidingFragmentActivity {
         SystemHelpers.init(getApplicationContext());
         PreferenceUtil.init(getApplicationContext());
 
-        int setPosition = 0;
-        if (savedInstanceState != null) {
-            setPosition = savedInstanceState.getInt(SAVED_INSTANCE_STATE_POSITION);
-        }
-
         // init Universal Image Loader
         initializeImageLoader();
 
         // init SlidingMenu
-        initializeSlidingMenu(setPosition);
+        initializeSlidingMenu();
 
         // set the Content View
         setContentView(R.layout.activity_main);
 
+        // set the current Fragment
+        Fragment fragment = new IntroduceFragment();
+        switchContent(fragment);
+
         // init ViewPager
-        initializePager(setPosition);
+        //initializePager(setPosition);
     }
 
     @Override
@@ -83,17 +71,12 @@ public class MainActivity extends SlidingFragmentActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
     public void switchContent(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
         showContent();
     }
 
-    public void showContent() {
+    public void hideSlideMenu() {
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 getSlidingMenu().showContent();
@@ -110,6 +93,70 @@ public class MainActivity extends SlidingFragmentActivity {
     public void hideLoadingDialog() {
         releaseDialog(mLoadingDialog);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releaseDialog(mLoadingDialog);
+    }
+
+    private void initializeImageLoader() {
+        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
+                .cacheOnDisk(true)
+                .cacheInMemory(true)
+                .imageScaleType(ImageScaleType.EXACTLY)
+                .displayer(new FadeInBitmapDisplayer(300))
+                .build();
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
+                SystemHelpers.getApplicationContext())
+                .denyCacheImageMultipleSizesInMemory()
+                .defaultDisplayImageOptions(defaultOptions)
+                .memoryCache(new WeakMemoryCache())
+                .memoryCacheSize(2 * 1024 * 1024)
+                .diskCacheSize(50 * 1024 * 1024)
+                .diskCacheFileCount(100)
+                .writeDebugLogs()
+                .build();
+        ImageLoader.getInstance().init(config);
+    }
+
+    private void initializeSlidingMenu() {
+        // set the Behind View
+        setBehindContentView(R.layout.menu_frame);
+
+        // customize the SlidingMenu
+        SlidingMenu sm = getSlidingMenu();
+        sm.setShadowWidthRes(R.dimen.shadow_width);
+        sm.setShadowDrawable(R.drawable.shadow);
+        sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+        sm.setFadeDegree(0.35f);
+        sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+        sm.setBehindScrollScale(0.0f);
+
+        // set scale animation transformer
+        sm.setBehindCanvasTransformer(new SlidingMenu.CanvasTransformer() {
+            @Override
+            public void transformCanvas(Canvas canvas, float percentOpen) {
+                canvas.scale(percentOpen, 1, 0, 0);
+            }
+        });
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setSlidingActionBarEnabled(true);
+    }
+
+    private void releaseDialog(Dialog dialog) {
+        if (dialog != null) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            dialog = null;
+        }
+    }
+
+//    private static final int HANDLE_MSG_SHOW_SLIDING_TAB_LAYOUT = 1;
+//    private static final int HANDLE_MSG_HIDE_SLIDING_TAB_LAYOUT = 2;
 
     /*
     private ExHandler<MainActivity> mHandler = new ExHandler<MainActivity>(this) {
@@ -133,61 +180,10 @@ public class MainActivity extends SlidingFragmentActivity {
     };
     */
 
+//    private SlidingTabLayout mSlidingTabLayout;
+//    private ExViewPager mViewPager;
 
-    private void initializeImageLoader() {
-        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
-                .cacheOnDisk(true)
-                .cacheInMemory(true)
-                .imageScaleType(ImageScaleType.EXACTLY)
-                .displayer(new FadeInBitmapDisplayer(300))
-                .build();
-
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
-                SystemHelpers.getApplicationContext())
-                .denyCacheImageMultipleSizesInMemory()
-                .defaultDisplayImageOptions(defaultOptions)
-                .memoryCache(new WeakMemoryCache())
-                .memoryCacheSize(2 * 1024 * 1024)
-                .diskCacheSize(50 * 1024 * 1024)
-                .diskCacheFileCount(100)
-                .writeDebugLogs()
-                .build();
-        ImageLoader.getInstance().init(config);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-        outState.putInt(SAVED_INSTANCE_STATE_POSITION, mViewPager.getCurrentItem());
-    }
-
-    private void initializeSlidingMenu(int setPosition) {
-        // set the Behind View
-        setBehindContentView(R.layout.menu_frame);
-
-        // customize the SlidingMenu
-        SlidingMenu sm = getSlidingMenu();
-        sm.setShadowWidthRes(R.dimen.shadow_width);
-        sm.setShadowDrawable(R.drawable.shadow);
-        sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
-        sm.setFadeDegree(0.35f);
-        sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-        sm.setBehindScrollScale(0.0f);
-
-        // set scale animation transformer
-        sm.setBehindCanvasTransformer(new SlidingMenu.CanvasTransformer() {
-            @Override
-            public void transformCanvas(Canvas canvas, float percentOpen) {canvas.scale(percentOpen, 1, 0, 0);
-            }
-        });
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setSlidingActionBarEnabled(true);
-
-        //set the sliding menu contents for first page
-        changeSlidingMenuContents(setPosition);
-    }
-
+    /*
     private void initializePager(int setPosition) {
         ContentsPagerAdapter contentsPagerAdapter = new ContentsPagerAdapter(getSupportFragmentManager());
         mViewPager = (ExViewPager) findViewById(R.id.pager);
@@ -198,7 +194,9 @@ public class MainActivity extends SlidingFragmentActivity {
         mSlidingTabLayout.setViewPager(mViewPager);
         mSlidingTabLayout.setOnPageChangeListener(mOnPageChangeListener);
     }
+    */
 
+    /*
     private ViewPager.OnPageChangeListener mOnPageChangeListener = new ViewPager.OnPageChangeListener() {
         @Override
         public void onPageSelected(int position) {
@@ -211,8 +209,6 @@ public class MainActivity extends SlidingFragmentActivity {
                 getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
                 break;
             }
-
-            changeSlidingMenuContents(position);
         }
 
         @Override
@@ -223,21 +219,9 @@ public class MainActivity extends SlidingFragmentActivity {
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
         }
     };
+    */
 
-    private void changeSlidingMenuContents(int currentPagePosition) {
-        ListFragment fragment = new MenuListFragment();
-        Bundle args = new Bundle();
-        if (currentPagePosition == Const.INTRODUCE_PAGE_INDEX) {
-            args.putInt(MenuListFragment.CURRENT_PAGER_INDEX, MenuListFragment.MENU_TYPE_INTRODUCE);
-        } else if (currentPagePosition == Const.WORSHIP_PAGE_INDEX) {
-            args.putInt(MenuListFragment.CURRENT_PAGER_INDEX, MenuListFragment.MENU_TYPE_WORSHIP);
-        }
-        fragment.setArguments(args);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.sliding_menu_container, fragment);
-        transaction.commit();
-    }
-
+    /*
     private class ContentsPagerAdapter extends FragmentPagerAdapter {
         private final String TAG = ContentsPagerAdapter.class.getSimpleName();
 
@@ -276,19 +260,5 @@ public class MainActivity extends SlidingFragmentActivity {
             }
         }
     }
-
-    private void releaseDialog(Dialog dialog) {
-        if (dialog != null) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-            dialog = null;
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        releaseDialog(mLoadingDialog);
-    }
+    */
 }

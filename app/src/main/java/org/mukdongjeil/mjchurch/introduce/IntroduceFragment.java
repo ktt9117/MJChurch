@@ -52,19 +52,19 @@ public class IntroduceFragment extends ImageBaseFragment {
             Logger.i(TAG, "selected sliding menu index : " + selectedMenuIndex);
 
             switch(selectedMenuIndex) {
-                case 1:
+                case 2:
                     requestUrl = Const.HISTROY_URL;
                     break;
-                case 2:
+                case 3:
                     requestUrl = Const.FIND_MAP_URL;
                     break;
-                case 3:
+                case 4:
                     requestUrl = Const.TIME_TABLE_URL;
                     break;
-                case 4:
+                case 5:
                     requestUrl = Const.WORKER_URL;
                     break;
-                case 0:
+                case 1:
                 default:
                     requestUrl = Const.INTRODUCE_URL;
                     break;

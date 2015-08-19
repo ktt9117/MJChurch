@@ -17,100 +17,76 @@ import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
 import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
 public class MenuListFragment extends ListFragment {
-
-	public static final String CURRENT_PAGER_INDEX = "menu";
 	public static final String SELECTED_MENU_INDEX = "selected_menu_index";
-
-	public static final int MENU_TYPE_INTRODUCE = 0;
-	public static final int MENU_TYPE_WORSHIP = 1;
 
 	private static final String TAG = MenuListFragment.class.getSimpleName();
 
-	private static final String[] introduceMenus = {"교회소개", "연혁", "찾아오시는 길", "예배시간안내", "동역자"};
-	private static final String[] worshipMenus = {"주일예배", "3부예배", "수요예배"};
-
-	private int mIntroduceLastSelectedMenuIndex = 0;
-	private int mWorshipLastSelectedMenuIndex = 0;
+	//list position 0, 6, 10, 15
+	private static final String[] groups = {"Introduce", "Worship", "Training", "Groups", "Board"};
+	//list position 1 ~ 5
+	private static final String[] introduceMenus = {"Church Intro", "History", "Find Map", "Time Tables", "Peoples"};
+	//list position 7 ~ 9
+	private static final String[] worshipMenus = {"Sunday Morning", "Sunday Afternoon", "Wednesday"};
+	//list position 11 ~ 14
+	private static final String[] trainingMenus = {"Bible Study", "Rearing Class", "Mother Wise", "1:1 Disciple"};
+	//list position 16 ~ 18
+	private static final String[] boardMenus = {"Introduce Cell", "Teaching Plan", "Department"};
 
 	private MenuListAdapter mAdapter;
+	private int mLastSelectedMenuIndex;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.list, null);
 	}
 
-	private int mMenuType = -1;
-
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		Logger.d(TAG, "onActivityCreated");
 
-		Logger.d(TAG, "savedInstance is null.");
-		Bundle args = getArguments();
-		if (args == null) {
-			Logger.e(TAG, "there is no arguments. just return onActivityCreated()");
-			return;
-		}
-		mMenuType = args.getInt(CURRENT_PAGER_INDEX);
-		Logger.d(TAG, "mMenuType : " + mMenuType);
-
-		mIntroduceLastSelectedMenuIndex = PreferenceUtil.getIntroduceLastSelectedMenuIndex();
-		mWorshipLastSelectedMenuIndex = PreferenceUtil.getWorshipLastSelectedMenuIndex();
+		mLastSelectedMenuIndex = 0;
+//		mIntroduceLastSelectedMenuIndex = PreferenceUtil.getIntroduceLastSelectedMenuIndex();
+//		mWorshipLastSelectedMenuIndex = PreferenceUtil.getWorshipLastSelectedMenuIndex();
 
 		initializeMenuList();
 	}
-
-	private void initializeMenuList() {
-		mAdapter = new MenuListAdapter(getActivity());
-		if (mMenuType == MENU_TYPE_INTRODUCE) {
-			for (int i = 0; i < introduceMenus.length; i++) {
-				mAdapter.add(new MenuItem(introduceMenus[i], android.R.drawable.ic_menu_search));
-				mAdapter.selectedItemPositionChanged(mIntroduceLastSelectedMenuIndex);
-			}
-		} else if (mMenuType == MENU_TYPE_WORSHIP) {
-			for (int i = 0; i < worshipMenus.length; i++) {
-				mAdapter.add(new MenuItem(worshipMenus[i], android.R.drawable.ic_menu_search));
-				mAdapter.selectedItemPositionChanged(mIntroduceLastSelectedMenuIndex);
-			}
-		}
-		setListAdapter(mAdapter);
-	}
-
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 
-		Fragment newFragment;
-		switch (mMenuType) {
-			case MENU_TYPE_WORSHIP:
-				if (mWorshipLastSelectedMenuIndex == position) {
-					showContent();
-					return;
-				}
+		MenuItem item = mAdapter.getItem(position);
 
-				if (mAdapter != null) {
-					mAdapter.selectedItemPositionChanged(position);
-				}
-				PreferenceUtil.setWorshipLastSelectedMenuIndex(position);
-				mWorshipLastSelectedMenuIndex = position;
+		// return if group title clicked
+		if (item == null || item.menuType == MenuItem.MENU_TYPE_GROUP) {
+			Logger.i(TAG, "This is not clickable item or The item is null");
+			return;
+		}
+
+		// return if previous select position clicked
+		if (mLastSelectedMenuIndex == position) {
+			hideSlide();
+			return;
+		}
+
+		// set previous select position
+		mLastSelectedMenuIndex = position;
+
+		// notify to adapter for select position has been changed
+		mAdapter.notifySelectedItemChanged(position);
+
+		// makes content fragment
+		Fragment newFragment;
+		switch (item.menuCategory) {
+			case MenuItem.MENU_CATEGORY_WORSHIP:
 				newFragment = new WorshipFragment();
 				break;
-			case MENU_TYPE_INTRODUCE:
+			case MenuItem.MENU_CATEGORY_INTRODUCE:
 			default:
-				if (mIntroduceLastSelectedMenuIndex == position) {
-					showContent();
-					return;
-				}
-
-				if (mAdapter != null) {
-					mAdapter.selectedItemPositionChanged(position);
-				}
-				PreferenceUtil.setIntroduceLastSelectedMenuIndex(position);
-				mIntroduceLastSelectedMenuIndex = position;
 				newFragment = new IntroduceFragment();
 				break;
 		}
 
+		// notify to main fragment container for replace content
 		if (newFragment != null) {
 			Bundle args = new Bundle();
 			args.putInt(SELECTED_MENU_INDEX, position);
@@ -119,15 +95,49 @@ public class MenuListFragment extends ListFragment {
 		}
 	}
 
+	private void initializeMenuList() {
+		mAdapter = new MenuListAdapter(getActivity());
+		for (int i = 0; i < groups.length; i++) {
+			mAdapter.add(new MenuItem(groups[i]));
+			String[] tempArr;
+			int category;
+			switch(i) {
+				case 1:
+					tempArr = worshipMenus;
+					category = MenuItem.MENU_CATEGORY_WORSHIP;
+					break;
+				case 2:
+					tempArr = trainingMenus;
+					category = MenuItem.MENU_CATEGORY_TRAINING;
+					break;
+				case 3:
+					tempArr = boardMenus;
+					category = MenuItem.MENU_CATEGORY_BOARD;
+					break;
+				case 0:
+				default:
+					tempArr = introduceMenus;
+					category = MenuItem.MENU_CATEGORY_INTRODUCE;
+					break;
+			}
+
+			for (int j = 0; j < tempArr.length; j++) {
+				mAdapter.add(new MenuItem(tempArr[j], android.R.drawable.ic_menu_search, category));
+			}
+		}
+
+		setListAdapter(mAdapter);
+	}
+
 	private void switchContent(Fragment newFragment) {
 		if (getActivity() instanceof MainActivity) {
 			((MainActivity) getActivity()).switchContent(newFragment);
 		}
 	}
 
-	private void showContent() {
+	private void hideSlide() {
 		if (getActivity() instanceof MainActivity) {
-			((MainActivity) getActivity()).showContent();
+			((MainActivity) getActivity()).hideSlideMenu();
 		}
 	}
 }

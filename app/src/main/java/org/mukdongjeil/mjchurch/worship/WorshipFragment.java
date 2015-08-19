@@ -4,16 +4,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
-import android.text.Html;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,17 +20,13 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import net.htmlparser.jericho.Attribute;
-import net.htmlparser.jericho.Attributes;
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
-import net.htmlparser.jericho.HTMLElements;
-import net.htmlparser.jericho.Segment;
 import net.htmlparser.jericho.Source;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.MediaService;
+import org.mukdongjeil.mjchurch.service.MediaService;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 
 import java.io.IOException;
@@ -43,7 +34,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.Inflater;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
@@ -167,14 +157,33 @@ public class WorshipFragment extends ListFragment {
             if (source != null) {
                 Element contentElement = source.getFirstElementByClass("contents bbs_list");
                 if (contentElement != null) {
-                    WorshipItem item = new WorshipItem();
+                    SermonItem item = new SermonItem();
                     Logger.i(TAG, "contentElement : " + contentElement.toString());
 
-                    //extract title
-                    item.title = getTitleFromElement(contentElement);
+                    //extract title & date
+                    Element ttlElement = contentElement.getFirstElementByClass("bbs_ttl");
+                    if (ttlElement != null) {
+                        Logger.i(TAG, "onPostExecute > ttlElement : " + ttlElement.getTextExtractor().toString());
+                        String temp = ttlElement.getTextExtractor().toString();
+                        if (!TextUtils.isEmpty(temp) && temp.length() > 12) {
+                            try {
+                                String date = temp.substring(0, 12);
+                                String title = temp.substring(13, temp.length());
+                                item.title = title;
+                                item.date = date;
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                item.title = temp;
+                            }
+                        } else {
+                            item.title = temp;
+                        }
+                    } else {
+                        Logger.e(TAG, "onPostExecute > cannot find ttlElement element");
+                    }
 
-                    //extract date
-                    item.date = getDateFromElement(contentElement);
+//                    item.title = getTitleFromElement(contentElement);
+//                    item.date = getDateFromElement(contentElement);
 
                     //extract preacher and chapterInfo
                     Element temp = contentElement.getFirstElementByClass("bbs_substance_p");
@@ -224,14 +233,14 @@ public class WorshipFragment extends ListFragment {
     private String getDateFromElement(Element elem) {
         Element dateElement = elem.getFirstElementByClass("bbs_date");
         if (dateElement != null) {
-            Logger.i(TAG, "getTitleFromElement() > " + dateElement.getTextExtractor().toString());
+            Logger.i(TAG, "getDateFromElement() > " + dateElement.getTextExtractor().toString());
             return dateElement.getTextExtractor().toString();
         }
-        Logger.e(TAG, "getTitleFromElement() > cannot find date element");
+        Logger.e(TAG, "getDateFromElement() > cannot find date element");
         return null;
     }
 
-    public class WorshipItem {
+    public class SermonItem {
         public String title;
         public String content;
         public String preacher;
@@ -245,7 +254,7 @@ public class WorshipFragment extends ListFragment {
         }
     }
 
-    public class WorshipListAdapter extends ArrayAdapter<WorshipItem> {
+    public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
         private Context mContext;
 
         public WorshipListAdapter(Context context) {
@@ -269,14 +278,18 @@ public class WorshipFragment extends ListFragment {
                 vh = (ViewHolder) convertView.getTag();
             }
 
-            WorshipItem item = getItem(position);
+            SermonItem item = getItem(position);
+            vh.item = item;
             vh.title.setText(item.title);
             vh.date.setText(item.date);
             vh.preacher.setText(item.preacher);
             vh.chapterInfo.setText(item.chapterInfo);
-            vh.imgView.setImageResource(R.mipmap.ic_launcher);
+            if (!TextUtils.isEmpty(item.preacher) && item.preacher.contains("김희준")) {
+                vh.imgView.setImageResource(R.mipmap.preacher_heejun);
+            } else {
+                vh.imgView.setImageResource(R.mipmap.ic_launcher);
+            }
             vh.btnPlay.setTag(Const.BASE_URL + item.audioFilePath);
-            //vh.docUrl = Const.BASE_URL + item.docFilePath;
 
             return convertView;
         }
@@ -293,6 +306,7 @@ public class WorshipFragment extends ListFragment {
         Button btnDownload;
         Button btnStop;
         MediaService player;
+        SermonItem item;
 
         public ViewHolder(final Context context, View rootView, MediaService service) {
             imgView = (ImageView) rootView.findViewById(R.id.img_preacher);
@@ -305,12 +319,10 @@ public class WorshipFragment extends ListFragment {
             btnPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String audioUrl = (String)v.getTag();
-                    Logger.i(TAG, "audio URL : " + audioUrl);
-                    if (!TextUtils.isEmpty(audioUrl)) {
+                    if (item != null && !TextUtils.isEmpty(item.audioFilePath)) {
                         if (player != null) {
                             try {
-                                player.startPlayer(audioUrl);
+                                player.startPlayer(item);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -318,7 +330,7 @@ public class WorshipFragment extends ListFragment {
                             Logger.e(TAG, "Media play failed caused by media player is not bounded yet maybe");
                         }
                     } else {
-                        Toast.makeText(context, "오디오 경로가 잘 못 되었습니다.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "오디오 경로가 없거나 잘 못 되었습니다.", Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -341,7 +353,6 @@ public class WorshipFragment extends ListFragment {
                 }
             });
             player = service;
-
         }
     }
 }

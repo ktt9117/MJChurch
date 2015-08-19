@@ -18,24 +18,26 @@ import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
  */
 public class ImageBaseFragment extends Fragment{
 
-    private ImageView mImageView;
+    private ImageView imageView;
     public ImageView getImageView() {
-        return mImageView;
+        return imageView;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.pager_base_fragment, container, false);
-        ((ViewGroup) rootView).removeAllViews();
+//        View rootView = inflater.inflate(R.layout.pager_base_fragment, container, false);
+//        ((ViewGroup) rootView).removeAllViews();
         ScrollView scrollView = new ScrollView(getActivity());
         scrollView.setLayoutParams(new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        FrameLayout.LayoutParams childParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams childParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
         childParams.gravity = Gravity.TOP| Gravity.CENTER_HORIZONTAL;
-        mImageView = new ImageView(getActivity());
-        mImageView.setLayoutParams(childParams);
-        scrollView.addView(mImageView);
+        imageView = new ImageView(getActivity());
+        imageView.setLayoutParams(childParams);
+        scrollView.addView(imageView);
 
-        ((ViewGroup) rootView).addView(scrollView);
-        return rootView;
+//        ((ViewGroup) rootView).addView(scrollView);
+//        return rootView;
+
+        return scrollView;
     }
 }
