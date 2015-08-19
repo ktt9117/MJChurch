@@ -43,7 +43,7 @@ public class MenuListFragment extends ListFragment {
 		super.onActivityCreated(savedInstanceState);
 		Logger.d(TAG, "onActivityCreated");
 
-		mLastSelectedMenuIndex = 0;
+		mLastSelectedMenuIndex = 1;
 //		mIntroduceLastSelectedMenuIndex = PreferenceUtil.getIntroduceLastSelectedMenuIndex();
 //		mWorshipLastSelectedMenuIndex = PreferenceUtil.getWorshipLastSelectedMenuIndex();
 

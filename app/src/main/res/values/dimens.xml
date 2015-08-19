@@ -9,7 +9,7 @@
 
     <!-- Sermon List -->
     <dimen name="sermon_row_padding">10dp</dimen>
-    <dimen name="sermon_row_inside_padding">5dp</dimen>
+    <dimen name="sermon_row_inside_padding">10dp</dimen>
 
     <dimen name="sermon_row_image_width">100dp</dimen>
     <dimen name="sermon_row_image_height">100dp</dimen>

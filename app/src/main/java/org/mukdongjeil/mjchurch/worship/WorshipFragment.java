@@ -28,6 +28,7 @@ import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.service.MediaService;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -41,6 +42,7 @@ import java.util.List;
 public class WorshipFragment extends ListFragment {
     public static final String TAG = WorshipFragment.class.getSimpleName();
     private int mPageNo;
+    private int mWorshipType;
 
     private MediaService mService;
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -70,8 +72,26 @@ public class WorshipFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
+            switch (selectedMenuIndex) {
+                case 8:
+                    mWorshipType = Const.WORSHIP_TYPE_SUNDAY_AFTERNOON;
+                    break;
+                case 9:
+                    mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
+                    break;
+                case 7:
+                default:
+                    mWorshipType = Const.WORSHIP_TYPE_SUNDAY_MORNING;
+                    break;
+            }
+        }
+        Logger.d(TAG, "worshipType : " + mWorshipType);
+
         mAdapter = new WorshipListAdapter(getActivity());
-        new RequestTask().execute(Const.getWorshipListURL(mPageNo));
+        new RequestTask().execute(Const.getWorshipListURL(mWorshipType, mPageNo));
         setListAdapter(mAdapter);
     }
 
@@ -116,7 +136,7 @@ public class WorshipFragment extends ListFragment {
 
                     if (bbsNoList.size() > 0) {
                         for (String bbsNo : bbsNoList) {
-                            new ContentRequestTask().execute(Const.getWorshipContentURL(mPageNo, bbsNo));
+                            new ContentRequestTask().execute(Const.getWorshipContentURL(mWorshipType, mPageNo, bbsNo));
                         }
                         // [test code]
                         //new ContentRequestTask().execute(Const.getWorshipContentURL(mPageNo, bbsNoList.get(0)));
@@ -187,11 +207,33 @@ public class WorshipFragment extends ListFragment {
 
                     //extract preacher and chapterInfo
                     Element temp = contentElement.getFirstElementByClass("bbs_substance_p");
+
                     for (Element element : temp.getAllElements(HTMLElementName.STRONG)) {
-                        if (element.toString().contains("설교 : ")) {
-                            item.preacher = element.getTextExtractor().toString();
-                        } else if (element.toString().contains("본문 : ")) {
-                            item.chapterInfo = element.getTextExtractor().toString();
+                        String tempStr = element.toString().replaceAll("&nbsp;", " ");
+                        //Logger.d(TAG, "strong element : " + );
+                        if (tempStr.contains("<br />")) {
+                            String extractStr = element.getTextExtractor().toString();
+                            String[] tempArr = null;
+                            boolean isTitleSplit = false;
+                            if (extractStr.contains("주제 : ")) {
+                                tempArr = extractStr.split("주제 : ");
+                                isTitleSplit = true;
+                            } else if (extractStr.contains("본문 : ")) {
+                                tempArr = extractStr.split("본문 : ");
+                            }
+
+                            if (tempArr != null && tempArr.length > 0) {
+                                item.preacher = tempArr[0];
+                                item.chapterInfo = (isTitleSplit ? "주제 : " : "본문 : ") + tempArr[1];
+                            } else {
+                                item.preacher = element.getTextExtractor().toString();
+                            }//
+                        } else {
+                            if (tempStr.contains("설교 : ") || tempStr.contains("강의 : ")) {
+                                item.preacher = element.getTextExtractor().toString();
+                            } else if (tempStr.contains("본문 : ") || tempStr.contains("주제 : ")) {
+                                item.chapterInfo = element.getTextExtractor().toString();
+                            }
                         }
                     }
 
