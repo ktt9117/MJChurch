@@ -12,19 +12,11 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.gson.Gson;
 
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
 
-import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.service.MediaService;
@@ -41,21 +33,21 @@ import java.util.List;
  * Created by Kim SungJoong on 2015-07-31.
  */
 public class WorshipFragment extends ListFragment {
-    public static final String TAG = WorshipFragment.class.getSimpleName();
+    private static final String TAG = WorshipFragment.class.getSimpleName();
     private int mPageNo;
     private int mWorshipType;
 
     private MediaService mService;
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Logger.d(TAG, "[MediaSerivce] onServiceConnected");
+            Logger.d(TAG, "[MediaService] onServiceConnected");
             mService = ((MediaService.LocalBinder)service).getService();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Logger.d(TAG, "[MediaSerivce] onServiceDisconnected");
+            Logger.d(TAG, "[MediaService] onServiceDisconnected");
             mService = null;
         }
     };
@@ -91,7 +83,7 @@ public class WorshipFragment extends ListFragment {
         }
         Logger.d(TAG, "worshipType : " + mWorshipType);
 
-        mAdapter = new WorshipListAdapter(getActivity());
+        mAdapter = new WorshipListAdapter(getActivity(), mService);
         new RequestTask().execute(Const.getWorshipListURL(mWorshipType, mPageNo));
         setListAdapter(mAdapter);
     }
@@ -100,16 +92,13 @@ public class WorshipFragment extends ListFragment {
 
         @Override
         protected Source doInBackground(String... params) {
-            if (params == null && params[0] == null) {
+            if (params == null || params[0] == null) {
                 return null;
             }
             try {
                 URL url = new URL(params[0]);
                 Logger.d(TAG, "request url : " + url.toString());
                 return new Source(url);
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -123,7 +112,7 @@ public class WorshipFragment extends ListFragment {
                 Element contentElement = source.getFirstElementByClass("contents bbs_list");
                 if (contentElement != null) {
                     //Logger.i(TAG, "contentElement : " + contentElement.toString());
-                    ArrayList<String> bbsNoList = new ArrayList<String>();
+                    ArrayList<String> bbsNoList = new ArrayList<>();
                     List<Element> linkList = contentElement.getAllElementsByClass("list_link");
                     for (Element link : linkList) {
                         String linkAttr = link.getAttributeValue("href");
@@ -156,16 +145,13 @@ public class WorshipFragment extends ListFragment {
     public class ContentRequestTask extends AsyncTask<String, Void, Source> {
         @Override
         protected Source doInBackground(String... params) {
-            if (params == null && params[0] == null) {
+            if (params == null || params[0] == null) {
                 return null;
             }
             try {
                 URL url = new URL(params[0]);
                 Logger.d(TAG, "request url : " + url.toString());
                 return new Source(url);
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -189,8 +175,7 @@ public class WorshipFragment extends ListFragment {
                         if (!TextUtils.isEmpty(temp) && temp.length() > 12) {
                             try {
                                 String date = temp.substring(0, 12);
-                                String title = temp.substring(13, temp.length());
-                                item.title = title;
+                                item.title = temp.substring(13, temp.length());
                                 item.date = date;
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -244,9 +229,9 @@ public class WorshipFragment extends ListFragment {
                         //Logger.i(TAG, "file element : " + elem.toString());
                         String href = elem.getFirstElement(HTMLElementName.A).getAttributeValue("href");
                         if (elem.getFirstElement(HTMLElementName.A).getAttributeValue("href").contains(".mp3")) {
-                            item.audioFilePath = href;
+                            item.audioUrl = href;
                         } else if (elem.getFirstElement(HTMLElementName.A).getAttributeValue("href").contains("hwp")) {
-                            item.docFilePath = href;
+                            item.docUrl = href;
                         }
                     }
                     Logger.i(TAG, "worshipItem : " + item.toString());

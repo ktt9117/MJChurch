@@ -14,7 +14,6 @@ import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
 import java.io.IOException;
 
@@ -71,7 +70,7 @@ public class MediaService extends Service {
         startForegroundService();
         mPlayer = new MediaPlayer();
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mPlayer.setDataSource(Const.BASE_URL + item.audioFilePath);
+        mPlayer.setDataSource(Const.BASE_URL + item.audioUrl);
         mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {

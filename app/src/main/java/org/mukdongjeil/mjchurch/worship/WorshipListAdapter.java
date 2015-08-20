@@ -59,7 +59,6 @@ public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
         } else {
             vh.imgView.setImageResource(R.mipmap.ic_launcher);
         }
-        vh.btnPlay.setTag(Const.BASE_URL + item.audioFilePath);
 
         return convertView;
     }
@@ -71,9 +70,10 @@ public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
         TextView preacher;
         TextView chapterInfo;
         TextView content;
-        Button btnPlay;
-        Button btnDownload;
-        Button btnStop;
+        Button btnMore;
+//        Button btnPlay;
+//        Button btnDownload;
+//        Button btnStop;
         MediaService player;
         SermonItem item;
 
@@ -84,11 +84,20 @@ public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
             preacher = (TextView) rootView.findViewById(R.id.preacher);
             chapterInfo = (TextView) rootView.findViewById(R.id.chapter_info);
             content = (TextView) rootView.findViewById(R.id.content_summary);
+            player = service;
+            btnMore = (Button) rootView.findViewById(R.id.content_more);
+            btnMore.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(context, "구현 준비중 입니다.", Toast.LENGTH_SHORT).show();
+                }
+            });
+            /*
             btnPlay = (Button) rootView.findViewById(R.id.btn_play);
             btnPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (item != null && !TextUtils.isEmpty(item.audioFilePath)) {
+                    if (item != null && !TextUtils.isEmpty(item.audioUrl)) {
                         if (player != null) {
                             try {
                                 player.startPlayer(item);
@@ -121,7 +130,7 @@ public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
                     Toast.makeText(context, "구현 예정입니다.", Toast.LENGTH_SHORT).show();
                 }
             });
-            player = service;
+            */
         }
     }
 }

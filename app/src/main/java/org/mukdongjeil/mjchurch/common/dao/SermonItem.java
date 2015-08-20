@@ -11,8 +11,8 @@ public class SermonItem {
     public String preacher;
     public String chapterInfo;
     public String date;
-    public String audioFilePath;
-    public String docFilePath;
+    public String audioUrl;
+    public String docUrl;
 
     public String toString() {
         return new Gson().toJson(this);
