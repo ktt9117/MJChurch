@@ -53,7 +53,7 @@ public class IntroduceFragment extends ImageBaseFragment {
 
             switch(selectedMenuIndex) {
                 case 2:
-                    requestUrl = Const.HISTROY_URL;
+                    requestUrl = Const.HISTORY_URL;
                     break;
                 case 3:
                     requestUrl = Const.FIND_MAP_URL;

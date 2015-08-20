@@ -25,7 +25,7 @@ public class MenuListAdapter extends ArrayAdapter<MenuItem> {
 
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.menu_row, null);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_menu, null);
         }
 
         MenuItem item = getItem(position);
@@ -35,19 +35,21 @@ public class MenuListAdapter extends ArrayAdapter<MenuItem> {
 
         if (item.menuType == MenuItem.MENU_TYPE_GROUP) {
             icon.setVisibility(View.GONE);
+            title.setTextAppearance(getContext(), android.R.style.TextAppearance_DeviceDefault_Medium);
+            convertView.setEnabled(false);
+            convertView.setBackgroundColor(Color.parseColor("#bebebe"));
         } else {
             icon.setVisibility(View.VISIBLE);
             icon.setImageResource(item.iconRes);
+            title.setTextAppearance(getContext(), android.R.style.TextAppearance_DeviceDefault_Small);
+            convertView.setEnabled(true);
+            if (selectedItemPosition == position) {
+                convertView.setBackgroundColor(Color.LTGRAY);
+            } else {
+                convertView.setBackgroundColor(Color.TRANSPARENT);
+            }
         }
-
         title.setText(item.title);
-
-        if (selectedItemPosition == position) {
-            convertView.setBackgroundColor(Color.LTGRAY);
-        } else {
-            convertView.setBackgroundColor(Color.TRANSPARENT);
-        }
-
         return convertView;
     }
 

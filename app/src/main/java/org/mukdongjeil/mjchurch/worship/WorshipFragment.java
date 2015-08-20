@@ -26,8 +26,10 @@ import net.htmlparser.jericho.Source;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.service.MediaService;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -41,6 +43,7 @@ import java.util.List;
 public class WorshipFragment extends ListFragment {
     public static final String TAG = WorshipFragment.class.getSimpleName();
     private int mPageNo;
+    private int mWorshipType;
 
     private MediaService mService;
     private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -70,8 +73,26 @@ public class WorshipFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
+            switch (selectedMenuIndex) {
+                case 8:
+                    mWorshipType = Const.WORSHIP_TYPE_SUNDAY_AFTERNOON;
+                    break;
+                case 9:
+                    mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
+                    break;
+                case 7:
+                default:
+                    mWorshipType = Const.WORSHIP_TYPE_SUNDAY_MORNING;
+                    break;
+            }
+        }
+        Logger.d(TAG, "worshipType : " + mWorshipType);
+
         mAdapter = new WorshipListAdapter(getActivity());
-        new RequestTask().execute(Const.getWorshipListURL(mPageNo));
+        new RequestTask().execute(Const.getWorshipListURL(mWorshipType, mPageNo));
         setListAdapter(mAdapter);
     }
 
@@ -116,7 +137,7 @@ public class WorshipFragment extends ListFragment {
 
                     if (bbsNoList.size() > 0) {
                         for (String bbsNo : bbsNoList) {
-                            new ContentRequestTask().execute(Const.getWorshipContentURL(mPageNo, bbsNo));
+                            new ContentRequestTask().execute(Const.getWorshipContentURL(mWorshipType, mPageNo, bbsNo));
                         }
                         // [test code]
                         //new ContentRequestTask().execute(Const.getWorshipContentURL(mPageNo, bbsNoList.get(0)));
@@ -187,11 +208,33 @@ public class WorshipFragment extends ListFragment {
 
                     //extract preacher and chapterInfo
                     Element temp = contentElement.getFirstElementByClass("bbs_substance_p");
+
                     for (Element element : temp.getAllElements(HTMLElementName.STRONG)) {
-                        if (element.toString().contains("설교 : ")) {
-                            item.preacher = element.getTextExtractor().toString();
-                        } else if (element.toString().contains("본문 : ")) {
-                            item.chapterInfo = element.getTextExtractor().toString();
+                        String tempStr = element.toString().replaceAll("&nbsp;", " ");
+                        //Logger.d(TAG, "strong element : " + );
+                        if (tempStr.contains("<br />")) {
+                            String extractStr = element.getTextExtractor().toString();
+                            String[] tempArr = null;
+                            boolean isTitleSplit = false;
+                            if (extractStr.contains("주제 : ")) {
+                                tempArr = extractStr.split("주제 : ");
+                                isTitleSplit = true;
+                            } else if (extractStr.contains("본문 : ")) {
+                                tempArr = extractStr.split("본문 : ");
+                            }
+
+                            if (tempArr != null && tempArr.length > 0) {
+                                item.preacher = tempArr[0];
+                                item.chapterInfo = (isTitleSplit ? "주제 : " : "본문 : ") + tempArr[1];
+                            } else {
+                                item.preacher = element.getTextExtractor().toString();
+                            }//
+                        } else {
+                            if (tempStr.contains("설교 : ") || tempStr.contains("강의 : ")) {
+                                item.preacher = element.getTextExtractor().toString();
+                            } else if (tempStr.contains("본문 : ") || tempStr.contains("주제 : ")) {
+                                item.chapterInfo = element.getTextExtractor().toString();
+                            }
                         }
                     }
 
@@ -240,119 +283,7 @@ public class WorshipFragment extends ListFragment {
         return null;
     }
 
-    public class SermonItem {
-        public String title;
-        public String content;
-        public String preacher;
-        public String chapterInfo;
-        public String date;
-        public String audioFilePath;
-        public String docFilePath;
 
-        public String toString() {
-            return new Gson().toJson(this);
-        }
-    }
 
-    public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
-        private Context mContext;
 
-        public WorshipListAdapter(Context context) {
-            super(context, 0);
-            mContext = context;
-        }
-
-        @Override
-        public int getCount() {
-            return super.getCount();
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder vh;
-            if (convertView == null) {
-                convertView = LayoutInflater.from(mContext).inflate(R.layout.sermon_row, null, false);
-                vh = new ViewHolder(getActivity(), convertView, mService);
-                convertView.setTag(vh);
-            } else {
-                vh = (ViewHolder) convertView.getTag();
-            }
-
-            SermonItem item = getItem(position);
-            vh.item = item;
-            vh.title.setText(item.title);
-            vh.date.setText(item.date);
-            vh.preacher.setText(item.preacher);
-            vh.chapterInfo.setText(item.chapterInfo);
-            if (!TextUtils.isEmpty(item.preacher) && item.preacher.contains("김희준")) {
-                vh.imgView.setImageResource(R.mipmap.preacher_heejun);
-            } else {
-                vh.imgView.setImageResource(R.mipmap.ic_launcher);
-            }
-            vh.btnPlay.setTag(Const.BASE_URL + item.audioFilePath);
-
-            return convertView;
-        }
-    }
-
-    public static class ViewHolder {
-        ImageView imgView;
-        TextView title;
-        TextView date;
-        TextView preacher;
-        TextView chapterInfo;
-        TextView content;
-        Button btnPlay;
-        Button btnDownload;
-        Button btnStop;
-        MediaService player;
-        SermonItem item;
-
-        public ViewHolder(final Context context, View rootView, MediaService service) {
-            imgView = (ImageView) rootView.findViewById(R.id.img_preacher);
-            title = (TextView) rootView.findViewById(R.id.title);
-            date = (TextView) rootView.findViewById(R.id.date);
-            preacher = (TextView) rootView.findViewById(R.id.preacher);
-            chapterInfo = (TextView) rootView.findViewById(R.id.chapter_info);
-            content = (TextView) rootView.findViewById(R.id.content_summary);
-            btnPlay = (Button) rootView.findViewById(R.id.btn_play);
-            btnPlay.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (item != null && !TextUtils.isEmpty(item.audioFilePath)) {
-                        if (player != null) {
-                            try {
-                                player.startPlayer(item);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            Logger.e(TAG, "Media play failed caused by media player is not bounded yet maybe");
-                        }
-                    } else {
-                        Toast.makeText(context, "오디오 경로가 없거나 잘 못 되었습니다.", Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-            btnStop = (Button) rootView.findViewById(R.id.btn_stop);
-            btnStop.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (player != null) {
-                        player.stopPlayer();
-                    } else {
-                        Logger.e(TAG, "Media stop failed caused by media player is not bounded yet maybe");
-                    }
-                }
-            });
-            btnDownload = (Button) rootView.findViewById(R.id.btn_download);
-            btnDownload.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(context, "구현 예정입니다.", Toast.LENGTH_SHORT).show();
-                }
-            });
-            player = service;
-        }
-    }
 }

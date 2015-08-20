@@ -51,6 +51,13 @@
             android:maxLines="2"
             android:ellipsize="end"/>
 
+        <TextView android:id="@+id/content_more"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:text="... 더보기 ..."/>
+
+        <!--
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -75,6 +82,7 @@
                 android:text="Download" />
 
         </LinearLayout>
+        -->
 
     </LinearLayout>
 
