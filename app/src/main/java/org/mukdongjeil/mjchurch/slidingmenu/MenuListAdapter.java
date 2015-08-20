@@ -25,7 +25,7 @@ public class MenuListAdapter extends ArrayAdapter<MenuItem> {
 
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.menu_row, null);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_menu, null);
         }
 
         MenuItem item = getItem(position);

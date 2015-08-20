@@ -12,6 +12,7 @@ import android.support.v4.app.NotificationCompat;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
@@ -27,7 +28,7 @@ public class MediaService extends Service {
 
     private final LocalBinder mBinder = new LocalBinder();
 
-    private WorshipFragment.SermonItem mCurrentItem;
+    private SermonItem mCurrentItem;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -64,7 +65,7 @@ public class MediaService extends Service {
         stopPlayer();
     }
 
-    public void startPlayer(WorshipFragment.SermonItem item) throws IOException {
+    public void startPlayer(SermonItem item) throws IOException {
         stopPlayer();
         mCurrentItem = item;
         startForegroundService();

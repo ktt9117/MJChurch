@@ -4,12 +4,7 @@ import android.app.Dialog;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PersistableBundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.view.ViewGroup;
 
 import com.actionbarsherlock.view.MenuItem;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
@@ -21,15 +16,10 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
-import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
-import org.mukdongjeil.mjchurch.common.ext_view.ExViewPager;
-import org.mukdongjeil.mjchurch.common.ext_view.SlidingTabLayout;
-import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
-import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
 public class MainActivity extends SlidingFragmentActivity {
 
@@ -123,7 +113,7 @@ public class MainActivity extends SlidingFragmentActivity {
 
     private void initializeSlidingMenu() {
         // set the Behind View
-        setBehindContentView(R.layout.menu_frame);
+        setBehindContentView(R.layout.fragment_slide_menu);
 
         // customize the SlidingMenu
         SlidingMenu sm = getSlidingMenu();
