@@ -33,9 +33,10 @@ public class DBManager  {
         return instance;
     }
 
-    public List<SermonItem> getSermonList() {
+    public List<SermonItem> getSermonList(int sermonType) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String sql = "SELECT * FROM " + DataHelper.TABLE_SERMON;
+        String sql = "SELECT * FROM " + DataHelper.TABLE_SERMON +
+                " WHERE " + SermonColumn.SERMON_TYPE + " = " + sermonType;
         Cursor cursor = db.rawQuery(sql, null);
         if (cursor != null) {
             List<SermonItem> list = new ArrayList<>();
@@ -45,10 +46,12 @@ public class DBManager  {
                 item.title = cursor.getString(cursor.getColumnIndex(SermonColumn.TITLE));
                 item.preacher = cursor.getString(cursor.getColumnIndex(SermonColumn.PREACHER));
                 item.content = cursor.getString(cursor.getColumnIndex(SermonColumn.CONTENT));
+                item.contentUrl = cursor.getString(cursor.getColumnIndex(SermonColumn.CONTENT_URL));
                 item.date = cursor.getString(cursor.getColumnIndex(SermonColumn.DATE));
                 item.chapterInfo = cursor.getString(cursor.getColumnIndex(SermonColumn.CHAPTER));
                 item.audioUrl = cursor.getString(cursor.getColumnIndex(SermonColumn.AUDIO_URL));
                 item.docUrl =cursor.getString(cursor.getColumnIndex(SermonColumn.DOC_URL));
+                item.bbsNo = cursor.getString(cursor.getColumnIndex(SermonColumn.BBS_NO));
                 list.add(item);
             }
             Logger.i(TAG, "getSermonList > item count : " + list.size());
@@ -62,28 +65,14 @@ public class DBManager  {
         }
     }
 
-    public int insertData(SermonItem item) {
+    public int insertData(SermonItem item, int sermonType) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int res = insertData(db, item);
+        int res = insertData(db, item, sermonType);
         db.close();
         return res;
     }
 
-    private int insertData(SQLiteDatabase db, SermonItem item) {
-        ContentValues values = new ContentValues();
-        values.put(SermonColumn.TITLE, item.title);
-        values.put(SermonColumn.PREACHER, item.preacher);
-        values.put(SermonColumn.CONTENT, item.content);
-        values.put(SermonColumn.DATE, item.date);
-        values.put(SermonColumn.CHAPTER, item.chapterInfo);
-        values.put(SermonColumn.AUDIO_URL, item.audioUrl);
-        values.put(SermonColumn.DOC_URL, item.docUrl);
-
-        long res = db.insert(DataHelper.TABLE_SERMON, null, values);
-        return (int)res;
-    }
-
-    public int insertData(List<SermonItem> items) {
+    public int insertData(List<SermonItem> items, int sermonType) {
         if (items == null) {
             return -1;
         }
@@ -93,7 +82,7 @@ public class DBManager  {
         try {
             db.beginTransaction();
             for (SermonItem item : items) {
-                res += insertData(db, item);
+                res += insertData(db, item, sermonType);
             }
             db.setTransactionSuccessful();
         } catch (SQLiteException e) {
@@ -111,15 +100,35 @@ public class DBManager  {
         String ID = "_id";
         String TITLE = "title";
         String CONTENT = "content";
+        String CONTENT_URL = "content_url";
         String DATE = "date";
         String PREACHER = "preacher";
         String CHAPTER = "chapter_info";
         String AUDIO_URL = "audio_url";
         String DOC_URL = "doc_url";
+        String BBS_NO = "bbs_no";
+        String SERMON_TYPE = "sermon_type";
+    }
+
+    private int insertData(SQLiteDatabase db, SermonItem item, int sermonType) {
+        ContentValues values = new ContentValues();
+        values.put(SermonColumn.TITLE, item.title);
+        values.put(SermonColumn.PREACHER, item.preacher);
+        values.put(SermonColumn.CONTENT, item.content);
+        values.put(SermonColumn.CONTENT_URL, item.contentUrl);
+        values.put(SermonColumn.DATE, item.date);
+        values.put(SermonColumn.CHAPTER, item.chapterInfo);
+        values.put(SermonColumn.AUDIO_URL, item.audioUrl);
+        values.put(SermonColumn.DOC_URL, item.docUrl);
+        values.put(SermonColumn.BBS_NO, item.bbsNo);
+        values.put(SermonColumn.SERMON_TYPE, sermonType);
+
+        long res = db.insert(DataHelper.TABLE_SERMON, null, values);
+        return (int)res;
     }
 
     private class DataHelper extends SQLiteOpenHelper {
-        private static final int DB_VERSION = 0;
+        private static final int DB_VERSION = 1; // Version must be >= 1
         private static final String DB_NAME = "data.db";
 
         public static final String TABLE_SERMON = "sermon";
@@ -130,15 +139,19 @@ public class DBManager  {
 
         @Override
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
-            String sql = "CREATE TABLE IF NOT EXIST " + TABLE_SERMON + " (" +
-                    SermonColumn.ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    SermonColumn.TITLE + " TEXT," +
-                    SermonColumn.CONTENT + " TEXT," +
-                    SermonColumn.DATE + " DATE," +
-                    SermonColumn.PREACHER + " TEXT," +
-                    SermonColumn.CHAPTER + " TEXT," +
-                    SermonColumn.AUDIO_URL + " TEXT," +
-                    SermonColumn.DOC_URL + " TEXT," + ");";
+            String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_SERMON + " (" +
+                    SermonColumn.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    SermonColumn.TITLE + " TEXT, " +
+                    SermonColumn.CONTENT + " TEXT ," +
+                    SermonColumn.CONTENT_URL + " TEXT ," +
+                    SermonColumn.DATE + " DATE, " +
+                    SermonColumn.PREACHER + " TEXT, " +
+                    SermonColumn.CHAPTER + " TEXT, " +
+                    SermonColumn.AUDIO_URL + " TEXT, " +
+                    SermonColumn.DOC_URL + " TEXT, " +
+                    SermonColumn.SERMON_TYPE + " INTEGER, " +
+                    SermonColumn.BBS_NO + " TEXT);";
+
             Logger.d(TAG, "create table query : " + sql);
             sqLiteDatabase.execSQL(sql);
         }

@@ -70,7 +70,7 @@ public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
         TextView preacher;
         TextView chapterInfo;
         TextView content;
-        Button btnMore;
+        TextView btnMore;
 //        Button btnPlay;
 //        Button btnDownload;
 //        Button btnStop;
@@ -85,7 +85,7 @@ public class WorshipListAdapter extends ArrayAdapter<SermonItem> {
             chapterInfo = (TextView) rootView.findViewById(R.id.chapter_info);
             content = (TextView) rootView.findViewById(R.id.content_summary);
             player = service;
-            btnMore = (Button) rootView.findViewById(R.id.content_more);
+            btnMore = (TextView) rootView.findViewById(R.id.content_more);
             btnMore.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

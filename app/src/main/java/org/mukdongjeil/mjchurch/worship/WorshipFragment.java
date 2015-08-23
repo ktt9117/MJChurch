@@ -19,6 +19,8 @@ import net.htmlparser.jericho.Source;
 
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
+import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocol.RequestSermonsTask;
 import org.mukdongjeil.mjchurch.service.MediaService;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
@@ -84,191 +86,22 @@ public class WorshipFragment extends ListFragment {
         Logger.d(TAG, "worshipType : " + mWorshipType);
 
         mAdapter = new WorshipListAdapter(getActivity(), mService);
-        new RequestTask().execute(Const.getWorshipListURL(mWorshipType, mPageNo));
         setListAdapter(mAdapter);
-    }
-
-    private class RequestTask extends AsyncTask<String, Void, Source> {
-
-        @Override
-        protected Source doInBackground(String... params) {
-            if (params == null || params[0] == null) {
-                return null;
-            }
-            try {
-                URL url = new URL(params[0]);
-                Logger.d(TAG, "request url : " + url.toString());
-                return new Source(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Source source) {
-            super.onPostExecute(source);
-            if (source != null) {
-                Element contentElement = source.getFirstElementByClass("contents bbs_list");
-                if (contentElement != null) {
-                    //Logger.i(TAG, "contentElement : " + contentElement.toString());
-                    ArrayList<String> bbsNoList = new ArrayList<>();
-                    List<Element> linkList = contentElement.getAllElementsByClass("list_link");
-                    for (Element link : linkList) {
-                        String linkAttr = link.getAttributeValue("href");
-                        //Logger.i(TAG, "link : " + linkAttr);
-                        if (!TextUtils.isEmpty(linkAttr)) {
-                            String bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
-                            //Logger.i(TAG, "bbsNo : " + bbsNo);
-                            bbsNoList.add(bbsNo);
-                        }
-                    }
-
-                    if (bbsNoList.size() > 0) {
-                        for (String bbsNo : bbsNoList) {
-                            new ContentRequestTask().execute(Const.getWorshipContentURL(mWorshipType, mPageNo, bbsNo));
-                        }
-                        // [test code]
-                        //new ContentRequestTask().execute(Const.getWorshipContentURL(mPageNo, bbsNoList.get(0)));
-                    }
-
-                } else {
-                    Logger.e(TAG, "contentElement is null");
-                    Logger.i(TAG, "source : " + source.toString());
+        new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
+            @Override
+            public void onResult(Object obj) {
+                if (obj instanceof SermonItem) {
+                    mAdapter.add((SermonItem)obj);
                 }
-            } else {
-                Logger.e(TAG, "source is null");
             }
-        }
+        });
     }
 
-    public class ContentRequestTask extends AsyncTask<String, Void, Source> {
-        @Override
-        protected Source doInBackground(String... params) {
-            if (params == null || params[0] == null) {
-                return null;
-            }
-            try {
-                URL url = new URL(params[0]);
-                Logger.d(TAG, "request url : " + url.toString());
-                return new Source(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Source source) {
-            super.onPostExecute(source);
-            if (source != null) {
-                Element contentElement = source.getFirstElementByClass("contents bbs_list");
-                if (contentElement != null) {
-                    SermonItem item = new SermonItem();
-                    Logger.i(TAG, "contentElement : " + contentElement.toString());
-
-                    //extract title & date
-                    Element ttlElement = contentElement.getFirstElementByClass("bbs_ttl");
-                    if (ttlElement != null) {
-                        Logger.i(TAG, "onPostExecute > ttlElement : " + ttlElement.getTextExtractor().toString());
-                        String temp = ttlElement.getTextExtractor().toString();
-                        if (!TextUtils.isEmpty(temp) && temp.length() > 12) {
-                            try {
-                                String date = temp.substring(0, 12);
-                                item.title = temp.substring(13, temp.length());
-                                item.date = date;
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                item.title = temp;
-                            }
-                        } else {
-                            item.title = temp;
-                        }
-                    } else {
-                        Logger.e(TAG, "onPostExecute > cannot find ttlElement element");
-                    }
-
-//                    item.title = getTitleFromElement(contentElement);
-//                    item.date = getDateFromElement(contentElement);
-
-                    //extract preacher and chapterInfo
-                    Element temp = contentElement.getFirstElementByClass("bbs_substance_p");
-
-                    for (Element element : temp.getAllElements(HTMLElementName.STRONG)) {
-                        String tempStr = element.toString().replaceAll("&nbsp;", " ");
-                        //Logger.d(TAG, "strong element : " + );
-                        if (tempStr.contains("<br />")) {
-                            String extractStr = element.getTextExtractor().toString();
-                            String[] tempArr = null;
-                            boolean isTitleSplit = false;
-                            if (extractStr.contains("주제 : ")) {
-                                tempArr = extractStr.split("주제 : ");
-                                isTitleSplit = true;
-                            } else if (extractStr.contains("본문 : ")) {
-                                tempArr = extractStr.split("본문 : ");
-                            }
-
-                            if (tempArr != null && tempArr.length > 0) {
-                                item.preacher = tempArr[0];
-                                item.chapterInfo = (isTitleSplit ? "주제 : " : "본문 : ") + tempArr[1];
-                            } else {
-                                item.preacher = element.getTextExtractor().toString();
-                            }//
-                        } else {
-                            if (tempStr.contains("설교 : ") || tempStr.contains("강의 : ")) {
-                                item.preacher = element.getTextExtractor().toString();
-                            } else if (tempStr.contains("본문 : ") || tempStr.contains("주제 : ")) {
-                                item.chapterInfo = element.getTextExtractor().toString();
-                            }
-                        }
-                    }
-
-                    //extract attached file
-                    List<Element> fileElement = contentElement.getAllElementsByClass("attch_file");
-                    for (Element elem : fileElement) {
-                        //Logger.i(TAG, "file element : " + elem.toString());
-                        String href = elem.getFirstElement(HTMLElementName.A).getAttributeValue("href");
-                        if (elem.getFirstElement(HTMLElementName.A).getAttributeValue("href").contains(".mp3")) {
-                            item.audioUrl = href;
-                        } else if (elem.getFirstElement(HTMLElementName.A).getAttributeValue("href").contains("hwp")) {
-                            item.docUrl = href;
-                        }
-                    }
-                    Logger.i(TAG, "worshipItem : " + item.toString());
-
-                    mAdapter.add(item);
-
-                } else {
-                    Logger.e(TAG, "contentElement is null");
-                    Logger.i(TAG, "source : " + source.toString());
-                }
-            } else {
-                Logger.e(TAG, "source is null");
-            }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mServiceConnection != null) {
+            getActivity().unbindService(mServiceConnection);
         }
     }
-
-    private String getTitleFromElement(Element elem) {
-        Element titleElement = elem.getFirstElementByClass("bbs_ttl");
-        if (titleElement != null) {
-            Logger.i(TAG, "getTitleFromElement() > " + titleElement.getTextExtractor().toString());
-            return titleElement.getTextExtractor().toString();
-        }
-        Logger.e(TAG, "getTitleFromElement() > cannot find title element");
-        return null;
-    }
-
-    private String getDateFromElement(Element elem) {
-        Element dateElement = elem.getFirstElementByClass("bbs_date");
-        if (dateElement != null) {
-            Logger.i(TAG, "getDateFromElement() > " + dateElement.getTextExtractor().toString());
-            return dateElement.getTextExtractor().toString();
-        }
-        Logger.e(TAG, "getDateFromElement() > cannot find date element");
-        return null;
-    }
-
-
-
-
 }
