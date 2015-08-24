@@ -1,25 +1,25 @@
-package org.mukdongjeil.mjchurch.introduce;
+package org.mukdongjeil.mjchurch.training;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
-import org.mukdongjeil.mjchurch.protocol.RequestImageTask;
-import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
+import org.mukdongjeil.mjchurch.common.ext_fragment.ImageBaseFragment;
 import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
 import org.mukdongjeil.mjchurch.common.util.DisplayUtil;
 import org.mukdongjeil.mjchurch.common.util.ImageUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
-import org.mukdongjeil.mjchurch.common.ext_fragment.ImageBaseFragment;
+import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocol.RequestImageTask;
+import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
 /**
- * Created by Kim SungJoong on 2015-07-31.
+ * Created by Kim SungJoong on 2015-08-24.
  */
-public class IntroduceFragment extends ImageBaseFragment {
-    private static final String TAG = IntroduceFragment.class.getSimpleName();
+public class TrainingFragment extends ImageBaseFragment{
+    private static final String TAG = TrainingFragment.class.getSimpleName();
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -34,27 +34,27 @@ public class IntroduceFragment extends ImageBaseFragment {
         Bundle args = getArguments();
         if (args == null) {
             Logger.e(TAG, "arguments is null");
-            requestUrl = Const.INTRODUCE_HOME_URL;
+            requestUrl = Const.TRAINING_HOME_URL;
         } else {
             int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
             Logger.i(TAG, "selected sliding menu index : " + selectedMenuIndex);
 
             switch(selectedMenuIndex) {
-                case 2:
-                    requestUrl = Const.INTRODUCE_HISTORY_URL;
+                case 12:
+                    requestUrl = Const.TRAINING_REARING_CLASS_URL;
                     break;
-                case 3:
-                    requestUrl = Const.INTRODUCE_FIND_MAP_URL;
+                case 13:
+                    requestUrl = Const.TRAINING_MOTHER_WISE_URL;
                     break;
-                case 4:
-                    requestUrl = Const.INTRODUCE_TIME_TABLE_URL;
+                case 14:
+                    requestUrl = Const.TRAINING_DISCIPLE_URL;
                     break;
-                case 5:
-                    requestUrl = Const.INTRODUCE_WORKER_URL;
+                case 15:
+                    requestUrl = Const.TRAINING_BOARD_URL;
                     break;
-                case 1:
+                case 11:
                 default:
-                    requestUrl = Const.INTRODUCE_HOME_URL;
+                    requestUrl = Const.TRAINING_BIBLE_STUDY_URL;
                     break;
             }
         }
@@ -67,7 +67,7 @@ public class IntroduceFragment extends ImageBaseFragment {
                 }
 
                 if (obj != null && obj instanceof Bitmap) {
-                    Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage((Bitmap)obj, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
+                    Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage((Bitmap) obj, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
                     if (getImageView() != null) {
                         getImageView().setImageBitmap(resizedBitmap);
                         new PhotoViewAttacher(getImageView());

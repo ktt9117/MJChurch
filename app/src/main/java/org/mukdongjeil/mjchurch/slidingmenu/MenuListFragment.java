@@ -14,6 +14,7 @@ import org.mukdongjeil.mjchurch.common.dao.MenuItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
+import org.mukdongjeil.mjchurch.training.TrainingFragment;
 import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
 public class MenuListFragment extends ListFragment {
@@ -27,10 +28,10 @@ public class MenuListFragment extends ListFragment {
 	private static final String[] introduceMenus = {"Church Intro", "History", "Find Map", "Time Tables", "Peoples"};
 	//list position 7 ~ 9
 	private static final String[] worshipMenus = {"Sunday Morning", "Sunday Afternoon", "Wednesday"};
-	//list position 11 ~ 14
-	private static final String[] trainingMenus = {"Bible Study", "Rearing Class", "Mother Wise", "1:1 Disciple"};
-	//list position 16 ~ 18
-	private static final String[] boardMenus = {"Introduce Cell", "Teaching Plan", "Department"};
+	//list position 11 ~ 15
+	private static final String[] trainingMenus = {"Bible Study", "Rearing Class", "Mother Wise", "1:1 Disciple", "Training Board"};
+	//list position 17 ~ 19
+	private static final String[] boardMenus = {"Thanks Sharing", "Gallery", "New Person"};
 
 	private MenuListAdapter mAdapter;
 	private int mLastSelectedMenuIndex;
@@ -80,6 +81,8 @@ public class MenuListFragment extends ListFragment {
 			case MenuItem.MENU_CATEGORY_WORSHIP:
 				newFragment = new WorshipFragment();
 				break;
+			case MenuItem.MENU_CATEGORY_TRAINING:
+				newFragment = new TrainingFragment();
 			case MenuItem.MENU_CATEGORY_INTRODUCE:
 			default:
 				newFragment = new IntroduceFragment();

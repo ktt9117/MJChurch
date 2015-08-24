@@ -17,6 +17,7 @@ import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
 
+import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
@@ -67,6 +68,11 @@ public class WorshipFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).showLoadingDialog();
+        }
+
         Bundle args = getArguments();
         if (args != null) {
             int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
@@ -90,8 +96,13 @@ public class WorshipFragment extends ListFragment {
         new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
             @Override
             public void onResult(Object obj) {
-                if (obj instanceof SermonItem) {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).hideLoadingDialog();
+                }
+                if (obj != null && obj instanceof SermonItem) {
                     mAdapter.add((SermonItem)obj);
+                } else {
+                    Logger.e(TAG, "obj is null or is not SermonItem at onResult");
                 }
             }
         });
