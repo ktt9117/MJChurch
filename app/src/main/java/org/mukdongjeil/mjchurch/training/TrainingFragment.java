@@ -2,6 +2,7 @@ package org.mukdongjeil.mjchurch.training;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -30,6 +31,7 @@ public class TrainingFragment extends ImageBaseFragment{
         }
 
         String requestUrl;
+        boolean needListRequest = false;
 
         Bundle args = getArguments();
         if (args == null) {
@@ -51,6 +53,7 @@ public class TrainingFragment extends ImageBaseFragment{
                     break;
                 case 15:
                     requestUrl = Const.TRAINING_BOARD_URL;
+                    needListRequest = true;
                     break;
                 case 11:
                 default:
@@ -59,25 +62,30 @@ public class TrainingFragment extends ImageBaseFragment{
             }
         }
 
-        new RequestImageTask(requestUrl, new RequestBaseTask.OnResultListener() {
-            @Override
-            public void onResult(Object obj) {
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).hideLoadingDialog();
-                }
+        if (needListRequest == true) {
+            Toast.makeText(getActivity(), "구현 준비 중입니다.", Toast.LENGTH_LONG).show();
 
-                if (obj != null && obj instanceof Bitmap) {
-                    Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage((Bitmap) obj, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
-                    if (getImageView() != null) {
-                        getImageView().setImageBitmap(resizedBitmap);
-                        new PhotoViewAttacher(getImageView());
-                    } else {
-                        Logger.e(TAG, "getImageView is null at onResult");
+        } else {
+            new RequestImageTask(requestUrl, new RequestBaseTask.OnResultListener() {
+                @Override
+                public void onResult(Object obj) {
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).hideLoadingDialog();
                     }
-                } else {
-                    Logger.e(TAG, "obj is null or is not Bitmap at onResult");
+
+                    if (obj != null && obj instanceof Bitmap) {
+                        Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage((Bitmap) obj, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
+                        if (getImageView() != null) {
+                            getImageView().setImageBitmap(resizedBitmap);
+                            new PhotoViewAttacher(getImageView());
+                        } else {
+                            Logger.e(TAG, "getImageView is null at onResult");
+                        }
+                    } else {
+                        Logger.e(TAG, "obj is null or is not Bitmap at onResult");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }

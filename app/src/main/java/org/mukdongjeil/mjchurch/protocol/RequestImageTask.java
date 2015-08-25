@@ -54,9 +54,11 @@ public class RequestImageTask extends RequestBaseTask {
                     });
                 } else {
                     Logger.e(TAG, "tab1 element is null");
+                    listener.onResult(null);
                 }
             } else {
                 Logger.e(TAG, "source is null");
+                listener.onResult(null);
             }
         } else {
             Logger.e(TAG, "cannot send result caused by OnResultListener is null");

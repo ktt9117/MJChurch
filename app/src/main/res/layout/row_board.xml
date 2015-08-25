@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/sermon_row_padding">
+
+    <TextView android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:textSize="20dp"
+        android:textColor="@color/black"
+        android:text="가나다라마다바사아자차카타파하" />
+
+    <TextView android:id="@+id/writer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="가나다라마다바사"
+        android:layout_below="@id/title" />
+
+    <TextView android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/light_gray"
+        android:layout_alignBaseline="@id/writer"
+        android:layout_toRightOf="@id/writer"
+        android:layout_marginLeft="10dp"
+        android:text="2015. 08. 25" />
+
+</RelativeLayout>

@@ -10,6 +10,7 @@ import android.widget.ListView;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
+import org.mukdongjeil.mjchurch.board.BoardFragment;
 import org.mukdongjeil.mjchurch.common.dao.MenuItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
@@ -23,7 +24,7 @@ public class MenuListFragment extends ListFragment {
 	private static final String TAG = MenuListFragment.class.getSimpleName();
 
 	//list position 0, 6, 10, 15
-	private static final String[] groups = {"Introduce", "Worship", "Training", "Groups", "Board"};
+	private static final String[] groups = {"Introduce", "Worship", "Training", "Board"};
 	//list position 1 ~ 5
 	private static final String[] introduceMenus = {"Church Intro", "History", "Find Map", "Time Tables", "Peoples"};
 	//list position 7 ~ 9
@@ -83,6 +84,10 @@ public class MenuListFragment extends ListFragment {
 				break;
 			case MenuItem.MENU_CATEGORY_TRAINING:
 				newFragment = new TrainingFragment();
+				break;
+			case MenuItem.MENU_CATEGORY_BOARD:
+				newFragment = new BoardFragment();
+				break;
 			case MenuItem.MENU_CATEGORY_INTRODUCE:
 			default:
 				newFragment = new IntroduceFragment();
