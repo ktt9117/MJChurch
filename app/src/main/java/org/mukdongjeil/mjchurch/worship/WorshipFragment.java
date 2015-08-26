@@ -4,33 +4,22 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ListFragment;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import net.htmlparser.jericho.Element;
-import net.htmlparser.jericho.HTMLElementName;
-import net.htmlparser.jericho.Source;
-
 import org.mukdongjeil.mjchurch.MainActivity;
+import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
+import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestSermonsTask;
 import org.mukdongjeil.mjchurch.service.MediaService;
-import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
@@ -62,7 +51,8 @@ public class WorshipFragment extends ListFragment {
         mPageNo = 1;
         Intent service = new Intent(getActivity(), MediaService.class);
         getActivity().bindService(service, mServiceConnection, Context.BIND_AUTO_CREATE);
-        return super.onCreateView(inflater, container, savedInstanceState);
+        View v = inflater.inflate(R.layout.fragment_worship, null);
+        return v;
     }
 
     @Override
