@@ -10,6 +10,10 @@ import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
@@ -21,6 +25,8 @@ import org.mukdongjeil.mjchurch.protocol.RequestSermonsTask;
 import org.mukdongjeil.mjchurch.service.MediaService;
 import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
+import java.io.IOException;
+
 /**
  * Created by Kim SungJoong on 2015-07-31.
  */
@@ -28,6 +34,7 @@ public class WorshipFragment extends ListFragment {
     private static final String TAG = WorshipFragment.class.getSimpleName();
     private int mPageNo;
     private int mWorshipType;
+    private ListPlayerController mPlayerController;
 
     private MediaService mService;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -35,6 +42,20 @@ public class WorshipFragment extends ListFragment {
         public void onServiceConnected(ComponentName name, IBinder service) {
             Logger.d(TAG, "[MediaService] onServiceConnected");
             mService = ((MediaService.LocalBinder)service).getService();
+            if (mPlayerController != null) {
+                if (mService.getCurrentPlayerItem() != null) {
+                    mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
+                    if (mService.isPlaying()) {
+                        mPlayerController.btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
+                        mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                    } else {
+                        mPlayerController.btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
+                        mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_STOP);
+                    }
+                }
+            } else {
+                Logger.e(TAG, "cannot set ListPlayerController info caused by ListPlayerController is not initialized yet!");
+            }
         }
 
         @Override
@@ -49,9 +70,10 @@ public class WorshipFragment extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mPageNo = 1;
+        View v = inflater.inflate(R.layout.fragment_worship, null);
+        mPlayerController = new ListPlayerController(v);
         Intent service = new Intent(getActivity(), MediaService.class);
         getActivity().bindService(service, mServiceConnection, Context.BIND_AUTO_CREATE);
-        View v = inflater.inflate(R.layout.fragment_worship, null);
         return v;
     }
 
@@ -91,6 +113,9 @@ public class WorshipFragment extends ListFragment {
                 }
                 if (obj != null && obj instanceof SermonItem) {
                     mAdapter.add((SermonItem)obj);
+                    if (mPlayerController.currentItem == null) {
+                        mPlayerController.updatePlayerInfo((SermonItem) obj);
+                    }
                 } else {
                     Logger.e(TAG, "obj is null or is not SermonItem at onResult");
                 }
@@ -99,10 +124,100 @@ public class WorshipFragment extends ListFragment {
     }
 
     @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        mPlayerController.updatePlayerInfo(mAdapter.getItem(position));
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (mServiceConnection != null) {
             getActivity().unbindService(mServiceConnection);
         }
+    }
+
+    private class ListPlayerController {
+        private ImageView btnNext;
+        private ImageView btnPrev;
+        public ImageView btnPlayOrPause;
+        private TextView txtTitle;
+        private TextView txtAuthor;
+        public SermonItem currentItem;
+
+        public ListPlayerController(View containerView) {
+            btnNext = (ImageView) containerView.findViewById(R.id.btn_next);
+            btnPrev = (ImageView) containerView.findViewById(R.id.btn_previous);
+            btnPlayOrPause = (ImageView) containerView.findViewById(R.id.btn_play_or_pause);
+            txtTitle = (TextView) containerView.findViewById(R.id.title);
+            txtAuthor = (TextView) containerView.findViewById(R.id.preacher);
+            btnNext.setOnClickListener(onClickListener);
+            btnPrev.setOnClickListener(onClickListener);
+            btnPlayOrPause.setOnClickListener(onClickListener);
+        }
+
+        public void updatePlayerInfo(SermonItem item) {
+            txtTitle.setText(item.title);
+            txtAuthor.setText(item.preacher);
+            currentItem = item;
+            if (mService != null) {
+                //현재 service가 재생중인 아이템과 사용자가 선택한 아이템이 같은지 체크
+                if (mService.getCurrentPlayerItem() != null && mService.getCurrentPlayerItem().title.equals(item.title)) {
+                    if (mService.isPlaying()) {
+                        btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
+                        btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                    } else {
+                        btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
+                        btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                    }
+                } else {
+                    btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
+                    btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                }
+            }
+        }
+
+        private View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (v.getId() == R.id.btn_play_or_pause) {
+                    if (mService == null) {
+                        Intent service = new Intent(getActivity(), MediaService.class);
+                        getActivity().bindService(service, mServiceConnection, Context.BIND_AUTO_CREATE);
+                        Toast.makeText(getActivity(), "플레이어가 아직 준비중입니다.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (v.getTag() != null) {
+                        int playerStatus = (int) v.getTag();
+                        if (playerStatus == MediaService.PLAYER_STATUS_PAUSE) {
+                            if (mService.pausePlayer()) {
+                                btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
+                                btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                            }
+                        } else if (playerStatus == MediaService.PLAYER_STATUS_PLAY) {
+//                            if (mService.resumePlayer() == true) {
+//                                btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
+//                                btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+//                            } else {
+                                try {
+                                    mService.startPlayer(currentItem);
+                                    btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
+                                    btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+//                            }
+                        } else if (playerStatus == MediaService.PLAYER_STATUS_STOP) {
+                            mService.stopPlayer();
+                            btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
+                            btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                        }
+                    }
+                } else {
+                    Toast.makeText(getActivity(), "구현 준비중입니다.", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
     }
 }

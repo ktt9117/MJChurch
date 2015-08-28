@@ -23,6 +23,10 @@ import java.io.IOException;
 public class MediaService extends Service {
     private static final String TAG = MediaService.class.getSimpleName();
 
+    public static final int PLAYER_STATUS_PLAY = 1;
+    public static final int PLAYER_STATUS_PAUSE = 2;
+    public static final int PLAYER_STATUS_STOP = 3;
+
     private static final int MEDIA_SERVICE_ID = 101;
 
     private final LocalBinder mBinder = new LocalBinder();
@@ -90,6 +94,31 @@ public class MediaService extends Service {
             mPlayer = null;
         }
         mCurrentItem = null;
+    }
+
+    public boolean isPlaying() {
+        return mPlayer != null && mPlayer.isPlaying();
+    }
+
+    public boolean pausePlayer() {
+        if (mPlayer == null) {
+            return false;
+        }
+
+        mPlayer.pause();
+        return true;
+    }
+
+    public boolean resumePlayer() {
+        if (mPlayer == null) {
+            return false;
+        }
+        mPlayer.start();
+        return true;
+    }
+
+    public SermonItem getCurrentPlayerItem() {
+        return mCurrentItem;
     }
 
     private void startForegroundService() {
