@@ -11,6 +11,7 @@ import android.widget.ListView;
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.board.BoardFragment;
+import org.mukdongjeil.mjchurch.board.BoardGalleryFragment;
 import org.mukdongjeil.mjchurch.common.dao.MenuItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
@@ -86,7 +87,11 @@ public class MenuListFragment extends ListFragment {
 				newFragment = new TrainingFragment();
 				break;
 			case MenuItem.MENU_CATEGORY_BOARD:
-				newFragment = new BoardFragment();
+				if (position == BoardFragment.BOARD_TYPE_GALLERY) {
+					newFragment = new BoardGalleryFragment();
+				} else {
+					newFragment = new BoardFragment();
+				}
 				break;
 			case MenuItem.MENU_CATEGORY_INTRODUCE:
 			default:
