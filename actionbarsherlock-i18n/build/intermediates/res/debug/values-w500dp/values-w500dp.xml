@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- From: file:/D:/AndroidStudio_Workspace/MJChurch/actionbarsherlock-i18n/build/intermediates/exploded-aar/MJChurch/actionbarsherlock/unspecified/res/values-w500dp/values-w500dp.xml -->
-    <eat-comment/>
-    <integer name="abs__max_action_buttons">4</integer>
-</resources>

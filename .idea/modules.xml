@@ -4,9 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MJChurch.iml" filepath="$PROJECT_DIR$/MJChurch.iml" />
       <module fileurl="file://$PROJECT_DIR$/SlidingMenu/SlidingMenu.iml" filepath="$PROJECT_DIR$/SlidingMenu/SlidingMenu.iml" />
-      <module fileurl="file://$PROJECT_DIR$/actionbarsherlock/actionbarsherlock.iml" filepath="$PROJECT_DIR$/actionbarsherlock/actionbarsherlock.iml" />
-      <module fileurl="file://$PROJECT_DIR$/actionbarsherlock-fest/actionbarsherlock-fest.iml" filepath="$PROJECT_DIR$/actionbarsherlock-fest/actionbarsherlock-fest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/actionbarsherlock-i18n/actionbarsherlock-i18n.iml" filepath="$PROJECT_DIR$/actionbarsherlock-i18n/actionbarsherlock-i18n.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

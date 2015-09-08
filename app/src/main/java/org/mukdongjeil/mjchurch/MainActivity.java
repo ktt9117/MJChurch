@@ -5,8 +5,8 @@ import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
-import com.actionbarsherlock.view.MenuItem;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
@@ -26,6 +26,7 @@ public class MainActivity extends SlidingFragmentActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private CycleProgressDialog mLoadingDialog;
+    private boolean isTouchModeFullScreen = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,19 +47,15 @@ public class MainActivity extends SlidingFragmentActivity {
         // set the current Fragment
         Fragment fragment = new IntroduceFragment();
         switchContent(fragment);
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                toggleTouchMode();
+            }
+        });
 
         // init ViewPager
         //initializePager(setPosition);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                toggle();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     public void switchContent(Fragment fragment) {
@@ -72,6 +69,12 @@ public class MainActivity extends SlidingFragmentActivity {
                 getSlidingMenu().showContent();
             }
         }, 100);
+    }
+
+    public void addContent(Fragment fragment) {
+        getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment).addToBackStack("detail").commit();
+        showContent();
     }
 
     public void showLoadingDialog() {
@@ -88,6 +91,24 @@ public class MainActivity extends SlidingFragmentActivity {
     protected void onDestroy() {
         super.onDestroy();
         releaseDialog(mLoadingDialog);
+    }
+
+    public void setSlidingTouchMode(int touchMode) {
+        if (getSlidingMenu() != null) {
+            getSlidingMenu().setTouchModeAbove(touchMode);
+        }
+    }
+
+    private void toggleTouchMode() {
+        if (getSlidingMenu() != null) {
+            if (isTouchModeFullScreen) {
+                isTouchModeFullScreen = false;
+                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
+            } else {
+                isTouchModeFullScreen = true;
+                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+            }
+        }
     }
 
     private void initializeImageLoader() {
@@ -132,7 +153,7 @@ public class MainActivity extends SlidingFragmentActivity {
             }
         });
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
         setSlidingActionBarEnabled(true);
     }
 

@@ -15,7 +15,9 @@
     <dimen name="sermon_row_image_height">60dp</dimen>
 
     <dimen name="sermon_row_content_height">100dp</dimen>
+
     <!-- Not used
     <dimen name="list_padding">10dp</dimen>
     -->
+
 </resources>

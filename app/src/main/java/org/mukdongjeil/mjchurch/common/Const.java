@@ -1,11 +1,15 @@
 package org.mukdongjeil.mjchurch.common;
 
+import org.mukdongjeil.mjchurch.R;
+
 /**
  * Created by Kim SungJoong on 2015-08-11.
  */
 public class Const {
 
     public static boolean DEBUG_MODE = true;
+
+    public static final int DEFAULT_IMG_RESOURCE = R.mipmap.ic_launcher;
 
 //    public static final String[] PAGER_MENUS = new String[] {"Introduce", "Worship", "Training", "Groups", "Board"};
 //    public static final int INTRODUCE_PAGE_INDEX = 0;
@@ -47,6 +51,8 @@ public class Const {
     //board pages url
     public static final String BOARD_THANKS_SHARE_URL = BASE_URL + "/m/board/index.mo?menuId=10004076&topMenuId=6&menuType=1&newMenuAt=true";
     public static final String BOARD_GALLERY_LIST_URL = BASE_URL + "/m/photo/index.mo?menuId=7203&topMenuId=6&menuType=9&newMenuAt=false";
+    public static final String BOARD_GALLERY_DETAIL_URL = BASE_URL + "/m/photo/view.mo?menuId=7203&topMenuId=6&menuType=9&newMenuAt=false&bbsNo=";
+
     //페이지 Indicator 두번째 거 눌렀을 때
     //http://mukdongjeil.hompee.org/m/photo/index.mo?menuId=7203&topMenuId=6&menuType=9&newMenuAt=false&tPage=2&sPage=null&ssPage=null&pageNow=2&keyfield=Subject&keyword=
 
@@ -82,5 +88,9 @@ public class Const {
             default:
                 return WORSHIP_CONTENT_URL + SUNDAY_MORNING_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
         }
+    }
+
+    public static final String getGalleryDetailURL(String contentNo) {
+        return BOARD_GALLERY_DETAIL_URL + contentNo;
     }
 }

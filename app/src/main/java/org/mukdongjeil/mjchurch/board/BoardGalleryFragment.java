@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -28,6 +30,7 @@ import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestListTask;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -36,12 +39,17 @@ import java.util.List;
 public class BoardGalleryFragment extends Fragment {
     private static final String TAG = BoardGalleryFragment.class.getSimpleName();
 
+    private SwipeRefreshLayout mSwiper;
     private GridView mGridView;
+    private BoardGridAdapter mAdapter;
     private int mPageNo;
+    private List<GalleryItem> mItemList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_grid_board, null);
+        mSwiper = (SwipeRefreshLayout) v.findViewById(R.id.swiper);
+        mSwiper.setOnRefreshListener(mOnRefreshListener);
         mGridView = (GridView) v.findViewById(R.id.gridview);
         return v;
     }
@@ -61,12 +69,45 @@ public class BoardGalleryFragment extends Fragment {
                 if (getActivity() instanceof MainActivity) {
                     ((MainActivity) getActivity()).hideLoadingDialog();
                 }
-                List<GalleryItem> itemList = (List) obj;
-                BoardGridAdapter adapter = new BoardGridAdapter(itemList);
-                mGridView.setAdapter(adapter);
+                mItemList = (List) obj;
+                mAdapter = new BoardGridAdapter(mItemList);
+                mGridView.setAdapter(mAdapter);
+                mGridView.setOnItemClickListener(onGridItemClickListener);
             }
         });
     }
+
+    private AdapterView.OnItemClickListener onGridItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            GalleryItem item = mItemList.get(position);
+            Fragment newFragment = BoardGalleryDetailFragment.newInstance(item.bbsNo);
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).addContent(newFragment);
+            }
+        }
+    };
+
+    private SwipeRefreshLayout.OnRefreshListener mOnRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+            mPageNo++;
+            new RequestListTask(BoardFragment.BOARD_TYPE_GALLERY, mPageNo, new RequestBaseTask.OnResultListener() {
+                @Override
+                public void onResult(Object obj) {
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).hideLoadingDialog();
+                    }
+                    if (obj != null && obj instanceof List) {
+                        mItemList.addAll((Collection<? extends GalleryItem>) obj);
+                        mAdapter.notifyDataSetChanged();
+                    } else {
+                        mSwiper.setEnabled(false);
+                    }
+                }
+            });
+        }
+    };
 
     private class BoardGridAdapter extends BaseAdapter {
 

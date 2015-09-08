@@ -1,1 +1,1 @@
-include ':app', ':SlidingMenu', ':actionbarsherlock-fest', ':actionbarsherlock-i18n', ':actionbarsherlock'
+include ':app', ':SlidingMenu'
