@@ -9,6 +9,8 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
+import android.widget.RemoteViews;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -32,6 +34,7 @@ public class MediaService extends Service {
     private final LocalBinder mBinder = new LocalBinder();
 
     private SermonItem mCurrentItem;
+    private RemoteViews remoteView;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -58,6 +61,23 @@ public class MediaService extends Service {
         if (intent != null) {
             String action = intent.getAction();
             Logger.i(TAG, "mediaService intent action : " + action);
+            if (TextUtils.isEmpty(action)) {
+                return START_STICKY;
+            }
+
+            if (action.equals("playAction")) {
+                if (resumePlayer() == false) {
+                    try {
+                        startPlayer(mCurrentItem);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else if (action.equals("pauseAction")) {
+                pausePlayer();
+            } else if (action.equals("stopAction")) {
+                stopPlayer();
+            }
         }
         return START_STICKY;
     }
@@ -129,14 +149,33 @@ public class MediaService extends Service {
         playIntent.setAction("playAction");
         PendingIntent playPending = PendingIntent.getService(this, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        Intent pauseIntent = new Intent(this, MediaService.class);
+        pauseIntent.setAction("pauseAction");
+        PendingIntent pausePending = PendingIntent.getService(this, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent stopIntent = new Intent(this, MediaService.class);
+        stopIntent.setAction("stopAction");
+        PendingIntent stopPending = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        RemoteViews remoteView = new RemoteViews(getPackageName(), R.layout.remote_media_player);
+//        remoteView.setImageViewResource(R.id.remote_play, android.R.drawable.ic_media_play);
+//        remoteView.setImageViewResource(R.id.remote_pause, android.R.drawable.ic_media_pause);
+//        remoteView.setImageViewResource(R.id.remote_stop, android.R.drawable.ic_menu_close_clear_cancel);
+        remoteView.setOnClickPendingIntent(R.id.remote_play, playPending);
+        remoteView.setOnClickPendingIntent(R.id.remote_pause, pausePending);
+        remoteView.setOnClickPendingIntent(R.id.remote_stop, stopPending);
+
         Notification notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText((mCurrentItem != null) ? mCurrentItem.title : "Preach a sermon")
+//                .setContentTitle(getString(R.string.app_name))
+//                .setContentText((mCurrentItem != null) ? mCurrentItem.title : "Preach a sermon")
                 .setContentIntent(contentPending)
+                .setContent(remoteView)
                 .setOngoing(true)
                 .setWhen(System.currentTimeMillis())
-                .addAction(android.R.drawable.ic_media_play, "Play", playPending)
+//                .addAction(android.R.drawable.ic_media_play, "Play", playPending)
+//                .addAction(android.R.drawable.ic_media_pause, "Pause", pausePending)
+//                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopPending)
                 .build();
 
         startForeground(MEDIA_SERVICE_ID, notification);

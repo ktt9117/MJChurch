@@ -138,12 +138,15 @@ public class WorshipFragment extends ListFragment {
     }
 
     private class ListPlayerController {
+        private final String TAG = ListPlayerController.class.getSimpleName();
         private ImageView btnNext;
         private ImageView btnPrev;
         public ImageView btnPlayOrPause;
         private TextView txtTitle;
         private TextView txtAuthor;
         public SermonItem currentItem;
+
+        private boolean equalsServiceItem;
 
         public ListPlayerController(View containerView) {
             btnNext = (ImageView) containerView.findViewById(R.id.btn_next);
@@ -154,6 +157,7 @@ public class WorshipFragment extends ListFragment {
             btnNext.setOnClickListener(onClickListener);
             btnPrev.setOnClickListener(onClickListener);
             btnPlayOrPause.setOnClickListener(onClickListener);
+            equalsServiceItem = false;
         }
 
         public void updatePlayerInfo(SermonItem item) {
@@ -161,16 +165,25 @@ public class WorshipFragment extends ListFragment {
             txtAuthor.setText(item.preacher);
             currentItem = item;
             if (mService != null) {
-                //현재 service가 재생중인 아이템과 사용자가 선택한 아이템이 같은지 체크
+                //현재 서비스에 등록되어 있는 아이템과 사용자가 선택한 아이템이 같은지 체크
                 if (mService.getCurrentPlayerItem() != null && mService.getCurrentPlayerItem().title.equals(item.title)) {
+                    equalsServiceItem = true;
+                } else {
+                    equalsServiceItem = false;
+                }
+
+                if (equalsServiceItem) {
+                    //재생중이면 Pause 버튼으로 표현
                     if (mService.isPlaying()) {
                         btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                     } else {
+                        //재생중이 아니면 Play 버튼으로 표현
                         btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                     }
                 } else {
+                    //서비스에 등록된 아이템이 아니면 Play 버튼으로 표현
                     btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
                     btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                 }
@@ -188,18 +201,33 @@ public class WorshipFragment extends ListFragment {
                         return;
                     }
 
+                    if (currentItem == null) {
+                        Toast.makeText(getActivity(), "목록에서 설교를 선택해주세요.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (mService.getCurrentPlayerItem() != null && mService.getCurrentPlayerItem().title.equals(currentItem.title)) {
+                        equalsServiceItem = true;
+                    } else {
+                        equalsServiceItem = false;
+                    }
+
                     if (v.getTag() != null) {
                         int playerStatus = (int) v.getTag();
+                        Logger.i(TAG, "playerStatus : " + playerStatus);
+                        Logger.i(TAG, "equalsServiceItem : " + equalsServiceItem);
                         if (playerStatus == MediaService.PLAYER_STATUS_PAUSE) {
                             if (mService.pausePlayer()) {
                                 btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);
                                 btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                             }
                         } else if (playerStatus == MediaService.PLAYER_STATUS_PLAY) {
-//                            if (mService.resumePlayer() == true) {
-//                                btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
-//                                btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
-//                            } else {
+                            if (equalsServiceItem && mService.resumePlayer()) {
+                                Logger.i(TAG, "equalsServiceItem == true && resumeResult == true");
+                                btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
+                                btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                            } else {
+                                Logger.i(TAG, "resumeResult == false maybe");
                                 try {
                                     mService.startPlayer(currentItem);
                                     btnPlayOrPause.setImageResource(android.R.drawable.ic_media_pause);
@@ -207,7 +235,7 @@ public class WorshipFragment extends ListFragment {
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-//                            }
+                            }
                         } else if (playerStatus == MediaService.PLAYER_STATUS_STOP) {
                             mService.stopPlayer();
                             btnPlayOrPause.setImageResource(android.R.drawable.ic_media_play);

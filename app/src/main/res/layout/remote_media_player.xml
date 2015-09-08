@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:padding="3dp" >
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/ic_launcher" />
+
+    <ImageView
+        android:id="@+id/remote_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:src="@android:drawable/ic_media_play" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:text="Play" />
+    <!--
+        android:text="Play"
+        android:drawableLeft="@android:drawable/ic_media_play"
+        android:drawablePadding="5dp"-->
+    <ImageView
+        android:id="@+id/remote_pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_media_pause"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:text="Pause" />
+    <!--
+        android:text="Pause"
+        android:drawableLeft="@android:drawable/ic_media_pause"
+        android:drawablePadding="5dp" -->
+
+
+    <ImageView
+        android:id="@+id/remote_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:text="Stop" />
+    <!--
+        android:text="Stop"
+        android:drawableLeft="@android:drawable/ic_menu_close_clear_cancel"
+        android:drawablePadding="5dp" -->
+
+</LinearLayout>
