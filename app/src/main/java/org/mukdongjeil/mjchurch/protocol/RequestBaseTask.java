@@ -16,7 +16,8 @@ public abstract class RequestBaseTask extends AsyncTask<String, Void, Source> {
     private static final String TAG = RequestBaseTask.class.getSimpleName();
 
     public interface OnResultListener {
-        void onResult(Object obj);
+        int POSITION_NONE = -1;
+        void onResult(Object obj, int position);
     }
 
     @Override

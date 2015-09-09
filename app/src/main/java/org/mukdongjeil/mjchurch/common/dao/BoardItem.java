@@ -7,10 +7,10 @@ import com.google.gson.Gson;
  */
 public class BoardItem {
     public String title;
-    public String contentUrl;
     public String writer;
     public String date;
-    public String bbsNo;
+    public String content;
+    public String contentUrl;
 
     public String toString() {
         return new Gson().toJson(this);

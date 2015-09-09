@@ -8,15 +8,9 @@ import net.htmlparser.jericho.Source;
 
 import org.mukdongjeil.mjchurch.board.BoardFragment;
 import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.dao.BoardItem;
 import org.mukdongjeil.mjchurch.common.dao.GalleryItem;
-import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
-import org.mukdongjeil.mjchurch.database.DBManager;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,23 +22,21 @@ public class RequestListTask extends RequestBaseTask {
 
     private OnResultListener listener;
     private int boardType;
-    private int pageNo;
 
     public RequestListTask(int boardType, int pageNo, OnResultListener listener) {
         this.listener = listener;
         this.boardType = boardType;
-        this.pageNo = pageNo;
         String requestUrl;
         switch (boardType) {
             case BoardFragment.BOARD_TYPE_GALLERY :
-                requestUrl = Const.BOARD_GALLERY_LIST_URL;
+                requestUrl = Const.getGalleryListUrl(pageNo);
                 break;
             case BoardFragment.BOARD_TYPE_NEW_PERSON :
-                requestUrl = Const.BOARD_NEW_PERSON_LIST_URL;
+                requestUrl = Const.getNewPersonListUrl(pageNo);
                 break;
             case BoardFragment.BOARD_TYPE_THANKS_SHARING :
             default :
-                requestUrl = Const.BOARD_THANKS_SHARE_URL;
+                requestUrl = Const.getThanksShareListUrl(pageNo);
                 break;
         }
         execute(requestUrl);
@@ -62,21 +54,22 @@ public class RequestListTask extends RequestBaseTask {
                     } else {
                         Logger.e(TAG, "contentElement is null");
                         Logger.i(TAG, "source : " + source.toString());
-                        listener.onResult(null);
+                        listener.onResult(null, OnResultListener.POSITION_NONE);
                     }
-                } else if (boardType == BoardFragment.BOARD_TYPE_GALLERY) {
+                } else /*if (boardType == BoardFragment.BOARD_TYPE_GALLERY)*/ {
                     Element contentElement = source.getFirstElementByClass("contents photo_list");
                     if (contentElement != null) {
                         parseGalleryList(contentElement);
+
                     } else {
                         Logger.e(TAG, "contentElement is null");
                         Logger.i(TAG, "source : " + source.toString());
-                        listener.onResult(null);
+                        listener.onResult(null, OnResultListener.POSITION_NONE);
                     }
                 }
             } else {
                 Logger.e(TAG, "source is null");
-                listener.onResult(null);
+                listener.onResult(null, OnResultListener.POSITION_NONE);
             }
         } else {
             Logger.e(TAG, "cannot send result caused by OnResultListener is null");
@@ -85,45 +78,46 @@ public class RequestListTask extends RequestBaseTask {
 
     private void parseBoardList(Element contentElement) {
         Logger.i(TAG, "contentElement : " + contentElement.toString());
-        List<BoardItem> itemList = new ArrayList<>();
+//        List<BoardItem> itemList = new ArrayList<>();
         List<Element> linkList = contentElement.getAllElementsByClass("list_link");
-        List<Element> titleList = contentElement.getAllElementsByClass("bbs_ttl");
-        List<Element> writerList = contentElement.getAllElementsByClass("bbs_writer");
-        List<Element> dateList = contentElement.getAllElementsByClass("bbs_date");
+//        List<Element> titleList = contentElement.getAllElementsByClass("bbs_ttl");
+//        List<Element> writerList = contentElement.getAllElementsByClass("bbs_writer");
+//        List<Element> dateList = contentElement.getAllElementsByClass("bbs_date");
 
         int loopCount = linkList.size();
         if (linkList != null && loopCount > 0) {
-            for (int i = 0; i < linkList.size(); i++) {
-                BoardItem item = new BoardItem();
-
-                String linkAttr = linkList.get(i).getAttributeValue("href");
-                //Logger.i(TAG, "link : " + linkAttr);
-                if (!TextUtils.isEmpty(linkAttr)) {
-                    item.contentUrl = linkAttr;
-                    String bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
-                    item.bbsNo = bbsNo;
-                }
-                try {
-                    item.title = titleList.get(i).getTextExtractor().toString();
-                    item.writer = writerList.get(i).getTextExtractor().toString();
-                    item.date = dateList.get(i).getTextExtractor().toString();
-                } catch (ArrayIndexOutOfBoundsException aiobe) {
-                    aiobe.printStackTrace();
-                    item = null;
-                } catch (NullPointerException npe) {
-                    npe.printStackTrace();
-                    item = null;
-                }
-
-                if (item != null) {
-                    Logger.d(TAG, "add item : " + item.toString());
-                    itemList.add(item);
-                }
-            }
-            listener.onResult(itemList);
+//            for (int i = 0; i < linkList.size(); i++) {
+//                BoardItem item = new BoardItem();
+//
+//                String linkAttr = linkList.get(i).getAttributeValue("href");
+//                //Logger.i(TAG, "link : " + linkAttr);
+//                if (!TextUtils.isEmpty(linkAttr)) {
+//                    item.contentUrl = linkAttr;
+//                    String bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
+//                    item.bbsNo = bbsNo;
+//                }
+//                try {
+//                    item.title = titleList.get(i).getTextExtractor().toString();
+//                    item.writer = writerList.get(i).getTextExtractor().toString();
+//                    item.date = dateList.get(i).getTextExtractor().toString();
+//                } catch (ArrayIndexOutOfBoundsException aiobe) {
+//                    aiobe.printStackTrace();
+//                    item = null;
+//                } catch (NullPointerException npe) {
+//                    npe.printStackTrace();
+//                    item = null;
+//                }
+//
+//                if (item != null) {
+//                    Logger.d(TAG, "add item : " + item.toString());
+//                    itemList.add(item);
+//                }
+//            }
+//            listener.onResult(itemList);
+            listener.onResult(linkList, OnResultListener.POSITION_NONE);
 
         } else {
-            listener.onResult(null);
+            listener.onResult(null, OnResultListener.POSITION_NONE);
             Logger.e(TAG, "there is not linkList child item");
         }
     }
@@ -170,10 +164,10 @@ public class RequestListTask extends RequestBaseTask {
                     itemList.add(item);
                 }
             }
-            listener.onResult(itemList);
+            listener.onResult(itemList, OnResultListener.POSITION_NONE);
 
         } else {
-            listener.onResult(null);
+            listener.onResult(null, OnResultListener.POSITION_NONE);
             Logger.e(TAG, "there is not linkList child item");
         }
     }

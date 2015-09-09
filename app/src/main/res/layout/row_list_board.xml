@@ -27,4 +27,11 @@
         android:layout_marginLeft="10dp"
         android:text="2015. 08. 25" />
 
+    <TextView android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/writer"
+        android:layout_marginTop="10dp"
+        android:text="동해물과 백두산이 마르고 닳도록 하나님이 보우하사 우리나라 만세 무궁화 삼천리 화려 강산 대한사람 대한으로 길이 보전하세 "/>
+
 </RelativeLayout>

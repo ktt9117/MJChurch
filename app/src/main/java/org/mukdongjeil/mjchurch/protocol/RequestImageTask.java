@@ -36,29 +36,32 @@ public class RequestImageTask extends RequestBaseTask {
                     Element imgElement = tab1.getFirstElement(HTMLElementName.IMG);
                     String src = imgElement.getAttributeValue("src");
                     src = src.replaceAll("&amp;", "&");
-                    ImageLoader.getInstance().loadImage(Const.BASE_URL + src, new ImageLoadingListener() {
+                    if (!src.contains("http")) {
+                        src = Const.BASE_URL + src;
+                    }
+                    ImageLoader.getInstance().loadImage(src, new ImageLoadingListener() {
                         @Override
                         public void onLoadingStarted(String s, View view) {}
                         @Override
                         public void onLoadingFailed(String s, View view, FailReason failReason) {
-                            listener.onResult(failReason);
+                            listener.onResult(failReason, OnResultListener.POSITION_NONE);
                         }
                         @Override
                         public void onLoadingComplete(String s, View view, Bitmap bitmap) {
-                            listener.onResult(bitmap);
+                            listener.onResult(bitmap, OnResultListener.POSITION_NONE);
                         }
                         @Override
                         public void onLoadingCancelled(String s, View view) {
-                            listener.onResult(s);
+                            listener.onResult(s, OnResultListener.POSITION_NONE);
                         }
                     });
                 } else {
                     Logger.e(TAG, "tab1 element is null");
-                    listener.onResult(null);
+                    listener.onResult(null, OnResultListener.POSITION_NONE);
                 }
             } else {
                 Logger.e(TAG, "source is null");
-                listener.onResult(null);
+                listener.onResult(null, OnResultListener.POSITION_NONE);
             }
         } else {
             Logger.e(TAG, "cannot send result caused by OnResultListener is null");

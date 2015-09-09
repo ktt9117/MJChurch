@@ -107,7 +107,7 @@ public class WorshipFragment extends ListFragment {
         setListAdapter(mAdapter);
         new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
             @Override
-            public void onResult(Object obj) {
+            public void onResult(Object obj, int position) {
                 if (getActivity() instanceof MainActivity) {
                     ((MainActivity) getActivity()).hideLoadingDialog();
                 }

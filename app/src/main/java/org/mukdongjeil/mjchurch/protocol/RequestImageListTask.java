@@ -1,17 +1,9 @@
 package org.mukdongjeil.mjchurch.protocol;
 
-import android.graphics.Bitmap;
-import android.view.View;
-
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
 
-import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 
 import java.util.List;
@@ -38,11 +30,11 @@ public class RequestImageListTask extends RequestBaseTask {
                 if (imgBoxElement != null) {
                     List<Element> imgTagList = imgBoxElement.getAllElements(HTMLElementName.IMG);
                     Logger.e(TAG, "imgTagList count : " + ((imgTagList != null) ? imgTagList.size() : -1));
-                    listener.onResult(imgTagList);
+                    listener.onResult(imgTagList, OnResultListener.POSITION_NONE);
                 }
             } else {
                 Logger.e(TAG, "source is null");
-                listener.onResult(null);
+                listener.onResult(null, OnResultListener.POSITION_NONE);
             }
         } else {
             Logger.e(TAG, "cannot send result caused by OnResultListener is null");

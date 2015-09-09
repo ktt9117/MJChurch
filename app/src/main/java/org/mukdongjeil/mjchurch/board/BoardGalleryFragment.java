@@ -3,9 +3,10 @@ package org.mukdongjeil.mjchurch.board;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +15,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -26,11 +27,13 @@ import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.GalleryItem;
 import org.mukdongjeil.mjchurch.common.util.DisplayUtil;
+import org.mukdongjeil.mjchurch.common.util.ExHandler;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestListTask;
+import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,17 +42,54 @@ import java.util.List;
 public class BoardGalleryFragment extends Fragment {
     private static final String TAG = BoardGalleryFragment.class.getSimpleName();
 
-    private SwipeRefreshLayout mSwiper;
+    private static final int HANDLE_WHAT_GET_CONTENTS = 100;
+
+    private int mBoardType;
     private GridView mGridView;
     private BoardGridAdapter mAdapter;
     private int mPageNo;
     private List<GalleryItem> mItemList;
+    private boolean hasMorePage;
+    private boolean isDetached = false;
+
+    private ExHandler<BoardGalleryFragment> mHandler = new ExHandler<BoardGalleryFragment>(this) {
+        @Override
+        protected void handleMessage(BoardGalleryFragment reference, Message msg) {
+            if (isDetached) return;
+            mPageNo++;
+            new RequestListTask(mBoardType, mPageNo, new RequestBaseTask.OnResultListener() {
+                @Override
+                public void onResult(Object obj, int position) {
+                    if (isDetached) return;
+
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).hideLoadingDialog();
+                    }
+
+                    if (obj != null && obj instanceof List) {
+                        List<GalleryItem> list = (List<GalleryItem>) obj;
+                        mItemList.addAll(list);
+                        mAdapter.notifyDataSetChanged();
+                        if (list.size() < Const.GALLERY_LIST_COUNT_PER_PAGE) {
+                            hasMorePage = false;
+
+                        }
+                    } else {
+                        hasMorePage = false;
+                    }
+
+                    if (hasMorePage == true) {
+                        mHandler.sendEmptyMessage(HANDLE_WHAT_GET_CONTENTS);
+                        //mHandler.sendEmptyMessageDelayed(HANDLE_WHAT_GET_CONTENTS, 100);
+                    }
+                }
+            });
+        }
+    } ;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_grid_board, null);
-        mSwiper = (SwipeRefreshLayout) v.findViewById(R.id.swiper);
-        mSwiper.setOnRefreshListener(mOnRefreshListener);
         mGridView = (GridView) v.findViewById(R.id.gridview);
         return v;
     }
@@ -57,55 +97,45 @@ public class BoardGalleryFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mPageNo = 1;
+        mPageNo = 0;
+        hasMorePage = true;
+
+        mBoardType = (getArguments() != null) ? getArguments().getInt(MenuListFragment.SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
+
+        mItemList = new ArrayList<>();
+        mAdapter = new BoardGridAdapter(mItemList);
+        mGridView.setAdapter(mAdapter);
+        mGridView.setOnItemClickListener(mOnGridItemClickListener);
 
         if (getActivity() instanceof MainActivity) {
             ((MainActivity) getActivity()).showLoadingDialog();
         }
 
-        new RequestListTask(BoardFragment.BOARD_TYPE_GALLERY, mPageNo, new RequestBaseTask.OnResultListener() {
-            @Override
-            public void onResult(Object obj) {
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).hideLoadingDialog();
-                }
-                mItemList = (List) obj;
-                mAdapter = new BoardGridAdapter(mItemList);
-                mGridView.setAdapter(mAdapter);
-                mGridView.setOnItemClickListener(onGridItemClickListener);
-            }
-        });
+        mHandler.sendEmptyMessage(HANDLE_WHAT_GET_CONTENTS);
     }
 
-    private AdapterView.OnItemClickListener onGridItemClickListener = new AdapterView.OnItemClickListener() {
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        isDetached = false;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mHandler.removeMessages(HANDLE_WHAT_GET_CONTENTS);
+        isDetached = true;
+        hasMorePage = false;
+    }
+
+    private AdapterView.OnItemClickListener mOnGridItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             GalleryItem item = mItemList.get(position);
-            Fragment newFragment = BoardGalleryDetailFragment.newInstance(item.bbsNo);
+            Fragment newFragment = BoardGalleryDetailFragment.newInstance(mBoardType, item.bbsNo);
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).addContent(newFragment);
             }
-        }
-    };
-
-    private SwipeRefreshLayout.OnRefreshListener mOnRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
-        @Override
-        public void onRefresh() {
-            mPageNo++;
-            new RequestListTask(BoardFragment.BOARD_TYPE_GALLERY, mPageNo, new RequestBaseTask.OnResultListener() {
-                @Override
-                public void onResult(Object obj) {
-                    if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).hideLoadingDialog();
-                    }
-                    if (obj != null && obj instanceof List) {
-                        mItemList.addAll((Collection<? extends GalleryItem>) obj);
-                        mAdapter.notifyDataSetChanged();
-                    } else {
-                        mSwiper.setEnabled(false);
-                    }
-                }
-            });
         }
     };
 
@@ -148,7 +178,11 @@ public class BoardGalleryFragment extends Fragment {
             if (item != null) {
                 if (!TextUtils.isEmpty(item.photoUrl)) {
                     Logger.d(TAG, "gridview > getView photoUrl : " + item.photoUrl);
-                    ImageLoader.getInstance().loadImage(Const.BASE_URL + item.photoUrl, new ImageLoadingListener() {
+                    item.photoUrl = item.photoUrl.replaceAll("&amp;", "&");
+                    if (!item.photoUrl.contains("http")) {
+                        item.photoUrl = Const.BASE_URL + item.photoUrl;
+                    }
+                    ImageLoader.getInstance().loadImage(item.photoUrl, new ImageLoadingListener() {
                         @Override
                         public void onLoadingStarted(String s, View view) {
                         }
@@ -160,7 +194,7 @@ public class BoardGalleryFragment extends Fragment {
                         @Override
                         public void onLoadingComplete(String s, View view, Bitmap bitmap) {
                             //Logger.e(TAG, "onLoadingComplete s : " + s + ", bitmap : " + bitmap);
-                            if (holder.imageView != null) {
+                            if (holder != null && holder.imageView != null) {
                                 holder.imageView.setImageBitmap(bitmap);
                             }
                         }
@@ -189,21 +223,24 @@ public class BoardGalleryFragment extends Fragment {
         //Logger.d(TAG, "displayWidth : " + displayWidth);
         int imageViewWidth = displayWidth / 3;
 
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setLayoutParams(new AbsListView.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, AbsListView.LayoutParams.WRAP_CONTENT));
+        RelativeLayout layout = new RelativeLayout(context);
+        layout.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.WRAP_CONTENT, AbsListView.LayoutParams.WRAP_CONTENT));
 
         ImageView imageView = new ImageView(context);
-        imageView.setLayoutParams(new LinearLayout.LayoutParams(imageViewWidth, imageViewWidth));
+        imageView.setId((int) System.currentTimeMillis());
+        imageView.setLayoutParams(new RelativeLayout.LayoutParams(imageViewWidth, imageViewWidth));
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         layout.addView(imageView);
         holder.imageView = imageView;
 
         TextView textView = new TextView(context);
-        textView.setLayoutParams(new LinearLayout.LayoutParams(imageViewWidth, (imageViewWidth / 3)));
-        textView.setMaxLines(2);
+        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(imageViewWidth, (imageViewWidth / 3));
+        tvParams.addRule(RelativeLayout.BELOW, imageView.getId());
+        textView.setLayoutParams(tvParams);
+        textView.setSingleLine(true);
+        textView.setGravity(Gravity.CENTER);
         textView.setEllipsize(TextUtils.TruncateAt.END);
-        textView.setPadding(10, 10, 10, 10);
+        textView.setPadding(5, 5, 5, 5);
         layout.addView(textView);
 
         holder.textView = textView;

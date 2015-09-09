@@ -68,7 +68,7 @@ public class TrainingFragment extends ImageBaseFragment{
         } else {
             new RequestImageTask(requestUrl, new RequestBaseTask.OnResultListener() {
                 @Override
-                public void onResult(Object obj) {
+                public void onResult(Object obj, int position) {
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) getActivity()).hideLoadingDialog();
                     }

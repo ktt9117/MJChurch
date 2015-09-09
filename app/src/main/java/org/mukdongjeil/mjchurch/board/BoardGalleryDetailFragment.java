@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
+import android.widget.TextView;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -39,16 +41,20 @@ public class BoardGalleryDetailFragment extends Fragment {
 
     private static final RelativeLayout.LayoutParams MATCH_PARENT = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
     private static final RelativeLayout.LayoutParams WRAP_CONTENT = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+    private static final String LOADING_PHOTO_MESSAGE = "사진을 불러오는 중입니다";
 
+    private static final String ARG_BOARD_TYPE = "boardType";
     private static final String ARG_CONTENT_NO = "contentNo";
 
+    private int mBoardType;
     private String mContentNo;
     private ExViewPager mPager;
 
 
-    public static BoardGalleryDetailFragment newInstance(String contentNo) {
+    public static BoardGalleryDetailFragment newInstance(int boardType, String contentNo) {
         BoardGalleryDetailFragment fragment = new BoardGalleryDetailFragment();
         Bundle args = new Bundle();
+        args.putInt(ARG_BOARD_TYPE, boardType);
         args.putString(ARG_CONTENT_NO, contentNo);
         fragment.setArguments(args);
         return fragment;
@@ -62,6 +68,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
+            mBoardType = getArguments().getInt(ARG_BOARD_TYPE);
             mContentNo = getArguments().getString(ARG_CONTENT_NO);
         }
     }
@@ -71,11 +78,11 @@ public class BoardGalleryDetailFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_board_gallery_detail, container, false);
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
-        mPager.setOnPageChangeListener(mOnPageChangeListener);
-        String requestUrl = Const.getGalleryDetailURL(mContentNo);
+        mPager.addOnPageChangeListener(mOnPageChangeListener);
+        String requestUrl = mBoardType == BoardFragment.BOARD_TYPE_GALLERY ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
         new RequestImageListTask(requestUrl, new RequestBaseTask.OnResultListener() {
             @Override
-            public void onResult(Object obj) {
+            public void onResult(Object obj, int position) {
                 if (obj != null && obj instanceof List) {
                     DetailPagerAdapter adapter = new DetailPagerAdapter(getActivity(), (List<Element>) obj);
                     mPager.setAdapter(adapter);
@@ -126,16 +133,24 @@ public class BoardGalleryDetailFragment extends Fragment {
 
             String imgLink = media.getAttributeValue("src");
             Logger.d(TAG, "imgLink : " + (Const.BASE_URL + imgLink));
-            ImageLoader.getInstance().loadImage(Const.BASE_URL + imgLink, new ImageLoadingListener() {
+            imgLink = imgLink.replaceAll("&amp;", "&");
+            if (!imgLink.contains("http")) {
+                imgLink = Const.BASE_URL + imgLink;
+            }
+            ImageLoader.getInstance().loadImage(imgLink, new ImageLoadingListener() {
                 @Override
                 public void onLoadingStarted(String s, View view) {
-                    if (holder != null) holder.progress.setVisibility(View.VISIBLE);
+                    if (holder != null) {
+                        holder.progress.setVisibility(View.VISIBLE);
+                        holder.txtView.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 @Override
                 public void onLoadingFailed(String s, View view, FailReason failReason) {
                     if (holder != null) {
-                        holder.progress.setVisibility(View.GONE);
+                        holder.progress.setVisibility(View.INVISIBLE);
+                        holder.txtView.setVisibility(View.INVISIBLE);
                         holder.imgPhoto.setImageResource(Const.DEFAULT_IMG_RESOURCE);
                     }
                 }
@@ -143,7 +158,8 @@ public class BoardGalleryDetailFragment extends Fragment {
                 @Override
                 public void onLoadingComplete(String s, View view, Bitmap bitmap) {
                     if (holder != null) {
-                        holder.progress.setVisibility(View.GONE);
+                        holder.progress.setVisibility(View.INVISIBLE);
+                        holder.txtView.setVisibility(View.INVISIBLE);
                         holder.imgPhoto.setImageBitmap(bitmap);
                         PhotoViewAttacher attacher = new PhotoViewAttacher(holder.imgPhoto);
                     }
@@ -152,7 +168,8 @@ public class BoardGalleryDetailFragment extends Fragment {
                 @Override
                 public void onLoadingCancelled(String s, View view) {
                     if (holder != null) {
-                        holder.progress.setVisibility(View.GONE);
+                        holder.progress.setVisibility(View.INVISIBLE);
+                        holder.txtView.setVisibility(View.INVISIBLE);
                         holder.imgPhoto.setImageResource(Const.DEFAULT_IMG_RESOURCE);
                     }
                 }
@@ -187,6 +204,7 @@ public class BoardGalleryDetailFragment extends Fragment {
         private class ViewHolder {
             RelativeLayout layout;
             ImageView imgPhoto;
+            TextView txtView;
             ProgressBar progress;
 
             public ViewHolder(Context context) {
@@ -195,16 +213,20 @@ public class BoardGalleryDetailFragment extends Fragment {
                 imgPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
                 progress = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
-                progress.setIndeterminate(true);
-                progress.setIndeterminateDrawable(context.getResources().getDrawable(R.mipmap.ic_progressring));
-                progress.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
                 WRAP_CONTENT.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
                 progress.setLayoutParams(WRAP_CONTENT);
+
+                txtView = new TextView(context, null, android.R.attr.textAppearanceLarge);
+                txtView.setText(LOADING_PHOTO_MESSAGE);
+                txtView.setTextColor(Color.WHITE);
+                txtView.setGravity(Gravity.CENTER);
+                txtView.setLayoutParams(MATCH_PARENT);
 
                 layout = new RelativeLayout(context);
                 layout.setBackgroundColor(Color.parseColor("#AB000000"));
                 layout.addView(imgPhoto);
                 layout.addView(progress);
+                layout.addView(txtView);
             }
         }
     }

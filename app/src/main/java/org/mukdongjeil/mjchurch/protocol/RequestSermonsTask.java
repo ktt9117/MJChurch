@@ -31,7 +31,7 @@ public class RequestSermonsTask extends RequestBaseTask {
         this.listener = listener;
         this.sermonType = sermonType;
         this.pageNo = pageNo;
-        execute(Const.getWorshipListURL(sermonType, pageNo));
+        execute(Const.getWorshipListUrl(sermonType, pageNo));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class RequestSermonsTask extends RequestBaseTask {
                         }
                     }
 
-                    // compare between local database item list and server item list.
+                    // compare between local database and server item list.
                     List<SermonItem> localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(sermonType);
                     boolean existLocalItem = false;
                     if (localSermonList != null && localSermonList.size() > 0) {
@@ -72,7 +72,7 @@ public class RequestSermonsTask extends RequestBaseTask {
                                     if (localItem.bbsNo.equals(serverItem.bbsNo)) {
                                         isExistItem = true;
                                         if (listener != null) {
-                                            listener.onResult(localItem);
+                                            listener.onResult(localItem, OnResultListener.POSITION_NONE);
                                         }
                                         break;
                                     }
@@ -80,7 +80,7 @@ public class RequestSermonsTask extends RequestBaseTask {
                             }
                             if (isExistItem == false) {
                                 Logger.d(TAG, "The sermon is not exist local db. request new bbs " + serverItem.bbsNo);
-                                new RequestSermonTask(serverItem).execute(Const.getWorshipContentURL(sermonType, pageNo, serverItem.bbsNo));
+                                new RequestSermonTask(serverItem).execute(Const.getWorshipContentUrl(sermonType, pageNo, serverItem.bbsNo));
                             }
                         }
                     }
@@ -196,11 +196,11 @@ public class RequestSermonsTask extends RequestBaseTask {
 
 //                  mAdapter.add(item);
 
-                    int insertResult = DBManager.getInstance(SystemHelpers.getApplicationContext()).insertData(item, sermonType);
+                    int insertResult = DBManager.getInstance(SystemHelpers.getApplicationContext()).insertSermon(item, sermonType);
                     Logger.d(TAG, "insert item to local database result : " + insertResult);
 
                     if (listener != null) {
-                        listener.onResult(item);
+                        listener.onResult(item, OnResultListener.POSITION_NONE);
                     }
 
                 } else {

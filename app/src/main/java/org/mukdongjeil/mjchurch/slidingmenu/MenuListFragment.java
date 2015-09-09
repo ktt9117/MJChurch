@@ -14,7 +14,6 @@ import org.mukdongjeil.mjchurch.board.BoardFragment;
 import org.mukdongjeil.mjchurch.board.BoardGalleryFragment;
 import org.mukdongjeil.mjchurch.common.dao.MenuItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
 import org.mukdongjeil.mjchurch.training.TrainingFragment;
 import org.mukdongjeil.mjchurch.worship.WorshipFragment;
@@ -87,10 +86,10 @@ public class MenuListFragment extends ListFragment {
 				newFragment = new TrainingFragment();
 				break;
 			case MenuItem.MENU_CATEGORY_BOARD:
-				if (position == BoardFragment.BOARD_TYPE_GALLERY) {
-					newFragment = new BoardGalleryFragment();
-				} else {
+				if (position == BoardFragment.BOARD_TYPE_THANKS_SHARING) {
 					newFragment = new BoardFragment();
+				} else {
+					newFragment = new BoardGalleryFragment();
 				}
 				break;
 			case MenuItem.MENU_CATEGORY_INTRODUCE:
