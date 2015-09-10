@@ -44,6 +44,7 @@ public class DBManager  {
             cursor.moveToFirst();
             while (cursor.moveToNext()) {
                 SermonItem item = new SermonItem();
+                item._id = cursor.getInt(cursor.getColumnIndex(SermonCols.ID));
                 item.title = cursor.getString(cursor.getColumnIndex(SermonCols.TITLE));
                 item.preacher = cursor.getString(cursor.getColumnIndex(SermonCols.PREACHER));
                 item.content = cursor.getString(cursor.getColumnIndex(SermonCols.CONTENT));
@@ -53,6 +54,7 @@ public class DBManager  {
                 item.audioUrl = cursor.getString(cursor.getColumnIndex(SermonCols.AUDIO_URL));
                 item.docUrl =cursor.getString(cursor.getColumnIndex(SermonCols.DOC_URL));
                 item.bbsNo = cursor.getString(cursor.getColumnIndex(SermonCols.BBS_NO));
+                item.downloadQueryId = cursor.getLong(cursor.getColumnIndex(SermonCols.DOWNLOAD_QUERY_ID));
                 list.add(item);
             }
             Logger.i(TAG, "getSermonList > item count : " + list.size());
@@ -158,7 +160,7 @@ public class DBManager  {
     }
 
     private class DataHelper extends SQLiteOpenHelper {
-        private static final int DB_VERSION = 2; // Version must be >= 1
+        private static final int DB_VERSION = 3; // Version must be >= 1
         private static final String DB_NAME = "data.db";
 
         public static final String TABLE_SERMON = "sermon";
@@ -181,6 +183,7 @@ public class DBManager  {
                     SermonCols.AUDIO_URL + " TEXT, " +
                     SermonCols.DOC_URL + " TEXT, " +
                     SermonCols.SERMON_TYPE + " INTEGER, " +
+                    SermonCols.DOWNLOAD_QUERY_ID + " LONG, " +
                     SermonCols.BBS_NO + " TEXT);";
             Logger.d(TAG, "create table sermon query : " + createTableSermon);
 
@@ -199,8 +202,8 @@ public class DBManager  {
 
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-            String dropTableSermon = "DROP TABLE IF EXIST " + TABLE_SERMON;
-            String dropTableThankShare = "DROP TABLE IF EXIST " + TABLE_THANK_SHARE;
+            String dropTableSermon = "DROP TABLE IF EXISTS " + TABLE_SERMON;
+            String dropTableThankShare = "DROP TABLE IF EXISTS " + TABLE_THANK_SHARE;
             sqLiteDatabase.execSQL(dropTableSermon);
             sqLiteDatabase.execSQL(dropTableThankShare);
             onCreate(sqLiteDatabase);

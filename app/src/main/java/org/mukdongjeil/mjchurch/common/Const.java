@@ -1,6 +1,10 @@
 package org.mukdongjeil.mjchurch.common;
 
+import android.os.Environment;
+
 import org.mukdongjeil.mjchurch.R;
+
+import java.io.File;
 
 /**
  * Created by Kim SungJoong on 2015-08-11.
@@ -8,6 +12,8 @@ import org.mukdongjeil.mjchurch.R;
 public class Const {
 
     public static boolean DEBUG_MODE = true;
+
+    public static final File DIR_PUB_DOWNLOAD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
     public static final int DEFAULT_IMG_RESOURCE = R.mipmap.ic_launcher;
 

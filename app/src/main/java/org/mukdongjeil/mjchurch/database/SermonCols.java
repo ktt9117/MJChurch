@@ -10,4 +10,5 @@ public interface SermonCols extends BaseCols {
     String AUDIO_URL = "audio_url";
     String DOC_URL = "doc_url";
     String SERMON_TYPE = "sermon_type";
+    String DOWNLOAD_QUERY_ID = "download_query_id";
 }

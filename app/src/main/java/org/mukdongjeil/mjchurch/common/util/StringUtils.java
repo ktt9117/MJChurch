@@ -4,6 +4,8 @@ import android.util.Patterns;
 
 public class StringUtils {
 
+	public static final String FILE_EXTENSION_MP3 = ".mp3";
+
 	public static final String PREFIX_FILE_URL = "file://";
 	
 	public static boolean isUrl(String url) {

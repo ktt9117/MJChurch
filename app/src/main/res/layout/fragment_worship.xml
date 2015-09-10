@@ -12,33 +12,29 @@
         android:background="@android:drawable/picture_frame">
 
         <ImageView
-            android:id="@+id/btn_next"
+            android:id="@+id/btn_download"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
-            android:src="@android:drawable/ic_media_next"/>
+            android:layout_centerVertical="true"
+            android:layout_marginRight="7dp"
+            android:layout_marginLeft="7dp"
+            android:src="@mipmap/ic_download" />
+
         <ImageView
             android:id="@+id/btn_play_or_pause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/btn_next"
+            android:layout_toLeftOf="@id/btn_download"
             android:layout_centerVertical="true"
-            android:src="@android:drawable/ic_media_play"/>
-        <ImageView
-            android:id="@+id/btn_previous"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@id/btn_play_or_pause"
-            android:layout_centerVertical="true"
-            android:src="@android:drawable/ic_media_previous" />
+            android:src="@mipmap/ic_play"/>
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toLeftOf="@id/btn_previous"
+            android:layout_toLeftOf="@id/btn_play_or_pause"
             android:padding="5dp">
 
             <TextView android:id="@+id/title"
