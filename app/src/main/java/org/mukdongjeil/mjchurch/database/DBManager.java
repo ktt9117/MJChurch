@@ -55,6 +55,7 @@ public class DBManager  {
                 item.docUrl =cursor.getString(cursor.getColumnIndex(SermonCols.DOC_URL));
                 item.bbsNo = cursor.getString(cursor.getColumnIndex(SermonCols.BBS_NO));
                 item.downloadQueryId = cursor.getLong(cursor.getColumnIndex(SermonCols.DOWNLOAD_QUERY_ID));
+                item.downloadStatus = SermonItem.DownloadStatus.parse(cursor.getInt(cursor.getColumnIndex(SermonCols.DOWNLOAD_STATUS)));
                 list.add(item);
             }
             Logger.i(TAG, "getSermonList > item count : " + list.size());
@@ -71,6 +72,28 @@ public class DBManager  {
     public int insertSermon(SermonItem item, int sermonType) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int res = insertSermon(db, item, sermonType);
+        db.close();
+        return res;
+    }
+
+
+    public int updateSermonDownloadStatus(long downloadQueryId, SermonItem.DownloadStatus status) {
+        Logger.i(TAG, "updateSermonDownloadStatus(downloadQueryId : " + downloadQueryId + ", downloadStatus : " + status.toString());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(SermonCols.DOWNLOAD_STATUS, status.ordinal());
+        int res = db.update(DataHelper.TABLE_SERMON, values, SermonCols.DOWNLOAD_QUERY_ID + "=" + downloadQueryId, null);
+        db.close();
+        return res;
+    }
+
+    public int updateSermonDownloadStatus(int _id, long downloadQueryId, SermonItem.DownloadStatus status) {
+        Logger.i(TAG, "updateSermonDownloadStatus(id : " + _id + ", downloadQueryId : " + downloadQueryId + ", downloadStatus : " + status.toString());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(SermonCols.DOWNLOAD_STATUS, status.ordinal());
+        values.put(SermonCols.DOWNLOAD_QUERY_ID, downloadQueryId);
+        int res = db.update(DataHelper.TABLE_SERMON, values, SermonCols.ID + "=" + _id, null);
         db.close();
         return res;
     }
@@ -160,7 +183,7 @@ public class DBManager  {
     }
 
     private class DataHelper extends SQLiteOpenHelper {
-        private static final int DB_VERSION = 3; // Version must be >= 1
+        private static final int DB_VERSION = 4; // Version must be >= 1
         private static final String DB_NAME = "data.db";
 
         public static final String TABLE_SERMON = "sermon";
@@ -172,7 +195,7 @@ public class DBManager  {
 
         @Override
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
-            String createTableSermon = "CREATE TABLE IF NOT EXISTS " + TABLE_SERMON + " (" +
+            String queryCreateTableSermon = "CREATE TABLE IF NOT EXISTS " + TABLE_SERMON + " (" +
                     SermonCols.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     SermonCols.TITLE + " TEXT, " +
                     SermonCols.CONTENT + " TEXT ," +
@@ -184,28 +207,29 @@ public class DBManager  {
                     SermonCols.DOC_URL + " TEXT, " +
                     SermonCols.SERMON_TYPE + " INTEGER, " +
                     SermonCols.DOWNLOAD_QUERY_ID + " LONG, " +
+                    SermonCols.DOWNLOAD_STATUS + " INTEGER, " +
                     SermonCols.BBS_NO + " TEXT);";
-            Logger.d(TAG, "create table sermon query : " + createTableSermon);
+            Logger.d(TAG, "create table sermon query : " + queryCreateTableSermon);
 
-            String createTableThankShare = "CREATE TABLE IF NOT EXISTS " + TABLE_THANK_SHARE + " (" +
+            String queryCreateTableThankShare = "CREATE TABLE IF NOT EXISTS " + TABLE_THANK_SHARE + " (" +
                     ThankShareCols.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     ThankShareCols.TITLE + " TEXT, " +
                     ThankShareCols.CONTENT + " TEXT ," +
                     ThankShareCols.DATE + " DATE, " +
                     ThankShareCols.CONTENT_URL + " TEXT ," +
                     ThankShareCols.WRITER + " TEXT);";
-            Logger.d(TAG, "create table thank_share query : " + createTableThankShare);
+            Logger.d(TAG, "create table thank_share query : " + queryCreateTableThankShare);
 
-            sqLiteDatabase.execSQL(createTableSermon);
-            sqLiteDatabase.execSQL(createTableThankShare);
+            sqLiteDatabase.execSQL(queryCreateTableSermon);
+            sqLiteDatabase.execSQL(queryCreateTableThankShare);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-            String dropTableSermon = "DROP TABLE IF EXISTS " + TABLE_SERMON;
-            String dropTableThankShare = "DROP TABLE IF EXISTS " + TABLE_THANK_SHARE;
-            sqLiteDatabase.execSQL(dropTableSermon);
-            sqLiteDatabase.execSQL(dropTableThankShare);
+            String queryDropTableSermon = "DROP TABLE IF EXISTS " + TABLE_SERMON;
+            String queryDropTableThankShare = "DROP TABLE IF EXISTS " + TABLE_THANK_SHARE;
+            sqLiteDatabase.execSQL(queryDropTableSermon);
+            sqLiteDatabase.execSQL(queryDropTableThankShare);
             onCreate(sqLiteDatabase);
         }
     }

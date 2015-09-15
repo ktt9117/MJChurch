@@ -16,7 +16,9 @@ import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.common.util.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -94,7 +96,16 @@ public class MediaService extends Service {
         startForegroundService();
         mPlayer = new MediaPlayer();
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mPlayer.setDataSource(Const.BASE_URL + item.audioUrl);
+
+        File file = new File(Const.DIR_PUB_DOWNLOAD, item.title + StringUtils.FILE_EXTENSION_MP3);
+        if (file.exists()) {
+            mPlayer.setDataSource(file.getPath());
+            Logger.i(TAG, "Local File Playing...");
+        } else {
+            mPlayer.setDataSource(Const.BASE_URL + item.audioUrl);
+            Logger.i(TAG, "Server File Streaming...");
+        }
+
         mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
@@ -161,6 +172,7 @@ public class MediaService extends Service {
 //        remoteView.setImageViewResource(R.id.remote_play, android.R.drawable.ic_media_play);
 //        remoteView.setImageViewResource(R.id.remote_pause, android.R.drawable.ic_media_pause);
 //        remoteView.setImageViewResource(R.id.remote_stop, android.R.drawable.ic_menu_close_clear_cancel);
+        remoteView.setTextViewText(R.id.remote_title, (mCurrentItem != null) ? mCurrentItem.title : "설교 말씀");
         remoteView.setOnClickPendingIntent(R.id.remote_play, playPending);
         remoteView.setOnClickPendingIntent(R.id.remote_pause, pausePending);
         remoteView.setOnClickPendingIntent(R.id.remote_stop, stopPending);

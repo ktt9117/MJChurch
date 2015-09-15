@@ -32,9 +32,9 @@ import java.util.List;
 public class BoardFragment extends ListFragment {
     private static final String TAG = BoardFragment.class.getSimpleName();
 
-    public static final int BOARD_TYPE_THANKS_SHARING = 17;
-    public static final int BOARD_TYPE_GALLERY = 18;
-    public static final int BOARD_TYPE_NEW_PERSON = 19;
+    public static final int BOARD_TYPE_THANKS_SHARING = 16;
+    public static final int BOARD_TYPE_GALLERY = 17;
+    public static final int BOARD_TYPE_NEW_PERSON = 18;
 
     private int mPageNo;
     private List<BoardItem> mItemList;
@@ -44,7 +44,6 @@ public class BoardFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         mPageNo = 1;
 
         if (getActivity() instanceof MainActivity) {
@@ -52,10 +51,15 @@ public class BoardFragment extends ListFragment {
         }
 
         mLocalItemList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getThankShareList();
+        mItemList = new ArrayList<>();
+        mAdapter = new BoardListAdapter(getActivity(), mItemList);
+        setListAdapter(mAdapter);
 
         new RequestListTask(BOARD_TYPE_THANKS_SHARING, mPageNo, new RequestBaseTask.OnResultListener() {
             @Override
             public void onResult(Object obj, int position) {
+                setListShown(true);
+
                 if (getActivity() instanceof MainActivity) {
                     ((MainActivity) getActivity()).hideLoadingDialog();
                 }
@@ -73,15 +77,6 @@ public class BoardFragment extends ListFragment {
                             new RequestBoardContentTask(i, href, new RequestBaseTask.OnResultListener() {
                                 @Override
                                 public void onResult(Object obj, int position) {
-                                    if (mItemList == null) {
-                                        mItemList = new ArrayList<>();
-                                    }
-
-                                    if (mAdapter == null) {
-                                        mAdapter = new BoardListAdapter(getActivity(), mItemList);
-                                        setListAdapter(mAdapter);
-                                    }
-
                                     if (obj != null && obj instanceof BoardItem) {
                                         if (position == POSITION_NONE) {
                                             position = 0;
@@ -178,6 +173,8 @@ public class BoardFragment extends ListFragment {
 
                 if (item != null) {
                     Logger.d(TAG, "add item : " + item.toString());
+                    int res = DBManager.getInstance(getActivity()).insertThankShare(item);
+                    Logger.i(TAG, "insert to local database result : " + res);
                 }
 
                 listener.onResult(item, position);

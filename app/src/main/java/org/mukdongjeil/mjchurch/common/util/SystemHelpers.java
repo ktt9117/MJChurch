@@ -1,27 +1,18 @@
 package org.mukdongjeil.mjchurch.common.util;
 
-import java.util.List;
-
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
+import java.util.List;
+
 public class SystemHelpers {
-	
-	public static final int NETWORK_NONE	= 0;
-	public static final int NETWORK_WIFI	= 1;
-	public static final int NETWORK_LTE		= 2;
-	public static final int NETWORK_3G		= 3;
-	
+
 	private static Context mContext = null;
 	
 	public static void init(Context context) {
@@ -49,18 +40,7 @@ public class SystemHelpers {
 		}
 		return null;
 	}
-	
-	public static String getMacAddress() {
-		if (mContext == null) {
-			throw new NullPointerException();
-		}
-		WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
-		if (wifiManager == null) {
-			return "";
-		}
-		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-		return (wifiInfo == null) ? "" : wifiInfo.getMacAddress();		
-	}
+
 	
 	public static boolean isServiceRunning(Context context, String className) {
 		if (context == null) {
@@ -91,34 +71,7 @@ public class SystemHelpers {
 	public static String getSdkVersion() {
 		return Build.VERSION.RELEASE;
 	}
-	
-	public static int getNetwork() {
-		ConnectivityManager mManager = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = mManager.getActiveNetworkInfo();
-		if(info != null && info.getTypeName() != null) {
-			// 와이파이에 연결되었을때
-			if (info.getTypeName().equalsIgnoreCase("WIFI")) {
-				return NETWORK_WIFI;
-			} else if (info.getTypeName().equalsIgnoreCase("mobile") && info.getSubtypeName() != null) {
-				if (info.getSubtypeName().equalsIgnoreCase("LTE")) {	// LTE에 연결되었을때
-					return NETWORK_LTE;
-				} else if(info.getSubtypeName().indexOf("CDMA") >= 0) { // 3G에 연결되었을때
-					return NETWORK_3G;
-				}
-			}
-		}
-		return NETWORK_NONE;	// 아무것에도 연결되지 않았을때
-	}
-	
-	public static boolean isWifi() {
-		return getNetwork() == NETWORK_WIFI;
-	}
-	
-	public static boolean isMobileNetwork() {
-		int network = getNetwork();
-		return network == NETWORK_LTE || network == NETWORK_3G;
-	}
-	
+
 	public static String getAppVersion() {
 		PackageInfo packageInfo;
         try {

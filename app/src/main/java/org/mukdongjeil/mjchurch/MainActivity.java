@@ -1,11 +1,14 @@
 package org.mukdongjeil.mjchurch;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.view.MenuItem;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
@@ -132,6 +135,16 @@ public class MainActivity extends SlidingFragmentActivity {
         ImageLoader.getInstance().init(config);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case android.R.id.home:
+                getSlidingMenu().toggle(true);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void initializeSlidingMenu() {
         // set the Behind View
         setBehindContentView(R.layout.fragment_slide_menu);
@@ -164,6 +177,30 @@ public class MainActivity extends SlidingFragmentActivity {
             }
             dialog = null;
         }
+    }
+
+    public interface NetworkAlertResultListener {
+        void onClick(boolean positiveButtonClick);
+    }
+
+    public void showNetworkAlertDialog(String message, final NetworkAlertResultListener listener) {
+        AlertDialog.Builder ab = new AlertDialog.Builder(MainActivity.this);
+        ab.setTitle("경고");
+        ab.setCancelable(false);
+        ab.setMessage(message);
+        ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                listener.onClick(true);
+            }
+        });
+        ab.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                listener.onClick(false);
+            }
+        });
+        ab.create().show();
     }
 
 //    private static final int HANDLE_MSG_SHOW_SLIDING_TAB_LAYOUT = 1;

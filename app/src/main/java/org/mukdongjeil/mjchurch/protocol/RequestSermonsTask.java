@@ -197,6 +197,7 @@ public class RequestSermonsTask extends RequestBaseTask {
 //                  mAdapter.add(item);
 
                     int insertResult = DBManager.getInstance(SystemHelpers.getApplicationContext()).insertSermon(item, sermonType);
+                    item._id = insertResult;
                     Logger.d(TAG, "insert item to local database result : " + insertResult);
 
                     if (listener != null) {

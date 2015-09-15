@@ -72,7 +72,6 @@ public class BoardGalleryFragment extends Fragment {
                         mAdapter.notifyDataSetChanged();
                         if (list.size() < Const.GALLERY_LIST_COUNT_PER_PAGE) {
                             hasMorePage = false;
-
                         }
                     } else {
                         hasMorePage = false;
@@ -80,7 +79,6 @@ public class BoardGalleryFragment extends Fragment {
 
                     if (hasMorePage == true) {
                         mHandler.sendEmptyMessage(HANDLE_WHAT_GET_CONTENTS);
-                        //mHandler.sendEmptyMessageDelayed(HANDLE_WHAT_GET_CONTENTS, 100);
                     }
                 }
             });

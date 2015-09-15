@@ -24,15 +24,16 @@ public class MenuListFragment extends ListFragment {
 	private static final String TAG = MenuListFragment.class.getSimpleName();
 
 	//list position 0, 6, 10, 15
-	private static final String[] groups = {"Introduce", "Worship", "Training", "Board"};
+	private static final String[] groups = {"환영합니다", "예배와 말씀", "양육과 훈련", "게시판"};
+	private static final int[] groups_ic = {R.mipmap.ic_menu_welcome, R.mipmap.ic_menu_worship, R.mipmap.ic_menu_training, R.mipmap.ic_menu_board};
 	//list position 1 ~ 5
-	private static final String[] introduceMenus = {"Church Intro", "History", "Find Map", "Time Tables", "Peoples"};
+	private static final String[] introduceMenus = {"교회소개", "교회연혁", "찾아오는 길", "예배시간안내", "섬김의 동역자"};
 	//list position 7 ~ 9
-	private static final String[] worshipMenus = {"Sunday Morning", "Sunday Afternoon", "Wednesday"};
+	private static final String[] worshipMenus = {"주일 오전 예배", "주일 오후 예배", "수요예배"};
 	//list position 11 ~ 15
-	private static final String[] trainingMenus = {"Bible Study", "Rearing Class", "Mother Wise", "1:1 Disciple", "Training Board"};
-	//list position 17 ~ 19
-	private static final String[] boardMenus = {"Thanks Sharing", "Gallery", "New Person"};
+	private static final String[] trainingMenus = {"성경 공부", "양육반", "마더와이즈", "1:1 제자훈련"};
+	//list position 16 ~ 18
+	private static final String[] boardMenus = {"감사 나눔", "교회앨범", "새신자앨범"};
 
 	private MenuListAdapter mAdapter;
 	private int mLastSelectedMenuIndex;
@@ -134,7 +135,7 @@ public class MenuListFragment extends ListFragment {
 			}
 
 			for (int j = 0; j < tempArr.length; j++) {
-				mAdapter.add(new MenuItem(tempArr[j], android.R.drawable.ic_menu_search, category));
+				mAdapter.add(new MenuItem(tempArr[j], groups_ic[i], category));
 			}
 		}
 

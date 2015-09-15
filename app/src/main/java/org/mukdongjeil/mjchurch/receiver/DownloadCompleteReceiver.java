@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.database.DBManager;
 
 /**
  * Created by Kim SungJoong on 2015-09-10.
@@ -17,8 +19,13 @@ public class DownloadCompleteReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
         Logger.i(TAG, "onReceive()");
         //로컬 DB에 있는 설교 목록에서 downloadId에 해당하는 항목을 찾아 downloadStatus값을 갱신한다.
-        long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
-
+        if (intent != null && intent.hasExtra(DownloadManager.EXTRA_DOWNLOAD_ID)) {
+            long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+            int res = DBManager.getInstance(context).updateSermonDownloadStatus(downloadId, SermonItem.DownloadStatus.DOWNLOAD_SUCCESS);
+            Logger.i(TAG, "update download status result : " + res);
+        } else {
+            Logger.e(TAG, "download done but do nothing! caused by there is no EXTRA_DOWNLOAD_ID");
+        }
         /*
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Query query = new DownloadManager.Query();

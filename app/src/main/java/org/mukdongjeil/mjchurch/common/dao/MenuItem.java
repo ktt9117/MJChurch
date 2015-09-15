@@ -10,8 +10,7 @@ public class MenuItem {
     public static final int MENU_CATEGORY_INTRODUCE = 0;
     public static final int MENU_CATEGORY_WORSHIP = 1;
     public static final int MENU_CATEGORY_TRAINING = 2;
-    public static final int MENU_CATEGORY_GROUP = 3;
-    public static final int MENU_CATEGORY_BOARD = 4;
+    public static final int MENU_CATEGORY_BOARD = 3;
 
     public String title;
     public int iconRes;
