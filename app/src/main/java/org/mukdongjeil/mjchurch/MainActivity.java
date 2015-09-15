@@ -291,7 +291,7 @@ public class MainActivity extends SlidingFragmentActivity {
         public Fragment getItem(int i) {
             switch (i) {
                 case Const.WORSHIP_PAGE_INDEX:
-                    return new WorshipFragment();
+                    return new SermonFragment();
                 case Const.INTRODUCE_PAGE_INDEX:
                 default:
                     return new IntroduceFragment();

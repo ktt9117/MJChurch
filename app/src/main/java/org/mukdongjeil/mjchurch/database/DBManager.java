@@ -8,7 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import org.mukdongjeil.mjchurch.common.dao.BoardItem;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
+import org.mukdongjeil.mjchurch.common.util.DownloadUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +57,7 @@ public class DBManager  {
                 item.docUrl =cursor.getString(cursor.getColumnIndex(SermonCols.DOC_URL));
                 item.bbsNo = cursor.getString(cursor.getColumnIndex(SermonCols.BBS_NO));
                 item.downloadQueryId = cursor.getLong(cursor.getColumnIndex(SermonCols.DOWNLOAD_QUERY_ID));
-                item.downloadStatus = SermonItem.DownloadStatus.parse(cursor.getInt(cursor.getColumnIndex(SermonCols.DOWNLOAD_STATUS)));
+                item.downloadStatus = DownloadUtil.getDownloadStatus(SystemHelpers.getApplicationContext(), item);
                 list.add(item);
             }
             Logger.i(TAG, "getSermonList > item count : " + list.size());
@@ -97,31 +99,6 @@ public class DBManager  {
         db.close();
         return res;
     }
-
-    /*
-    public int insertSermon(List<SermonItem> items, int sermonType) {
-        if (items == null) {
-            return -1;
-        }
-
-        int res = 0;
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        try {
-            db.beginTransaction();
-            for (SermonItem item : items) {
-                res += insertSermon(db, item, sermonType);
-            }
-            db.setTransactionSuccessful();
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-            res = -1;
-        } finally {
-            db.endTransaction();
-            db.close();
-        }
-        return res;
-    }
-    */
 
     /** Thank Share Relate Query */
     public List<BoardItem> getThankShareList() {

@@ -15,8 +15,8 @@ import org.mukdongjeil.mjchurch.board.BoardGalleryFragment;
 import org.mukdongjeil.mjchurch.common.dao.MenuItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
+import org.mukdongjeil.mjchurch.sermon.SermonFragment;
 import org.mukdongjeil.mjchurch.training.TrainingFragment;
-import org.mukdongjeil.mjchurch.worship.WorshipFragment;
 
 public class MenuListFragment extends ListFragment {
 	public static final String SELECTED_MENU_INDEX = "selected_menu_index";
@@ -81,7 +81,7 @@ public class MenuListFragment extends ListFragment {
 		Fragment newFragment;
 		switch (item.menuCategory) {
 			case MenuItem.MENU_CATEGORY_WORSHIP:
-				newFragment = new WorshipFragment();
+				newFragment = new SermonFragment();
 				break;
 			case MenuItem.MENU_CATEGORY_TRAINING:
 				newFragment = new TrainingFragment();

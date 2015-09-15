@@ -50,17 +50,5 @@ public class SermonItem {
                     return DOWNLOAD_NONE;
             }
         }
-
-        public static String toString(DownloadStatus status) {
-            switch (status.ordinal()) {
-                case 1: return "DOWNLOAD_START";
-                case 2: return "DOWNLOAD_SUCCESS";
-                case 3: return "DOWNLOAD_FAILED";
-                case 0:
-                default:
-                    return "DOWNLOAD_NONE";
-
-            }
-        }
     }
 }

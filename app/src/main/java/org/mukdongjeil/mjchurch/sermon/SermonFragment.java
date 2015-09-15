@@ -1,4 +1,4 @@
-package org.mukdongjeil.mjchurch.worship;
+package org.mukdongjeil.mjchurch.sermon;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,8 +32,8 @@ import java.io.IOException;
 /**
  * Created by Kim SungJoong on 2015-07-31.
  */
-public class WorshipFragment extends ListFragment {
-    private static final String TAG = WorshipFragment.class.getSimpleName();
+public class SermonFragment extends ListFragment {
+    private static final String TAG = SermonFragment.class.getSimpleName();
     private int mPageNo;
     private int mWorshipType;
     private ListPlayerController mPlayerController;
@@ -67,7 +67,7 @@ public class WorshipFragment extends ListFragment {
         }
     };
 
-    private WorshipListAdapter mAdapter;
+    private SermonListAdapter mAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -105,7 +105,7 @@ public class WorshipFragment extends ListFragment {
         }
         Logger.d(TAG, "worshipType : " + mWorshipType);
 
-        mAdapter = new WorshipListAdapter(getActivity(), mService);
+        mAdapter = new SermonListAdapter(getActivity(), mService);
         setListAdapter(mAdapter);
         new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
             @Override
@@ -118,6 +118,17 @@ public class WorshipFragment extends ListFragment {
                     if (mPlayerController.currentItem == null) {
                         mPlayerController.updatePlayerInfo((SermonItem) obj);
                     }
+
+                    if (mService.getCurrentPlayerItem() != null) {
+                        mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
+                        if (mService.isPlaying()) {
+                            mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                            mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                        } else {
+                            mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                            mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_STOP);
+                        }
+                    }
                 } else {
                     Logger.e(TAG, "obj is null or is not SermonItem at onResult");
                 }
@@ -128,6 +139,7 @@ public class WorshipFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
+        mAdapter.setCurrentItemSelected(position);
         mPlayerController.updatePlayerInfo(mAdapter.getItem(position));
     }
 
@@ -227,12 +239,52 @@ public class WorshipFragment extends ListFragment {
                                 btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                             } else {
                                 Logger.i(TAG, "resumeResult == false maybe");
-                                try {
-                                    mService.startPlayer(currentItem);
-                                    btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
-                                    btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                                if (currentItem.downloadStatus == SermonItem.DownloadStatus.DOWNLOAD_SUCCESS) {
+                                    //다운로드 된 아이템은 그냥 재생한다.
+                                    try {
+                                        mService.startPlayer(currentItem);
+                                        btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                                        btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                                        return;
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                //다운로드 되지 않은 아이템은 네트워크에 연결되어 있는지 체크
+                                if (NetworkUtil.getNetwork(getActivity()) == NetworkUtil.NETWORK_NONE) {
+                                    Toast.makeText(getActivity(), "네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+
+                                if (!NetworkUtil.isWifi(getActivity())) {
+                                    //와이파이에 연결되지 않은 상태에서 재생을 누르면 경고 문구를 보여준다.
+                                    if (getActivity() instanceof MainActivity) {
+                                        ((MainActivity) getActivity()).showNetworkAlertDialog("와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 요금이 부과될 수도 있습니다.\n(다운로드 하거나 와이파이에서 재생하기를 권장합니다.)\n 재생 하시겠습니까?",
+                                        new MainActivity.NetworkAlertResultListener() {
+                                            @Override
+                                            public void onClick(boolean positiveButtonClick) {
+                                                if (positiveButtonClick) {
+                                                    try {
+                                                        mService.startPlayer(currentItem);
+                                                        btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                                                        btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                                                    } catch (IOException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    //와이파이라면 그냥 재생한다.
+                                    try {
+                                        mService.startPlayer(currentItem);
+                                        btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                                        btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         } else if (playerStatus == MediaService.PLAYER_STATUS_STOP) {
@@ -242,20 +294,24 @@ public class WorshipFragment extends ListFragment {
                         }
                     }
                 } else if (v.getId() == R.id.btn_download) {
-                    if (DownloadUtil.checkNecessaryDownload(getActivity(), currentItem)) {
+                    if (DownloadUtil.isNecessaryDownload(getActivity(), currentItem)) {
+                        if (NetworkUtil.getNetwork(getActivity()) == NetworkUtil.NETWORK_NONE) {
+                            Toast.makeText(getActivity(), "네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
                         if (!NetworkUtil.isWifi(getActivity())) {
                             if (getActivity() instanceof MainActivity) {
-                                ((MainActivity) getActivity()).showNetworkAlertDialog("와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 요금이 부과될 수도 있습니다. 다운로드를 하시겠습니까?\n(와이파이에서 다운로드를 권장합니다.)",
-                                    new MainActivity.NetworkAlertResultListener() {
-                                        @Override
-                                        public void onClick(boolean positiveButtonClick) {
-                                            if (positiveButtonClick) {
-                                                DownloadUtil.requestDownload(getActivity(), currentItem);
-                                            }
+                                ((MainActivity) getActivity()).showNetworkAlertDialog("와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 요금이 부과될 수도 있습니다.\n(와이파이에서 다운로드를 권장합니다.)\n 다운로드 하시겠습니까?",
+                                new MainActivity.NetworkAlertResultListener() {
+                                    @Override
+                                    public void onClick(boolean positiveButtonClick) {
+                                        if (positiveButtonClick) {
+                                            DownloadUtil.requestDownload(getActivity(), currentItem);
                                         }
-                                    });
+                                    }
+                                });
                             }
-                            //ab.setMessage();
                         } else {
                             DownloadUtil.requestDownload(getActivity(), currentItem);
                         }
