@@ -28,6 +28,7 @@ import net.htmlparser.jericho.Element;
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.common.ext_view.CirclePageIndicator;
 import org.mukdongjeil.mjchurch.common.ext_view.ExViewPager;
 import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
 import org.mukdongjeil.mjchurch.common.util.Logger;
@@ -49,7 +50,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     private int mBoardType;
     private String mContentNo;
     private ExViewPager mPager;
-
+    private CirclePageIndicator mPagerIndicator;
 
     public static BoardGalleryDetailFragment newInstance(int boardType, String contentNo) {
         BoardGalleryDetailFragment fragment = new BoardGalleryDetailFragment();
@@ -79,6 +80,16 @@ public class BoardGalleryDetailFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_board_gallery_detail, container, false);
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
         mPager.addOnPageChangeListener(mOnPageChangeListener);
+        mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
+        v.findViewById(R.id.gallery_detail_close).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        getActivity().onBackPressed();
+                    }
+                }
+        );
+
         String requestUrl = mBoardType == BoardFragment.BOARD_TYPE_GALLERY ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
         new RequestImageListTask(requestUrl, new RequestBaseTask.OnResultListener() {
             @Override
@@ -86,6 +97,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                 if (obj != null && obj instanceof List) {
                     DetailPagerAdapter adapter = new DetailPagerAdapter(getActivity(), (List<Element>) obj);
                     mPager.setAdapter(adapter);
+                    mPagerIndicator.setViewPager(mPager);
                 }
             }
         });
@@ -107,11 +119,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     };
 
     private class DetailPagerAdapter extends PagerAdapter {
-
-        private final String TAG = DetailPagerAdapter.class.getSimpleName();
-
-        List<Element> itemList;
-
+        private List<Element> itemList;
         private Context context;
 
         public DetailPagerAdapter(Context context, List<Element> itemList) {
@@ -137,6 +145,7 @@ public class BoardGalleryDetailFragment extends Fragment {
             if (!imgLink.contains("http")) {
                 imgLink = Const.BASE_URL + imgLink;
             }
+
             ImageLoader.getInstance().loadImage(imgLink, new ImageLoadingListener() {
                 @Override
                 public void onLoadingStarted(String s, View view) {
@@ -161,7 +170,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                         holder.progress.setVisibility(View.INVISIBLE);
                         holder.txtView.setVisibility(View.INVISIBLE);
                         holder.imgPhoto.setImageBitmap(bitmap);
-                        PhotoViewAttacher attacher = new PhotoViewAttacher(holder.imgPhoto);
+                        new PhotoViewAttacher(holder.imgPhoto);
                     }
                 }
 
@@ -195,39 +204,41 @@ public class BoardGalleryDetailFragment extends Fragment {
             new Handler().post(new Runnable() {
                 public void run() {
                     View v = (View) object;
-                    container.removeView(v);
-                    v = null;
+                    if (v != null) {
+                        container.removeView(v);
+                        v = null;
+                    }
                 }
             });
         }
+    }
 
-        private class ViewHolder {
-            RelativeLayout layout;
-            ImageView imgPhoto;
-            TextView txtView;
-            ProgressBar progress;
+    private static class ViewHolder {
+        RelativeLayout layout;
+        ImageView imgPhoto;
+        TextView txtView;
+        ProgressBar progress;
 
-            public ViewHolder(Context context) {
-                imgPhoto = new ImageView(context);
-                imgPhoto.setLayoutParams(MATCH_PARENT);
-                imgPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        public ViewHolder(Context context) {
+            imgPhoto = new ImageView(context);
+            imgPhoto.setLayoutParams(MATCH_PARENT);
+            imgPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
-                progress = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
-                WRAP_CONTENT.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-                progress.setLayoutParams(WRAP_CONTENT);
+            progress = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
+            WRAP_CONTENT.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+            progress.setLayoutParams(WRAP_CONTENT);
 
-                txtView = new TextView(context, null, android.R.attr.textAppearanceLarge);
-                txtView.setText(LOADING_PHOTO_MESSAGE);
-                txtView.setTextColor(Color.WHITE);
-                txtView.setGravity(Gravity.CENTER);
-                txtView.setLayoutParams(MATCH_PARENT);
+            txtView = new TextView(context, null, android.R.attr.textAppearanceLarge);
+            txtView.setText(LOADING_PHOTO_MESSAGE);
+            txtView.setTextColor(Color.WHITE);
+            txtView.setGravity(Gravity.CENTER);
+            txtView.setLayoutParams(MATCH_PARENT);
 
-                layout = new RelativeLayout(context);
-                layout.setBackgroundColor(Color.parseColor("#AB000000"));
-                layout.addView(imgPhoto);
-                layout.addView(progress);
-                layout.addView(txtView);
-            }
+            layout = new RelativeLayout(context);
+            layout.setBackgroundColor(Color.parseColor("#99000000"));
+            layout.addView(imgPhoto);
+            layout.addView(progress);
+            layout.addView(txtView);
         }
     }
 }

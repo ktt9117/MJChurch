@@ -1,12 +1,15 @@
 package org.mukdongjeil.mjchurch.sermon;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ListFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +25,7 @@ import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.DownloadUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.NetworkUtil;
+import org.mukdongjeil.mjchurch.database.DBManager;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestSermonsTask;
 import org.mukdongjeil.mjchurch.service.MediaService;
@@ -34,11 +38,15 @@ import java.io.IOException;
  */
 public class SermonFragment extends ListFragment {
     private static final String TAG = SermonFragment.class.getSimpleName();
+
+    public static final String INTENT_ACTION_DOWNLOAD_COMPLETED = "intent_action_download_completed";
+
     private int mPageNo;
     private int mWorshipType;
     private ListPlayerController mPlayerController;
-
+    private SermonListAdapter mAdapter;
     private MediaService mService;
+    private BroadcastReceiver mBroadcast;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -66,8 +74,6 @@ public class SermonFragment extends ListFragment {
             mService = null;
         }
     };
-
-    private SermonListAdapter mAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -115,20 +121,7 @@ public class SermonFragment extends ListFragment {
                 }
                 if (obj != null && obj instanceof SermonItem) {
                     mAdapter.add((SermonItem)obj);
-                    if (mPlayerController.currentItem == null) {
-                        mPlayerController.updatePlayerInfo((SermonItem) obj);
-                    }
-
-                    if (mService.getCurrentPlayerItem() != null) {
-                        mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
-                        if (mService.isPlaying()) {
-                            mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
-                            mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
-                        } else {
-                            mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_play);
-                            mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_STOP);
-                        }
-                    }
+                    updatePlayerControllerIfNecessary((SermonItem) obj);
                 } else {
                     Logger.e(TAG, "obj is null or is not SermonItem at onResult");
                 }
@@ -141,6 +134,18 @@ public class SermonFragment extends ListFragment {
         super.onListItemClick(l, v, position, id);
         mAdapter.setCurrentItemSelected(position);
         mPlayerController.updatePlayerInfo(mAdapter.getItem(position));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerBroadcastReceiver();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterBroadcastReceiver();
     }
 
     @Override
@@ -325,5 +330,42 @@ public class SermonFragment extends ListFragment {
         };
     }
 
+    private void updatePlayerControllerIfNecessary(SermonItem item) {
+        if (mPlayerController.currentItem == null) {
+            mPlayerController.updatePlayerInfo(item);
+        }
+
+        if (mService.getCurrentPlayerItem() != null) {
+            mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
+            if (mService.isPlaying()) {
+                mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+            } else {
+                mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_STOP);
+            }
+        }
+    }
+
+    private void registerBroadcastReceiver() {
+        if (mBroadcast == null) {
+            mBroadcast = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    //item download done. so refresh list
+                    //DBManager.getInstance(context).getSermonList(mWorshipType);
+                    Logger.e(TAG, "onReceive Intent_action_download_completed");
+                }
+            };
+        }
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mBroadcast, new IntentFilter(INTENT_ACTION_DOWNLOAD_COMPLETED));
+    }
+
+    private void unregisterBroadcastReceiver() {
+        if (mBroadcast != null) {
+            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mBroadcast);
+            mBroadcast = null;
+        }
+    }
 
 }

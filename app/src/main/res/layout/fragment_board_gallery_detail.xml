@@ -5,9 +5,19 @@
     android:layout_height="match_parent"
     tools:context="org.mukdongjeil.mjchurch.board.BoardGalleryDetailFragment">
 
+    <org.mukdongjeil.mjchurch.common.ext_view.CirclePageIndicator
+        android:id="@+id/pager_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="15dp"
+        android:paddingBottom="11dp"
+        android:layout_centerHorizontal="true"
+        android:background="#99000000"/>
+
     <org.mukdongjeil.mjchurch.common.ext_view.ExViewPager
         android:id="@+id/gallery_detail_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/pager_indicator" />
 
 </RelativeLayout>

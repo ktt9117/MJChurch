@@ -31,6 +31,10 @@ public class MediaService extends Service {
     public static final int PLAYER_STATUS_PAUSE = 2;
     public static final int PLAYER_STATUS_STOP = 3;
 
+    public static final String ACTION_PLAYER_PLAY = "action_player_play";
+    public static final String ACTION_PLAYER_PAUSE = "action_player_pause";
+    public static final String ACTION_PLAYER_STOP = "action_player_stop";
+
     private static final int MEDIA_SERVICE_ID = 101;
 
     private final LocalBinder mBinder = new LocalBinder();
@@ -113,6 +117,12 @@ public class MediaService extends Service {
             }
         });
         mPlayer.prepareAsync();
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                stopPlayer();
+            }
+        });
     }
 
     public void stopPlayer() {
@@ -169,25 +179,16 @@ public class MediaService extends Service {
         PendingIntent stopPending = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         RemoteViews remoteView = new RemoteViews(getPackageName(), R.layout.remote_media_player);
-//        remoteView.setImageViewResource(R.id.remote_play, android.R.drawable.ic_media_play);
-//        remoteView.setImageViewResource(R.id.remote_pause, android.R.drawable.ic_media_pause);
-//        remoteView.setImageViewResource(R.id.remote_stop, android.R.drawable.ic_menu_close_clear_cancel);
-        remoteView.setTextViewText(R.id.remote_title, (mCurrentItem != null) ? mCurrentItem.title : "설교 말씀");
         remoteView.setOnClickPendingIntent(R.id.remote_play, playPending);
         remoteView.setOnClickPendingIntent(R.id.remote_pause, pausePending);
         remoteView.setOnClickPendingIntent(R.id.remote_stop, stopPending);
 
         Notification notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-//                .setContentTitle(getString(R.string.app_name))
-//                .setContentText((mCurrentItem != null) ? mCurrentItem.title : "Preach a sermon")
                 .setContentIntent(contentPending)
                 .setContent(remoteView)
                 .setOngoing(true)
                 .setWhen(System.currentTimeMillis())
-//                .addAction(android.R.drawable.ic_media_play, "Play", playPending)
-//                .addAction(android.R.drawable.ic_media_pause, "Pause", pausePending)
-//                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopPending)
                 .build();
 
         startForeground(MEDIA_SERVICE_ID, notification);

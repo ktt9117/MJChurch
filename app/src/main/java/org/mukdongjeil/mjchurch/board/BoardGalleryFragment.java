@@ -182,12 +182,10 @@ public class BoardGalleryFragment extends Fragment {
                     }
                     ImageLoader.getInstance().loadImage(item.photoUrl, new ImageLoadingListener() {
                         @Override
-                        public void onLoadingStarted(String s, View view) {
-                        }
+                        public void onLoadingStarted(String s, View view) {}
 
                         @Override
-                        public void onLoadingFailed(String s, View view, FailReason failReason) {
-                        }
+                        public void onLoadingFailed(String s, View view, FailReason failReason) {}
 
                         @Override
                         public void onLoadingComplete(String s, View view, Bitmap bitmap) {
@@ -196,10 +194,8 @@ public class BoardGalleryFragment extends Fragment {
                                 holder.imageView.setImageBitmap(bitmap);
                             }
                         }
-
                         @Override
-                        public void onLoadingCancelled(String s, View view) {
-                        }
+                        public void onLoadingCancelled(String s, View view) {}
                     });
                 }
                 if (holder.textView != null) {
@@ -210,7 +206,7 @@ public class BoardGalleryFragment extends Fragment {
         }
     }
 
-    public class GridViewHolder {
+    public static class GridViewHolder {
         public View layout;
         public ImageView imageView;
         public TextView textView;
@@ -218,7 +214,6 @@ public class BoardGalleryFragment extends Fragment {
 
     private View makeGridRowView(GridViewHolder holder, Context context) {
         int displayWidth = DisplayUtil.getDisplaySizeWidth(getActivity());
-        //Logger.d(TAG, "displayWidth : " + displayWidth);
         int imageViewWidth = displayWidth / 3;
 
         RelativeLayout layout = new RelativeLayout(context);
