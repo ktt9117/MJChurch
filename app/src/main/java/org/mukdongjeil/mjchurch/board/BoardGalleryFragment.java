@@ -185,7 +185,11 @@ public class BoardGalleryFragment extends Fragment {
                         public void onLoadingStarted(String s, View view) {}
 
                         @Override
-                        public void onLoadingFailed(String s, View view, FailReason failReason) {}
+                        public void onLoadingFailed(String s, View view, FailReason failReason) {
+                            if (holder != null && holder.imageView != null) {
+                                holder.imageView.setImageResource(R.mipmap.ic_launcher);
+                            }
+                        }
 
                         @Override
                         public void onLoadingComplete(String s, View view, Bitmap bitmap) {
@@ -195,7 +199,11 @@ public class BoardGalleryFragment extends Fragment {
                             }
                         }
                         @Override
-                        public void onLoadingCancelled(String s, View view) {}
+                        public void onLoadingCancelled(String s, View view) {
+                            if (holder != null && holder.imageView != null) {
+                                holder.imageView.setImageResource(R.mipmap.ic_launcher);
+                            }
+                        }
                     });
                 }
                 if (holder.textView != null) {

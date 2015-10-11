@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -81,27 +82,23 @@ public class BoardGalleryDetailFragment extends Fragment {
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
         mPager.addOnPageChangeListener(mOnPageChangeListener);
         mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
-        v.findViewById(R.id.gallery_detail_close).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        getActivity().onBackPressed();
-                    }
-                }
-        );
 
         String requestUrl = mBoardType == BoardFragment.BOARD_TYPE_GALLERY ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
         new RequestImageListTask(requestUrl, new RequestBaseTask.OnResultListener() {
             @Override
             public void onResult(Object obj, int position) {
-                if (obj != null && obj instanceof List) {
+                if (obj != null && obj instanceof List && ((List) obj).size() > 0) {
                     DetailPagerAdapter adapter = new DetailPagerAdapter(getActivity(), (List<Element>) obj);
                     mPager.setAdapter(adapter);
                     mPagerIndicator.setViewPager(mPager);
+                } else {
+                    Toast.makeText(getActivity(), "사진을 불러올 수 없습니다.", Toast.LENGTH_LONG).show();
+                    getActivity().onBackPressed();
                 }
             }
         });
 
+        ((MainActivity) getActivity()).showCloseMenu();
         return v;
     }
 

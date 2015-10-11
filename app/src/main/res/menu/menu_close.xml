@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TODO : 공유 기능 추가 필요
+    <item android:id="@+id/action_share"
+        android:showAsAction="always"
+        android:title="share"
+        android:icon="@android:drawable/ic_menu_share" />
+    -->
+
+    <item
+        android:id="@+id/action_mode_close_button"
+        android:showAsAction="always"
+        android:title="close"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel" />
+
+</menu>

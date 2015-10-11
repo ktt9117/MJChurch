@@ -3,13 +3,19 @@ package org.mukdongjeil.mjchurch;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Canvas;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ShareActionProvider;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
@@ -20,9 +26,11 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
+import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
+import org.mukdongjeil.mjchurch.service.RegistrationIntentService;
 
 public class MainActivity extends SlidingFragmentActivity {
 
@@ -30,13 +38,17 @@ public class MainActivity extends SlidingFragmentActivity {
 
     private CycleProgressDialog mLoadingDialog;
     private boolean isTouchModeFullScreen = true;
-
+    private boolean mNeedCloseMenu = false;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         SystemHelpers.init(getApplicationContext());
         PreferenceUtil.init(getApplicationContext());
+
+        // get the GCM Token
+        getInstanceIdToken();
 
         // init Universal Image Loader
         initializeImageLoader();
@@ -136,13 +148,34 @@ public class MainActivity extends SlidingFragmentActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mNeedCloseMenu) {
+            getMenuInflater().inflate(R.menu.menu_close, menu);
+            return true;
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
                 getSlidingMenu().toggle(true);
                 return true;
+            case R.id.action_mode_close_button:
+                onBackPressed();
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (mNeedCloseMenu) {
+            mNeedCloseMenu = false;
+            invalidateOptionsMenu();
+        }
     }
 
     private void initializeSlidingMenu() {
@@ -202,6 +235,43 @@ public class MainActivity extends SlidingFragmentActivity {
         });
         ab.create().show();
     }
+
+    public void showCloseMenu() {
+        mNeedCloseMenu = true;
+        invalidateOptionsMenu();
+    }
+
+    /**
+     * Google Play Service를 사용할 수 있는 환경이지를 체크한다.
+     */
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Logger.i(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Instance ID를 이용하여 디바이스 토큰을 가져오는 RegistrationIntentService를 실행한다.
+     */
+    public void getInstanceIdToken() {
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
+    }
+
+
 
 //    private static final int HANDLE_MSG_SHOW_SLIDING_TAB_LAYOUT = 1;
 //    private static final int HANDLE_MSG_HIDE_SLIDING_TAB_LAYOUT = 2;

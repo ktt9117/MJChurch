@@ -32,6 +32,7 @@ import org.mukdongjeil.mjchurch.service.MediaService;
 import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
@@ -352,8 +353,7 @@ public class SermonFragment extends ListFragment {
             mBroadcast = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    //item download done. so refresh list
-                    //DBManager.getInstance(context).getSermonList(mWorshipType);
+                    //TODO : item download done. so refresh list
                     Logger.e(TAG, "onReceive Intent_action_download_completed");
                 }
             };

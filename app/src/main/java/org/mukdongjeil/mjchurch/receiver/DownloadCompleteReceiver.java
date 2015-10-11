@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
@@ -28,6 +29,7 @@ public class DownloadCompleteReceiver extends BroadcastReceiver{
         }
 
         if (action.equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE)) {
+            Toast.makeText(context, "다운로드 완료", Toast.LENGTH_LONG).show();
             //로컬 DB에 있는 설교 목록에서 downloadId에 해당하는 항목을 찾아 downloadStatus값을 갱신한다.
             if (intent != null && intent.hasExtra(DownloadManager.EXTRA_DOWNLOAD_ID)) {
                 long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);

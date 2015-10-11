@@ -52,11 +52,11 @@ public class DownloadUtil {
         request.setTitle("설교 다운로드");
         request.setDescription(item.title);
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, item.title + StringUtils.FILE_EXTENSION_MP3);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            request.setShowRunningNotification(true);
-        } else {
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        }
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+//            request.setShowRunningNotification(true);
+//        } else {
+//            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+//        }
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         long downloadQueryId = downloadManager.enqueue(request);

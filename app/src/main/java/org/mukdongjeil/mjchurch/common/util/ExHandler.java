@@ -15,7 +15,6 @@ public abstract class ExHandler<T> extends Handler {
 
 	@Override
 	public void handleMessage(Message msg) {
-		// TODO Auto-generated method stub
 		super.handleMessage(msg);
 		if(mReference.get() == null) {
 			return;
