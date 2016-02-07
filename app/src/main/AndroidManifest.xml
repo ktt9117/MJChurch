@@ -32,6 +32,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".IntroActivity"
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen"
+            android:screenOrientation="portrait" />
+
         <service
             android:name=".service.MediaService" />
 

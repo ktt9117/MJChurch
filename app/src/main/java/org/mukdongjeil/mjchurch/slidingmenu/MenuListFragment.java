@@ -111,7 +111,7 @@ public class MenuListFragment extends ListFragment {
 	private void initializeMenuList() {
 		mAdapter = new MenuListAdapter(getActivity());
 		for (int i = 0; i < groups.length; i++) {
-			mAdapter.add(new MenuItem(groups[i]));
+			mAdapter.add(new MenuItem(groups[i], groups_ic[i]));
 			String[] tempArr;
 			int category;
 			switch(i) {
@@ -135,7 +135,7 @@ public class MenuListFragment extends ListFragment {
 			}
 
 			for (int j = 0; j < tempArr.length; j++) {
-				mAdapter.add(new MenuItem(tempArr[j], groups_ic[i], category));
+				mAdapter.add(new MenuItem(tempArr[j], -1, category));
 			}
 		}
 

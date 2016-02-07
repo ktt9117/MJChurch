@@ -31,16 +31,11 @@ public class MediaService extends Service {
     public static final int PLAYER_STATUS_PAUSE = 2;
     public static final int PLAYER_STATUS_STOP = 3;
 
-    public static final String ACTION_PLAYER_PLAY = "action_player_play";
-    public static final String ACTION_PLAYER_PAUSE = "action_player_pause";
-    public static final String ACTION_PLAYER_STOP = "action_player_stop";
-
     private static final int MEDIA_SERVICE_ID = 101;
 
     private final LocalBinder mBinder = new LocalBinder();
 
     private SermonItem mCurrentItem;
-    private RemoteViews remoteView;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -97,7 +92,7 @@ public class MediaService extends Service {
     public void startPlayer(SermonItem item) throws IOException {
         stopPlayer();
         mCurrentItem = item;
-        startForegroundService();
+        startForegroundService(item.title);
         mPlayer = new MediaPlayer();
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
@@ -162,7 +157,7 @@ public class MediaService extends Service {
         return mCurrentItem;
     }
 
-    private void startForegroundService() {
+    private void startForegroundService(String title) {
         Intent contentIntent = new Intent(this, MediaService.class);
         PendingIntent contentPending = PendingIntent.getService(this, 0, contentIntent, 0);
 
@@ -182,6 +177,7 @@ public class MediaService extends Service {
         remoteView.setOnClickPendingIntent(R.id.remote_play, playPending);
         remoteView.setOnClickPendingIntent(R.id.remote_pause, pausePending);
         remoteView.setOnClickPendingIntent(R.id.remote_stop, stopPending);
+        remoteView.setTextViewText(R.id.remote_title, title);
 
         Notification notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)

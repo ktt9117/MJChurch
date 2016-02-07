@@ -34,13 +34,13 @@ public class MenuListAdapter extends ArrayAdapter<MenuItem> {
         TextView title = (TextView) convertView.findViewById(R.id.row_title);
 
         if (item.menuType == MenuItem.MENU_TYPE_GROUP) {
-            icon.setVisibility(View.GONE);
+            icon.setVisibility(View.VISIBLE);
+            icon.setImageResource(item.iconRes);
             title.setTextAppearance(getContext(), android.R.style.TextAppearance_DeviceDefault_Medium);
             convertView.setEnabled(false);
             convertView.setBackgroundColor(Color.parseColor("#bebebe"));
         } else {
-            icon.setVisibility(View.VISIBLE);
-            icon.setImageResource(item.iconRes);
+            icon.setVisibility(View.GONE);
             title.setTextAppearance(getContext(), android.R.style.TextAppearance_DeviceDefault_Small);
             convertView.setEnabled(true);
             if (selectedItemPosition == position) {

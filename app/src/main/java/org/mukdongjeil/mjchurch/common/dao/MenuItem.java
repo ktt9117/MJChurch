@@ -17,10 +17,10 @@ public class MenuItem {
     public int menuType;
     public int menuCategory;
 
-    public MenuItem(String title) {
+    public MenuItem(String title, int iconRes) {
         this.title = title;
         this.menuType = MENU_TYPE_GROUP;
-        this.iconRes = -1;
+        this.iconRes = iconRes;
     }
 
     public MenuItem(String title, int iconRes, int category) {

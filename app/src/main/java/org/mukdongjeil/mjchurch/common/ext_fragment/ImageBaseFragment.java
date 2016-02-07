@@ -25,8 +25,6 @@ public class ImageBaseFragment extends Fragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        View rootView = inflater.inflate(R.layout.pager_base_fragment, container, false);
-//        ((ViewGroup) rootView).removeAllViews();
         ScrollView scrollView = new ScrollView(getActivity());
         scrollView.setLayoutParams(new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         FrameLayout.LayoutParams childParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
@@ -34,10 +32,6 @@ public class ImageBaseFragment extends Fragment{
         imageView = new ImageView(getActivity());
         imageView.setLayoutParams(childParams);
         scrollView.addView(imageView);
-
-//        ((ViewGroup) rootView).addView(scrollView);
-//        return rootView;
-
         return scrollView;
     }
 }
