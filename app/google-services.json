@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_id": "mjchurch-b60bd",
-    "project_number": "610354226318",
+    "project_id": "mjchurch-de25",
+    "project_number": "537844475313",
     "name": "MJChurch"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:610354226318:android:88e52f1b9653ca42",
+        "mobilesdk_app_id": "1:537844475313:android:88e52f1b9653ca42",
         "client_id": "android:org.mukdongjeil.mjchurch",
         "client_type": 1,
         "android_client_info": {
@@ -18,10 +18,13 @@
       "api_key": [],
       "services": {
         "analytics_service": {
-          "status": 1
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-73642933-1"
+          }
         },
         "cloud_messaging_service": {
-          "status": 2,
+          "status": 1,
           "apns_config": []
         },
         "appinvite_service": {

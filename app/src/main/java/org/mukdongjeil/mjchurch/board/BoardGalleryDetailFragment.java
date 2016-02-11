@@ -98,7 +98,7 @@ public class BoardGalleryDetailFragment extends Fragment {
             }
         });
 
-        ((MainActivity) getActivity()).showCloseMenu();
+        ((MainActivity) getActivity()).showCloseMenuItem();
         return v;
     }
 

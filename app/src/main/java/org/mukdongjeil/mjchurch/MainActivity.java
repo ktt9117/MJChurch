@@ -1,36 +1,32 @@
 package org.mukdongjeil.mjchurch;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.graphics.Canvas;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ShareActionProvider;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
-import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
 import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
-import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
 import org.mukdongjeil.mjchurch.service.RegistrationIntentService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends SlidingFragmentActivity {
 
@@ -38,7 +34,7 @@ public class MainActivity extends SlidingFragmentActivity {
 
     private CycleProgressDialog mLoadingDialog;
     private boolean isTouchModeFullScreen = true;
-    private boolean mNeedCloseMenu = false;
+    private boolean mNeedShowCloseMenuItem = false;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,14 +42,9 @@ public class MainActivity extends SlidingFragmentActivity {
 
         startActivity(new Intent(this, IntroActivity.class));
 
-        SystemHelpers.init(getApplicationContext());
-        PreferenceUtil.init(getApplicationContext());
-
+        //일단은 GCM을 쓰지 않으므로 주석처리
         // get the GCM Token
-        getInstanceIdToken();
-
-        // init Universal Image Loader
-        initializeImageLoader();
+        //getInstanceIdToken();
 
         // init SlidingMenu
         initializeSlidingMenu();
@@ -128,30 +119,9 @@ public class MainActivity extends SlidingFragmentActivity {
         }
     }
 
-    private void initializeImageLoader() {
-        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
-                .cacheOnDisk(true)
-                .cacheInMemory(true)
-                .imageScaleType(ImageScaleType.EXACTLY)
-                .displayer(new FadeInBitmapDisplayer(300))
-                .build();
-
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
-                SystemHelpers.getApplicationContext())
-                .denyCacheImageMultipleSizesInMemory()
-                .defaultDisplayImageOptions(defaultOptions)
-                .memoryCache(new WeakMemoryCache())
-                .memoryCacheSize(2 * 1024 * 1024)
-                .diskCacheSize(50 * 1024 * 1024)
-                .diskCacheFileCount(100)
-                .writeDebugLogs()
-                .build();
-        ImageLoader.getInstance().init(config);
-    }
-
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (mNeedCloseMenu) {
+        if (mNeedShowCloseMenuItem) {
             getMenuInflater().inflate(R.menu.menu_close, menu);
             return true;
         }
@@ -174,8 +144,8 @@ public class MainActivity extends SlidingFragmentActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (mNeedCloseMenu) {
-            mNeedCloseMenu = false;
+        if (mNeedShowCloseMenuItem) {
+            mNeedShowCloseMenuItem = false;
             invalidateOptionsMenu();
         }
     }
@@ -238,9 +208,13 @@ public class MainActivity extends SlidingFragmentActivity {
         ab.create().show();
     }
 
-    public void showCloseMenu() {
-        mNeedCloseMenu = true;
+    public void showCloseMenuItem() {
+        mNeedShowCloseMenuItem = true;
         invalidateOptionsMenu();
+    }
+
+    public void showShareMenuItem() {
+
     }
 
     /**
