@@ -51,6 +51,7 @@ public class SermonListAdapter extends ArrayAdapter<SermonItem> {
         vh.date.setText(item.date);
         vh.preacher.setText(item.preacher);
         vh.playInfo.setText("");
+        vh.content.setText(item.content);
         if (item.downloadStatus.name().equals(SermonItem.DownloadStatus.DOWNLOAD_SUCCESS.name())) {
             vh.downloadInfo.setText("다운로드 됨");
         } else {

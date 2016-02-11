@@ -3,12 +3,15 @@ package org.mukdongjeil.mjchurch.service;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
@@ -36,6 +39,7 @@ public class MediaService extends Service {
     private final LocalBinder mBinder = new LocalBinder();
 
     private SermonItem mCurrentItem;
+    private PhoneCallStateListener mCallStateListener;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -53,6 +57,7 @@ public class MediaService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mCallStateListener = new PhoneCallStateListener();
     }
 
     @Override
@@ -118,6 +123,9 @@ public class MediaService extends Service {
                 stopPlayer();
             }
         });
+
+        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        tm.listen(mCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     public void stopPlayer() {
@@ -130,6 +138,9 @@ public class MediaService extends Service {
             mPlayer = null;
         }
         mCurrentItem = null;
+
+        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        tm.listen(mCallStateListener, PhoneStateListener.LISTEN_NONE);
     }
 
     public boolean isPlaying() {
@@ -188,5 +199,18 @@ public class MediaService extends Service {
                 .build();
 
         startForeground(MEDIA_SERVICE_ID, notification);
+    }
+
+    private class PhoneCallStateListener extends PhoneStateListener {
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            Logger.i(TAG, "PhoneCallStateListener onCallStateChanged state : " + state);
+            super.onCallStateChanged(state, incomingNumber);
+            if (state == TelephonyManager.CALL_STATE_OFFHOOK || state == TelephonyManager.CALL_STATE_RINGING) {
+                if (mPlayer != null && mPlayer.isPlaying()) {
+                    pausePlayer();
+                }
+            }
+        }
     }
 }
