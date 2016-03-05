@@ -60,7 +60,7 @@ public class SermonListAdapter extends ArrayAdapter<SermonItem> {
 
         vh.chapterInfo.setText(item.chapterInfo);
         if (!TextUtils.isEmpty(item.preacher) && item.preacher.contains("김희준")) {
-            vh.imgView.setImageResource(R.mipmap.preacher_heejun);
+            vh.imgView.setImageResource(R.drawable.preacher_heejun);
         } else {
             vh.imgView.setImageResource(R.mipmap.ic_launcher);
         }

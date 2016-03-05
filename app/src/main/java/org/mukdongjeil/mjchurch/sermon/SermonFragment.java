@@ -18,6 +18,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -25,6 +28,8 @@ import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.DownloadUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.NetworkUtil;
+import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
+import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.database.DBManager;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestSermonsTask;
@@ -32,6 +37,8 @@ import org.mukdongjeil.mjchurch.service.MediaService;
 import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -57,10 +64,10 @@ public class SermonFragment extends ListFragment {
                 if (mService.getCurrentPlayerItem() != null) {
                     mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
                     if (mService.isPlaying()) {
-                        mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                        mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                         mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                     } else {
-                        mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                        mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_play);
                         mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_STOP);
                     }
                 }
@@ -99,13 +106,25 @@ public class SermonFragment extends ListFragment {
             int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
             switch (selectedMenuIndex) {
                 case 8:
+                    Answers.getInstance().logContentView(new ContentViewEvent()
+                            .putContentName("설교 목록 조회")
+                            .putContentType("목록 조회")
+                            .putContentId("주일 오후 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_SUNDAY_AFTERNOON;
                     break;
                 case 9:
+                    Answers.getInstance().logContentView(new ContentViewEvent()
+                            .putContentName("설교 목록 조회")
+                            .putContentType("목록 조회")
+                            .putContentId("수요 예배 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
                     break;
                 case 7:
                 default:
+                    Answers.getInstance().logContentView(new ContentViewEvent()
+                            .putContentName("설교 목록 조회")
+                            .putContentType("목록 조회")
+                            .putContentId("주일 오전 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_SUNDAY_MORNING;
                     break;
             }
@@ -114,20 +133,56 @@ public class SermonFragment extends ListFragment {
 
         mAdapter = new SermonListAdapter(getActivity(), mService);
         setListAdapter(mAdapter);
-        new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
-            @Override
-            public void onResult(Object obj, int position) {
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).hideLoadingDialog();
+//        List<SermonItem> localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(mWorshipType);
+        //로컬 DB에 저장된 목록이 없거나 오늘 서버에서 리스트 체크를 하지 않은 경우에만 서버로부터 목록을 받아온다.
+        //TODO : 하루 한번만 체크했을 때 이상하게 마지막 아이템을 불러오지 못하는 현상이 있다...
+//        if ((localSermonList != null && localSermonList.size() < 1) || isAlreadyCheckToday(mWorshipType) == false) {
+            new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
+                @Override
+                public void onResult(Object obj, int position) {
+                    PreferenceUtil.setWorshipListCheckTimeInMillis(mWorshipType, System.currentTimeMillis());
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).hideLoadingDialog();
+                    }
+                    if (obj != null && obj instanceof SermonItem) {
+                        mAdapter.add((SermonItem) obj);
+                        updatePlayerControllerIfNecessary((SermonItem) obj);
+                    } else {
+                        Logger.e(TAG, "obj is null or is not SermonItem at onResult");
+                    }
                 }
-                if (obj != null && obj instanceof SermonItem) {
-                    mAdapter.add((SermonItem)obj);
-                    updatePlayerControllerIfNecessary((SermonItem) obj);
-                } else {
-                    Logger.e(TAG, "obj is null or is not SermonItem at onResult");
-                }
+            });
+//        } else {
+//            Logger.i(TAG, "already check today");
+//            if (getActivity() instanceof MainActivity) {
+//                ((MainActivity) getActivity()).hideLoadingDialog();
+//            }
+//            for (SermonItem item : localSermonList) {
+//                mAdapter.add(item);
+//            }
+//            mAdapter.notifyDataSetChanged();
+//        }
+    }
+
+    //설교 목록은 하루에 한번만 체크한다. 오늘 체크한 기록이 있다면 다시 체크하지 않기 위한 작업
+    private boolean isAlreadyCheckToday(int worshipType) {
+        long lastCheckTimeInMillis = PreferenceUtil.getWorshipListCheckTimeInMillis(worshipType);
+        if (lastCheckTimeInMillis > 0) {
+            Calendar todayCal = Calendar.getInstance();
+            Calendar somedayCal = Calendar.getInstance();
+            somedayCal.setTimeInMillis(lastCheckTimeInMillis);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+            final String today = sdf.format(todayCal.getTime());
+            final String checkedDay = sdf.format(somedayCal.getTime());
+
+            Logger.i(TAG, "today : " + today + ", checkedDay : " + checkedDay);
+            if (today.equals(checkedDay)) {
+                return true;
             }
-        });
+        }
+
+        return false;
     }
 
     @Override
@@ -192,16 +247,16 @@ public class SermonFragment extends ListFragment {
                 if (equalsServiceItem) {
                     //재생중이면 Pause 버튼으로 표현
                     if (mService.isPlaying()) {
-                        btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                        btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                     } else {
                         //재생중이 아니면 Play 버튼으로 표현
-                        btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                        btnPlayOrPause.setImageResource(R.drawable.ic_play);
                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                     }
                 } else {
                     //서비스에 등록된 아이템이 아니면 Play 버튼으로 표현
-                    btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                    btnPlayOrPause.setImageResource(R.drawable.ic_play);
                     btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                 }
             }
@@ -235,13 +290,13 @@ public class SermonFragment extends ListFragment {
                         Logger.i(TAG, "equalsServiceItem : " + equalsServiceItem);
                         if (playerStatus == MediaService.PLAYER_STATUS_PAUSE) {
                             if (mService.pausePlayer()) {
-                                btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                                btnPlayOrPause.setImageResource(R.drawable.ic_play);
                                 btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                             }
                         } else if (playerStatus == MediaService.PLAYER_STATUS_PLAY) {
                             if (equalsServiceItem && mService.resumePlayer()) {
                                 Logger.i(TAG, "equalsServiceItem == true && resumeResult == true");
-                                btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                                btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                                 btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                             } else {
                                 Logger.i(TAG, "resumeResult == false maybe");
@@ -249,7 +304,7 @@ public class SermonFragment extends ListFragment {
                                     //다운로드 된 아이템은 그냥 재생한다.
                                     try {
                                         mService.startPlayer(currentItem);
-                                        btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                                        btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                                         return;
                                     } catch (IOException e) {
@@ -273,7 +328,7 @@ public class SermonFragment extends ListFragment {
                                                 if (positiveButtonClick) {
                                                     try {
                                                         mService.startPlayer(currentItem);
-                                                        btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                                                        btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                                                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                                                     } catch (IOException e) {
                                                         e.printStackTrace();
@@ -286,7 +341,7 @@ public class SermonFragment extends ListFragment {
                                     //와이파이라면 그냥 재생한다.
                                     try {
                                         mService.startPlayer(currentItem);
-                                        btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                                        btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                                     } catch (IOException e) {
                                         e.printStackTrace();
@@ -295,7 +350,7 @@ public class SermonFragment extends ListFragment {
                             }
                         } else if (playerStatus == MediaService.PLAYER_STATUS_STOP) {
                             mService.stopPlayer();
-                            btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                            btnPlayOrPause.setImageResource(R.drawable.ic_play);
                             btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
                         }
                     }
@@ -339,10 +394,10 @@ public class SermonFragment extends ListFragment {
         if (mService.getCurrentPlayerItem() != null) {
             mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
             if (mService.isPlaying()) {
-                mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_pause);
+                mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                 mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
             } else {
-                mPlayerController.btnPlayOrPause.setImageResource(R.mipmap.ic_play);
+                mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_play);
                 mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_STOP);
             }
         }
@@ -355,6 +410,8 @@ public class SermonFragment extends ListFragment {
                 public void onReceive(Context context, Intent intent) {
                     //TODO : item download done. so refresh list
                     Logger.e(TAG, "onReceive Intent_action_download_completed");
+                    //아래와 같이 해도 다운로드 상태가 갱신되지 않음
+                    //mAdapter.notifyDataSetChanged();
                 }
             };
         }

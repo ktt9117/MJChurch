@@ -14,19 +14,21 @@ import android.widget.ImageView;
  */
 public class IntroActivity extends Activity {
 
+    ImageView mImageView;
+
     @Override
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        ImageView imgView = new ImageView(getBaseContext());
-        imgView.setImageResource(R.drawable.intro);
-        imgView.setScaleType(ImageView.ScaleType.FIT_XY);
-        imgView.setBackgroundColor(Color.TRANSPARENT);
-        setContentView(imgView);
+        mImageView = new ImageView(getBaseContext());
+        mImageView.setImageResource(R.drawable.intro);
+        mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        mImageView.setBackgroundColor(Color.TRANSPARENT);
+        setContentView(mImageView);
 
         Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out_ani);
-        imgView.startAnimation(animation);
+        mImageView.startAnimation(animation);
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -35,6 +37,6 @@ public class IntroActivity extends Activity {
                     finish();
                 }
             }
-        }, 3000);
+        }, 2000);
     }
 }

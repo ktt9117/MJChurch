@@ -15,6 +15,9 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
@@ -95,6 +98,13 @@ public class MediaService extends Service {
     }
 
     public void startPlayer(SermonItem item) throws IOException {
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("설교 재생")
+                .putContentType("설교 재생")
+                .putContentId(item.title)
+                .putCustomAttribute("downloadStatus", item.downloadStatus.ordinal())
+        );
+
         stopPlayer();
         mCurrentItem = item;
         startForegroundService(item.title);

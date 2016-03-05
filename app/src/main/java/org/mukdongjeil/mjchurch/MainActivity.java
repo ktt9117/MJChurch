@@ -35,16 +35,15 @@ public class MainActivity extends SlidingFragmentActivity {
     private CycleProgressDialog mLoadingDialog;
     private boolean isTouchModeFullScreen = true;
     private boolean mNeedShowCloseMenuItem = false;
-    
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         startActivity(new Intent(this, IntroActivity.class));
 
-        //일단은 GCM을 쓰지 않으므로 주석처리
         // get the GCM Token
-        //getInstanceIdToken();
+        getInstanceIdToken();
 
         // init SlidingMenu
         initializeSlidingMenu();
@@ -61,9 +60,6 @@ public class MainActivity extends SlidingFragmentActivity {
                 toggleTouchMode();
             }
         });
-
-        // init ViewPager
-        //initializePager(setPosition);
     }
 
     public void switchContent(Fragment fragment) {
@@ -141,6 +137,42 @@ public class MainActivity extends SlidingFragmentActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /*
+    private void showImageShareDialog() {
+        List<Intent> targetedShareIntents = new ArrayList<Intent>();
+        Intent share = new Intent(android.content.Intent.ACTION_SEND);
+        share.setType("image/jpeg");
+        List<ResolveInfo> resInfo = getPackageManager().queryIntentActivities(share, 0);
+        if ( !resInfo.isEmpty() ) {
+            for ( ResolveInfo info : resInfo ) {
+                Intent targetedShare;
+                Logger.i(TAG, "PackageName : " + info.activityInfo.packageName + " / " + info.activityInfo.name);
+
+                if ( info.activityInfo.packageName.toLowerCase().contains(appName) ||
+                        info.activityInfo.name.toLowerCase().contains(appName) ) {
+
+                    targetedShare = ShareCompat.IntentBuilder.from((Activity)get)
+                            .setType("image/jpeg")
+                            .setStream(Uri.fromFile(file))
+                            .getIntent()
+                            .setPackage(info.activityInfo.packageName);
+
+                    targetedShareIntents.add(targetedShare);
+                }
+            }
+
+            if ( targetedShareIntents.size() == 0 ) {
+                // FIXME : Event Dispatch!!
+                Toast.makeText(mContext, "없음 : " + appName, Toast.LENGTH_LONG);
+                return;
+            }
+            Intent chooserIntent = Intent.createChooser(targetedShareIntents.remove(0), "Select app to share");
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, targetedShareIntents.toArray(new Parcelable[]{}));
+            mContext.startActivity(chooserIntent);
+        }
+    }
+    */
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -211,10 +243,6 @@ public class MainActivity extends SlidingFragmentActivity {
     public void showCloseMenuItem() {
         mNeedShowCloseMenuItem = true;
         invalidateOptionsMenu();
-    }
-
-    public void showShareMenuItem() {
-
     }
 
     /**

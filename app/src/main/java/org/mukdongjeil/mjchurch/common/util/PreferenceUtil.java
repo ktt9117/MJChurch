@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+import org.mukdongjeil.mjchurch.common.Const;
+
 public class PreferenceUtil {
 	
 	private static final String TAG = PreferenceUtil.class.getSimpleName();
@@ -12,6 +14,11 @@ public class PreferenceUtil {
 
 	private static final String INTRODUCE_LAST_SELECTED_MENU_INDEX = "introduceLastSelectedMenuIndex";
 	private static final String WORSHIP_LAST_SELECTED_MENU_INDEX = "worshipLastSelectedMenuIndex";
+
+	private static final String SUNDAY_MORNING_WORSHIP_CHECK_DATE = "sundayMorningWorshipCheckDate";
+	private static final String SUNDAY_AFTERNOON_WORSHIP_CHECK_DATE = "sundayAfternoonWorshipCheckDate";
+	private static final String WEDNESDAY_WORSHIP_CHECK_DATE = "WednesdayWorshipCheckDate";
+
 
 	private static SharedPreferences mPreference = null;
 	private static Context mContext = null;
@@ -51,7 +58,7 @@ public class PreferenceUtil {
 		editor.putLong(preName, value);
 		editor.commit();
 	}
-	
+
 	// ---------------------- Setter -------------------------- //
 	public static void setIntroduceLastSelectedMenuIndex(int index) {
 		setPreferenceValue(INTRODUCE_LAST_SELECTED_MENU_INDEX, index);
@@ -59,6 +66,16 @@ public class PreferenceUtil {
 
 	public static void setWorshipLastSelectedMenuIndex(int index) {
 		setPreferenceValue(WORSHIP_LAST_SELECTED_MENU_INDEX, index);
+	}
+
+	public static void setWorshipListCheckTimeInMillis(int worshipType, long currentTimeInMillis) {
+		if (worshipType == Const.WORSHIP_TYPE_SUNDAY_MORNING) {
+			setPreferenceValue(SUNDAY_MORNING_WORSHIP_CHECK_DATE, currentTimeInMillis);
+		} else if (worshipType == Const.WORSHIP_TYPE_SUNDAY_AFTERNOON) {
+			setPreferenceValue(SUNDAY_AFTERNOON_WORSHIP_CHECK_DATE, currentTimeInMillis);
+		} else {
+			setPreferenceValue(WEDNESDAY_WORSHIP_CHECK_DATE, currentTimeInMillis);
+		}
 	}
 
 	// ---------------------- Getter -------------------------- //
@@ -69,5 +86,15 @@ public class PreferenceUtil {
 
 	public static int getWorshipLastSelectedMenuIndex() {
 		return mPreference.getInt(WORSHIP_LAST_SELECTED_MENU_INDEX, 0);
+	}
+
+	public static long getWorshipListCheckTimeInMillis(int worshipType) {
+		if (worshipType == Const.WORSHIP_TYPE_SUNDAY_MORNING) {
+			return mPreference.getLong(SUNDAY_MORNING_WORSHIP_CHECK_DATE, 0);
+		} else if (worshipType == Const.WORSHIP_TYPE_SUNDAY_AFTERNOON) {
+			return mPreference.getLong(SUNDAY_AFTERNOON_WORSHIP_CHECK_DATE, 0);
+		} else {
+			return mPreference.getLong(WEDNESDAY_WORSHIP_CHECK_DATE, 0);
+		}
 	}
 }

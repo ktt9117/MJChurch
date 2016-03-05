@@ -1,9 +1,13 @@
 package org.mukdongjeil.mjchurch.board;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
@@ -12,6 +16,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -36,6 +42,8 @@ import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestImageListTask;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
 public class BoardGalleryDetailFragment extends Fragment {
@@ -52,6 +60,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     private String mContentNo;
     private ExViewPager mPager;
     private CirclePageIndicator mPagerIndicator;
+    //private Button shareItemButton;
 
     public static BoardGalleryDetailFragment newInstance(int boardType, String contentNo) {
         BoardGalleryDetailFragment fragment = new BoardGalleryDetailFragment();
@@ -78,12 +87,68 @@ public class BoardGalleryDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_board_gallery_detail, container, false);
+        final View v = inflater.inflate(R.layout.fragment_board_gallery_detail, container, false);
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
         mPager.addOnPageChangeListener(mOnPageChangeListener);
         mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
+        /*
+        shareItemButton = (Button) v.findViewById(R.id.share_item_button);
+        shareItemButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO : 사진 공유하기 버튼은 각 item 마다 두는것으로 수정 필요
+                Logger.e(TAG, "getCurrentItem : " + mPager.getCurrentItem());
 
-        String requestUrl = mBoardType == BoardFragment.BOARD_TYPE_GALLERY ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
+                View tempView = mPager.getChildAt(1);
+                ImageView content = null;
+                if (tempView instanceof ViewGroup) {
+                    for (int i = 0; i < ((ViewGroup) tempView).getChildCount(); i++) {
+                        if (((ViewGroup) tempView).getChildAt(i) instanceof ImageView) {
+                            content = (ImageView) ((ViewGroup) tempView).getChildAt(i);
+                            break;
+                        }
+                    }
+                } else if (tempView instanceof ImageView){
+                    content = (ImageView) tempView;
+                } else {
+                    Logger.e(TAG, "Warning! mPager.getChildAt View is not ViewGroup. It must be ViewGroup");
+                    return;
+                }
+
+                if (content == null) {
+                    Logger.e(TAG, "Warning! mPager.getChildAt View has no Image childView");
+                    return;
+                }
+
+                Bitmap bitmap = ((BitmapDrawable)content.getDrawable()).getBitmap();
+                if (bitmap == null) {
+                    Logger.e(TAG, "Warning! bitmap is null");
+                    return;
+                }
+                File cacheFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/tmp_share_image.jpg");
+                boolean isFileSaved = false;
+                try {
+                    cacheFile.createNewFile();
+                    FileOutputStream fosStream = new FileOutputStream(cacheFile);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fosStream);
+                    fosStream.close();
+                    isFileSaved = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+//                content.setDrawingCacheEnabled(false);
+
+                if (isFileSaved) {
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType("image/*");
+                    share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(cacheFile));
+                    startActivity(Intent.createChooser(share, "사진 공유"));
+                }
+            }
+        });
+        */
+
+        String requestUrl = (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
         new RequestImageListTask(requestUrl, new RequestBaseTask.OnResultListener() {
             @Override
             public void onResult(Object obj, int position) {
@@ -220,6 +285,7 @@ public class BoardGalleryDetailFragment extends Fragment {
             imgPhoto = new ImageView(context);
             imgPhoto.setLayoutParams(MATCH_PARENT);
             imgPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            imgPhoto.setTag("ChildImgView");
 
             progress = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
             WRAP_CONTENT.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);

@@ -5,10 +5,13 @@ import android.text.TextUtils;
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
+import net.htmlparser.jericho.StartTagType;
+import net.htmlparser.jericho.TextExtractor;
 
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.database.DBManager;
 
@@ -178,8 +181,16 @@ public class RequestSermonsTask extends RequestBaseTask {
                             } else if (tempStr.contains("본문 : ") || tempStr.contains("주제 : ")) {
                                 item.chapterInfo = element.getTextExtractor().toString();
                             }
+//                            else {
+//                                item.chapterInfo += element.getTextExtractor().toString();
+//                            }
                         }
                     }
+
+                    //extract content text
+                    //TODO : 아래와 같이 하면 설교 본문이 중복되어 표시되어 일단 주석처리함. 추후 수정필요
+                    //TextExtractor contentText = temp.getTextExtractor();
+                    //item.content = contentText.toString();
 
                     //extract attached file
                     List<Element> fileElement = contentElement.getAllElementsByClass("attch_file");

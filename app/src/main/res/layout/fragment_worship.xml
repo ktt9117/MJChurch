@@ -19,7 +19,7 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="7dp"
             android:layout_marginLeft="7dp"
-            android:src="@mipmap/ic_download" />
+            android:src="@drawable/ic_download" />
 
         <ImageView
             android:id="@+id/btn_play_or_pause"
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@id/btn_download"
             android:layout_centerVertical="true"
-            android:src="@mipmap/ic_play"/>
+            android:src="@drawable/ic_play"/>
 
         <LinearLayout
             android:orientation="vertical"

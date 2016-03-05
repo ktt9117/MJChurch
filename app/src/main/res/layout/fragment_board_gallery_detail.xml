@@ -4,6 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="org.mukdongjeil.mjchurch.board.BoardGalleryDetailFragment">
+    <!--
+    <Button
+        android:id="@+id/share_item_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#99000000"
+        android:textColor="#ffffff"
+        android:text="사진 공유하기" />
+        android:layout_below="@id/share_item_button"
+    -->
 
     <org.mukdongjeil.mjchurch.common.ext_view.CirclePageIndicator
         android:id="@+id/pager_indicator"

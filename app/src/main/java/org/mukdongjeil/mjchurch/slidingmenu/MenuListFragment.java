@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
+
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.board.BoardFragment;
@@ -25,7 +28,7 @@ public class MenuListFragment extends ListFragment {
 
 	//list position 0, 6, 10, 15
 	private static final String[] groups = {"환영합니다", "예배와 말씀", "양육과 훈련", "게시판"};
-	private static final int[] groups_ic = {R.mipmap.ic_menu_welcome, R.mipmap.ic_menu_worship, R.mipmap.ic_menu_training, R.mipmap.ic_menu_board};
+	private static final int[] groups_ic = {R.drawable.ic_menu_welcome, R.drawable.ic_menu_worship, R.drawable.ic_menu_training, R.drawable.ic_menu_board};
 	//list position 1 ~ 5
 	private static final String[] introduceMenus = {"교회소개", "교회연혁", "찾아오는 길", "예배시간안내", "섬김의 동역자"};
 	//list position 7 ~ 9
@@ -88,6 +91,10 @@ public class MenuListFragment extends ListFragment {
 				break;
 			case MenuItem.MENU_CATEGORY_BOARD:
 				if (position == BoardFragment.BOARD_TYPE_THANKS_SHARING) {
+					Answers.getInstance().logContentView(new ContentViewEvent()
+							.putContentName("게시판")
+							.putContentType("목록 조회")
+							.putContentId("감사나눔"));
 					newFragment = new BoardFragment();
 				} else {
 					newFragment = new BoardGalleryFragment();

@@ -18,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -99,6 +101,18 @@ public class BoardGalleryFragment extends Fragment {
         hasMorePage = true;
 
         mBoardType = (getArguments() != null) ? getArguments().getInt(MenuListFragment.SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
+
+        if (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) {
+            Answers.getInstance().logContentView(new ContentViewEvent()
+                    .putContentName("게시판")
+                    .putContentType("사진 조회")
+                    .putContentId("교회앨범"));
+        } else {
+            Answers.getInstance().logContentView(new ContentViewEvent()
+                    .putContentName("게시판")
+                    .putContentType("사진 조회")
+                    .putContentId("새신자앨범"));
+        }
 
         mItemList = new ArrayList<>();
         mAdapter = new BoardGridAdapter(mItemList);

@@ -1,9 +1,5 @@
 [
     {
-        "merged": "F:\\AndroidStudio_Workspace\\MJChurch\\SlidingMenu\\build\\intermediates\\bundles\\debug\\res\\layout\\slidingmenumain.xml",
-        "source": "F:\\AndroidStudio_Workspace\\MJChurch\\SlidingMenu\\res\\layout\\slidingmenumain.xml"
-    },
-    {
         "merged": "F:\\AndroidStudio_Workspace\\MJChurch\\SlidingMenu\\build\\intermediates\\res\\merged\\debug\\layout\\slidingmenumain.xml",
         "source": "F:\\AndroidStudio_Workspace\\MJChurch\\SlidingMenu\\res\\layout\\slidingmenumain.xml"
     }
