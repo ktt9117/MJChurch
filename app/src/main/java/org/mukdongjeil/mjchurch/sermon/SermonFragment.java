@@ -89,6 +89,7 @@ public class SermonFragment extends ListFragment {
         View v = inflater.inflate(R.layout.fragment_worship, null);
         mPlayerController = new ListPlayerController(v);
         Intent service = new Intent(getActivity(), MediaService.class);
+        getActivity().startService(service);
         getActivity().bindService(service, mServiceConnection, Context.BIND_AUTO_CREATE);
         return v;
     }

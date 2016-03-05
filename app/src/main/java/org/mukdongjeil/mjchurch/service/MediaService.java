@@ -94,6 +94,7 @@ public class MediaService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Logger.e(TAG, "onDestroy called");
         stopPlayer();
     }
 
@@ -139,6 +140,7 @@ public class MediaService extends Service {
     }
 
     public void stopPlayer() {
+        Logger.e(TAG, "stopPlayer called");
         stopForeground(true);
         if (mPlayer != null) {
             if (mPlayer.isPlaying()) {
