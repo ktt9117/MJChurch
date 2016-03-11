@@ -104,6 +104,9 @@ public class SermonFragment extends ListFragment {
                 case 9:
                     mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
                     break;
+                case 10:
+                    mWorshipType = Const.WORSHIP_TYPE_FRIDAY;
+                    break;
                 case 7:
                 default:
                     mWorshipType = Const.WORSHIP_TYPE_SUNDAY_MORNING;

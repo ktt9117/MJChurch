@@ -33,10 +33,12 @@ public class Const {
     public static final int WORSHIP_TYPE_SUNDAY_MORNING = 0;
     public static final int WORSHIP_TYPE_SUNDAY_AFTERNOON = 1;
     public static final int WORSHIP_TYPE_WEDNESDAY = 2;
+    public static final int WORSHIP_TYPE_FRIDAY = 3;
 
     private static final int SUNDAY_MORNING_WORSHIP_ID      = 10004043;
     private static final int SUNDAY_AFTERNOON_WORSHIP_ID    = 10004044;
     private static final int WEDNESDAY_WORSHIP_ID           = 10004487;
+    private static final int FRIDAY_WORSHIP_ID              = 10006470;
 
     private static final String WORSHIP_LIST_URL        = BASE_URL + "/m/board/index.mo?menuId=";
     private static final String WORSHIP_LIST_EXT_URL    = "&topMenuId=2&menuType=1&newMenuAt=true&tPage=";
@@ -68,6 +70,9 @@ public class Const {
             case WORSHIP_TYPE_SUNDAY_AFTERNOON:
                 return WORSHIP_LIST_URL + SUNDAY_AFTERNOON_WORSHIP_ID + WORSHIP_LIST_EXT_URL + pageNo;
 
+            case WORSHIP_TYPE_FRIDAY:
+                return WORSHIP_LIST_URL + FRIDAY_WORSHIP_ID + WORSHIP_LIST_EXT_URL + pageNo;
+
             case WORSHIP_TYPE_SUNDAY_MORNING:
             default:
                 return WORSHIP_LIST_URL + SUNDAY_MORNING_WORSHIP_ID + WORSHIP_LIST_EXT_URL + pageNo;
@@ -81,6 +86,9 @@ public class Const {
 
             case WORSHIP_TYPE_SUNDAY_AFTERNOON:
                 return WORSHIP_CONTENT_URL + SUNDAY_AFTERNOON_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
+
+            case WORSHIP_TYPE_FRIDAY:
+                return WORSHIP_CONTENT_URL + FRIDAY_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
 
             case WORSHIP_TYPE_SUNDAY_MORNING:
             default:
