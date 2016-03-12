@@ -27,11 +27,20 @@ public class RequestSermonsTask extends RequestBaseTask {
     private static final String TAG = RequestSermonsTask.class.getSimpleName();
 
     private OnResultListener listener;
+    private OnResultNoneListener noneListener;
     private int sermonType;
     private int pageNo;
 
     public RequestSermonsTask(int sermonType, int pageNo, OnResultListener listener) {
         this.listener = listener;
+        this.sermonType = sermonType;
+        this.pageNo = pageNo;
+        execute(Const.getWorshipListUrl(sermonType, pageNo));
+    }
+
+    public RequestSermonsTask(int sermonType, int pageNo, OnResultListener listener, OnResultNoneListener noneListener) {
+        this.listener = listener;
+        this.noneListener = noneListener;
         this.sermonType = sermonType;
         this.pageNo = pageNo;
         execute(Const.getWorshipListUrl(sermonType, pageNo));
@@ -86,8 +95,12 @@ public class RequestSermonsTask extends RequestBaseTask {
                                 new RequestSermonTask(serverItem).execute(Const.getWorshipContentUrl(sermonType, pageNo, serverItem.bbsNo));
                             }
                         }
+                    } else {
+                        //서버에 설교가 없는 경우
+                        if (noneListener != null) {
+                            noneListener.onResultNone();
+                        }
                     }
-
                 } else {
                     Logger.e(TAG, "contentElement is null");
                     Logger.i(TAG, "source : " + source.toString());

@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +53,7 @@ public class SermonFragment extends ListFragment {
     private int mPageNo;
     private int mWorshipType;
     private ListPlayerController mPlayerController;
+    private TextView listText;
     private SermonListAdapter mAdapter;
     private MediaService mService;
     private BroadcastReceiver mBroadcast;
@@ -87,6 +89,7 @@ public class SermonFragment extends ListFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mPageNo = 1;
         View v = inflater.inflate(R.layout.fragment_worship, null);
+        listText = (TextView) v.findViewById(R.id.list_text);
         mPlayerController = new ListPlayerController(v);
         Intent service = new Intent(getActivity(), MediaService.class);
         getActivity().startService(service);
@@ -121,6 +124,10 @@ public class SermonFragment extends ListFragment {
                     mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
                     break;
                 case 10:
+                    Answers.getInstance().logContentView(new ContentViewEvent()
+                            .putContentName("설교 목록 조회")
+                            .putContentType("목록 조회")
+                            .putContentId("금요 기도회 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_FRIDAY;
                     break;
                 case 7:
@@ -154,6 +161,16 @@ public class SermonFragment extends ListFragment {
                     } else {
                         Logger.e(TAG, "obj is null or is not SermonItem at onResult");
                     }
+                }
+            }, new RequestBaseTask.OnResultNoneListener() {
+                @Override
+                public void onResultNone() {
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).hideLoadingDialog();
+                    }
+                    mPlayerController.playerLayout.setVisibility(View.GONE);
+                    listText.setText(R.string.sermon_empty_message);
+                    listText.bringToFront();
                 }
             });
 //        } else {
@@ -218,6 +235,7 @@ public class SermonFragment extends ListFragment {
 
     private class ListPlayerController {
         private final String TAG = ListPlayerController.class.getSimpleName();
+        public RelativeLayout playerLayout;
         public ImageView btnPlayOrPause;
         public ImageView btnDownload;
         private TextView txtTitle;
@@ -227,6 +245,7 @@ public class SermonFragment extends ListFragment {
         private boolean equalsServiceItem;
 
         public ListPlayerController(View containerView) {
+            playerLayout = (RelativeLayout) containerView.findViewById(R.id.player_layout);
             btnDownload = (ImageView) containerView.findViewById(R.id.btn_download);
             btnPlayOrPause = (ImageView) containerView.findViewById(R.id.btn_play_or_pause);
             txtTitle = (TextView) containerView.findViewById(R.id.title);

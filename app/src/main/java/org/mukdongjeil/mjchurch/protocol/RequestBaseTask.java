@@ -20,6 +20,10 @@ public abstract class RequestBaseTask extends AsyncTask<String, Void, Source> {
         void onResult(Object obj, int position);
     }
 
+    public interface OnResultNoneListener {
+        void onResultNone();
+    }
+
     @Override
     protected Source doInBackground(String... params) {
         if (params == null || params[0] == null) {

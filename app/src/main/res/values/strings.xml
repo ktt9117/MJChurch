@@ -4,4 +4,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <string name="loading_sermon_data">설교를 불러오는 중입니다.</string>
+    <string name="sermon_empty_message">설교 목록이 없습니다.</string>
+
 </resources>
