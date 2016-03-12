@@ -26,16 +26,16 @@ public class MenuListFragment extends ListFragment {
 
 	private static final String TAG = MenuListFragment.class.getSimpleName();
 
-	//list position 0, 6, 10, 15
+	//list position 0, 6, 11, 16
 	private static final String[] groups = {"환영합니다", "예배와 말씀", "양육과 훈련", "게시판"};
 	private static final int[] groups_ic = {R.drawable.ic_menu_welcome, R.drawable.ic_menu_worship, R.drawable.ic_menu_training, R.drawable.ic_menu_board};
 	//list position 1 ~ 5
 	private static final String[] introduceMenus = {"교회소개", "교회연혁", "찾아오는 길", "예배시간안내", "섬김의 동역자"};
-	//list position 7 ~ 9
-	private static final String[] worshipMenus = {"주일 오전 예배", "주일 오후 예배", "수요예배"};
-	//list position 11 ~ 15
+	//list position 7 ~ 10
+	private static final String[] worshipMenus = {"주일 오전 예배", "주일 오후 예배", "수요예배", "금요기도회"};
+	//list position 12 ~ 15
 	private static final String[] trainingMenus = {"성경 공부", "양육반", "마더와이즈", "1:1 제자훈련"};
-	//list position 16 ~ 18
+	//list position 17 ~ 19
 	private static final String[] boardMenus = {"감사 나눔", "교회앨범", "새신자앨범"};
 
 	private MenuListAdapter mAdapter;

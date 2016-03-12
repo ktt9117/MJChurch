@@ -120,6 +120,9 @@ public class SermonFragment extends ListFragment {
                             .putContentId("수요 예배 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
                     break;
+                case 10:
+                    mWorshipType = Const.WORSHIP_TYPE_FRIDAY;
+                    break;
                 case 7:
                 default:
                     Answers.getInstance().logContentView(new ContentViewEvent()
