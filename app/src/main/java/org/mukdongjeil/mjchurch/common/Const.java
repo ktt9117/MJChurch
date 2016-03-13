@@ -53,7 +53,6 @@ public class Const {
     public static final String TRAINING_REARING_CLASS_URL = BASE_URL + "/m/html/index.mo?menuId=10004997&topMenuId=3&menuType=27&newMenuAt=true";
     public static final String TRAINING_MOTHER_WISE_URL = BASE_URL + "/m/html/index.mo?menuId=10004999&topMenuId=3&menuType=27&newMenuAt=true";
     public static final String TRAINING_DISCIPLE_URL = BASE_URL + "/m/html/index.mo?menuId=10005002&topMenuId=3&menuType=27&newMenuAt=true";
-    public static final String TRAINING_BOARD_URL = BASE_URL + "/m/html/index.mo?menuId=10005628&topMenuId=3&menuType=27&newMenuAt=true";
 
     //board pages url
     private static final String BOARD_THANKS_SHARE_URL = BASE_URL + "/m/board/index.mo?menuId=10004076&topMenuId=6&menuType=1&newMenuAt=true&pageNow=";

@@ -32,9 +32,9 @@ import java.util.List;
 public class BoardFragment extends ListFragment {
     private static final String TAG = BoardFragment.class.getSimpleName();
 
-    public static final int BOARD_TYPE_THANKS_SHARING = 16;
-    public static final int BOARD_TYPE_GALLERY = 17;
-    public static final int BOARD_TYPE_NEW_PERSON = 18;
+    public static final int BOARD_TYPE_THANKS_SHARING = 17;
+    public static final int BOARD_TYPE_GALLERY = 18;
+    public static final int BOARD_TYPE_NEW_PERSON = 19;
 
     private int mPageNo;
     private List<BoardItem> mItemList;

@@ -42,20 +42,16 @@ public class TrainingFragment extends ImageBaseFragment{
             Logger.i(TAG, "selected sliding menu index : " + selectedMenuIndex);
 
             switch(selectedMenuIndex) {
-                case 12:
+                case 13:
                     requestUrl = Const.TRAINING_REARING_CLASS_URL;
                     break;
-                case 13:
+                case 14:
                     requestUrl = Const.TRAINING_MOTHER_WISE_URL;
                     break;
-                case 14:
+                case 15:
                     requestUrl = Const.TRAINING_DISCIPLE_URL;
                     break;
-                case 15:
-                    requestUrl = Const.TRAINING_BOARD_URL;
-                    needListRequest = true;
-                    break;
-                case 11:
+                case 12:
                 default:
                     requestUrl = Const.TRAINING_BIBLE_STUDY_URL;
                     break;
