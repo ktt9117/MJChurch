@@ -2,6 +2,8 @@ package org.mukdongjeil.mjchurch.board;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.Fragment;
@@ -18,8 +20,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -53,6 +53,7 @@ public class BoardGalleryFragment extends Fragment {
     private List<GalleryItem> mItemList;
     private boolean hasMorePage;
     private boolean isDetached = false;
+    private int mColumnWidth;
 
     private ExHandler<BoardGalleryFragment> mHandler = new ExHandler<BoardGalleryFragment>(this) {
         @Override
@@ -91,6 +92,11 @@ public class BoardGalleryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_grid_board, null);
         mGridView = (GridView) v.findViewById(R.id.gridview);
+
+        int displayWidth = DisplayUtil.getDisplaySizeWidth(getActivity());
+        mColumnWidth = displayWidth / 3;
+        mGridView.setColumnWidth(mColumnWidth);
+        mGridView.setStretchMode(GridView.STRETCH_COLUMN_WIDTH);
         return v;
     }
 
@@ -102,6 +108,7 @@ public class BoardGalleryFragment extends Fragment {
 
         mBoardType = (getArguments() != null) ? getArguments().getInt(MenuListFragment.SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
 
+        /*
         if (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) {
             Answers.getInstance().logContentView(new ContentViewEvent()
                     .putContentName("게시판")
@@ -113,6 +120,7 @@ public class BoardGalleryFragment extends Fragment {
                     .putContentType("사진 조회")
                     .putContentId("새신자앨범"));
         }
+        */
 
         mItemList = new ArrayList<>();
         mAdapter = new BoardGridAdapter(mItemList);
@@ -235,24 +243,24 @@ public class BoardGalleryFragment extends Fragment {
     }
 
     private View makeGridRowView(GridViewHolder holder, Context context) {
-        int displayWidth = DisplayUtil.getDisplaySizeWidth(getActivity());
-        int imageViewWidth = displayWidth / 3;
 
         RelativeLayout layout = new RelativeLayout(context);
         layout.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.WRAP_CONTENT, AbsListView.LayoutParams.WRAP_CONTENT));
 
         ImageView imageView = new ImageView(context);
-        imageView.setId((int) System.currentTimeMillis());
-        imageView.setLayoutParams(new RelativeLayout.LayoutParams(imageViewWidth, imageViewWidth));
+        imageView.setId(R.id.grid_img);
+        imageView.setLayoutParams(new RelativeLayout.LayoutParams(mColumnWidth, mColumnWidth));
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         layout.addView(imageView);
         holder.imageView = imageView;
 
         TextView textView = new TextView(context);
-        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(imageViewWidth, (imageViewWidth / 3));
+        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(mColumnWidth, AbsListView.LayoutParams.WRAP_CONTENT);
         tvParams.addRule(RelativeLayout.BELOW, imageView.getId());
         textView.setLayoutParams(tvParams);
         textView.setSingleLine(true);
+        textView.setTextColor(Color.WHITE);
+        textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
         textView.setGravity(Gravity.CENTER);
         textView.setEllipsize(TextUtils.TruncateAt.END);
         textView.setPadding(5, 5, 5, 5);

@@ -13,11 +13,9 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -186,6 +184,12 @@ public class BoardGalleryDetailFragment extends Fragment {
                         holder.btnShare.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+
+//                                Answers.getInstance().logContentView(new ContentViewEvent()
+//                                        .putContentName("앨범")
+//                                        .putContentType("이벤트")
+//                                        .putContentId("사진 공유하기"));
+
                                 Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
                                 if (bitmap == null) {
                                     Logger.e(TAG, "Warning! bitmap is null");
@@ -214,6 +218,12 @@ public class BoardGalleryDetailFragment extends Fragment {
                         holder.btnDownload.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+
+//                                Answers.getInstance().logContentView(new ContentViewEvent()
+//                                        .putContentName("앨범")
+//                                        .putContentType("이벤트")
+//                                        .putContentId("사진 내려받기"));
+
                                 Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
                                 if (bitmap == null) {
                                     Logger.e(TAG, "Warning! bitmap is null");

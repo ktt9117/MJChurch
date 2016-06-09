@@ -1,32 +1,23 @@
 package org.mukdongjeil.mjchurch;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ShareCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
-import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
-import org.mukdongjeil.mjchurch.service.RegistrationIntentService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends SlidingFragmentActivity {
 
@@ -36,14 +27,18 @@ public class MainActivity extends SlidingFragmentActivity {
     private boolean isTouchModeFullScreen = true;
     private boolean mNeedShowCloseMenuItem = false;
 
+    private FirebaseAnalytics mFirebaseAnalytics;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         startActivity(new Intent(this, IntroActivity.class));
 
-        // get the GCM Token
-        getInstanceIdToken();
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
+        // get the GCM Token > no needs to GCM Token getting bcuz using change for FCM
+        //getInstanceIdToken();
 
         // init SlidingMenu
         initializeSlidingMenu();
@@ -248,6 +243,7 @@ public class MainActivity extends SlidingFragmentActivity {
     /**
      * Google Play Service를 사용할 수 있는 환경이지를 체크한다.
      */
+    /*
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private boolean checkPlayServices() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -263,10 +259,12 @@ public class MainActivity extends SlidingFragmentActivity {
         }
         return true;
     }
+    */
 
     /**
      * Instance ID를 이용하여 디바이스 토큰을 가져오는 RegistrationIntentService를 실행한다.
      */
+    /*
     public void getInstanceIdToken() {
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
@@ -274,4 +272,5 @@ public class MainActivity extends SlidingFragmentActivity {
             startService(intent);
         }
     }
+    */
 }
