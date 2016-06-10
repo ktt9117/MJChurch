@@ -1,7 +1,6 @@
 package org.mukdongjeil.mjchurch.board;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -20,9 +19,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.bumptech.glide.Glide;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
@@ -202,31 +199,13 @@ public class BoardGalleryFragment extends Fragment {
                     if (!item.photoUrl.contains("http")) {
                         item.photoUrl = Const.BASE_URL + item.photoUrl;
                     }
-                    ImageLoader.getInstance().loadImage(item.photoUrl, new ImageLoadingListener() {
-                        @Override
-                        public void onLoadingStarted(String s, View view) {}
 
-                        @Override
-                        public void onLoadingFailed(String s, View view, FailReason failReason) {
-                            if (holder != null && holder.imageView != null) {
-                                holder.imageView.setImageResource(R.mipmap.ic_launcher);
-                            }
-                        }
+                    Glide.with(getActivity())
+                            .load(item.photoUrl)
+                            .placeholder(Const.DEFAULT_IMG_RESOURCE)
+                            .crossFade()
+                            .into(holder.imageView);
 
-                        @Override
-                        public void onLoadingComplete(String s, View view, Bitmap bitmap) {
-                            //Logger.e(TAG, "onLoadingComplete s : " + s + ", bitmap : " + bitmap);
-                            if (holder != null && holder.imageView != null) {
-                                holder.imageView.setImageBitmap(bitmap);
-                            }
-                        }
-                        @Override
-                        public void onLoadingCancelled(String s, View view) {
-                            if (holder != null && holder.imageView != null) {
-                                holder.imageView.setImageResource(R.mipmap.ic_launcher);
-                            }
-                        }
-                    });
                 }
                 if (holder.textView != null) {
                     holder.textView.setText(item.title);
