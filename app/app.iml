@@ -131,6 +131,7 @@
     <orderEntry type="library" exported="" name="firebase-crash-9.0.2" level="project" />
     <orderEntry type="library" exported="" name="android-async-http-1.4.8" level="project" />
     <orderEntry type="library" exported="" name="support-v4-23.0.1" level="project" />
+    <orderEntry type="library" exported="" name="glide-3.7.0" level="project" />
     <orderEntry type="library" exported="" name="firebase-common-9.0.2" level="project" />
     <orderEntry type="library" exported="" name="firebase-iid-9.0.2" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-23.0.1" level="project" />

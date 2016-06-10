@@ -31,6 +31,7 @@ public class MainApplication extends Application {
     }
 
     private void initializeImageLoader() {
+
         DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
                 .cacheOnDisk(true)
                 .cacheInMemory(true)
@@ -49,5 +50,6 @@ public class MainApplication extends Application {
                 //.writeDebugLogs()
                 .build();
         ImageLoader.getInstance().init(config);
+
     }
 }
