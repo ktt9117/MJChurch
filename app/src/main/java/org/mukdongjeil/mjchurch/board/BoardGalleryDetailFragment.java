@@ -13,11 +13,9 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,10 +25,11 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import net.htmlparser.jericho.Element;
 
@@ -62,6 +61,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     private String mContentNo;
     private ExViewPager mPager;
     private CirclePageIndicator mPagerIndicator;
+    private ProgressBar mProgressBar;
     //private Button shareItemButton;
 
     public static BoardGalleryDetailFragment newInstance(int boardType, String contentNo) {
@@ -93,16 +93,19 @@ public class BoardGalleryDetailFragment extends Fragment {
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
         mPager.addOnPageChangeListener(mOnPageChangeListener);
         mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
+        mProgressBar = (ProgressBar) v.findViewById(R.id.detail_page_progress);
 
         String requestUrl = (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
         new RequestImageListTask(requestUrl, new RequestBaseTask.OnResultListener() {
             @Override
             public void onResult(Object obj, int position) {
+                hideProgressBar();
                 if (obj != null && obj instanceof List && ((List) obj).size() > 0) {
                     DetailPagerAdapter adapter = new DetailPagerAdapter(getActivity(), (List<Element>) obj);
                     mPager.setAdapter(adapter);
                     mPagerIndicator.setViewPager(mPager);
                 } else {
+
                     Toast.makeText(getActivity(), "사진을 불러올 수 없습니다.", Toast.LENGTH_LONG).show();
                     getActivity().onBackPressed();
                 }
@@ -111,6 +114,12 @@ public class BoardGalleryDetailFragment extends Fragment {
 
         ((MainActivity) getActivity()).showCloseMenuItem();
         return v;
+    }
+
+    private void hideProgressBar() {
+        if (mProgressBar.getVisibility() == View.VISIBLE) {
+            mProgressBar.setVisibility(View.GONE);
+        }
     }
 
     private ViewPager.OnPageChangeListener mOnPageChangeListener = new ViewPager.OnPageChangeListener() {
@@ -154,114 +163,112 @@ public class BoardGalleryDetailFragment extends Fragment {
                 imgLink = Const.BASE_URL + imgLink;
             }
 
-            ImageLoader.getInstance().loadImage(imgLink, new ImageLoadingListener() {
-                @Override
-                public void onLoadingStarted(String s, View view) {
-                    if (holder != null) {
-                        holder.progress.setVisibility(View.VISIBLE);
-                        holder.txtView.setVisibility(View.VISIBLE);
-                        holder.funcLayout.setVisibility(View.INVISIBLE);
-                    }
-                }
+            holder.progress.setVisibility(View.VISIBLE);
+            holder.txtView.setVisibility(View.VISIBLE);
 
-                @Override
-                public void onLoadingFailed(String s, View view, FailReason failReason) {
-                    if (holder != null) {
-                        holder.progress.setVisibility(View.INVISIBLE);
-                        holder.txtView.setVisibility(View.INVISIBLE);
-                        holder.imgPhoto.setImageResource(Const.DEFAULT_IMG_RESOURCE);
-                        holder.funcLayout.setVisibility(View.INVISIBLE);
-                    }
-                }
+            Glide.with(getActivity())
+                    .load(imgLink)
+                    .placeholder(Const.DEFAULT_IMG_RESOURCE)
+                    .crossFade()
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            holder.progress.setVisibility(View.INVISIBLE);
+                            holder.txtView.setVisibility(View.INVISIBLE);
+                            holder.funcLayout.setVisibility(View.INVISIBLE);
+                            return false;
+                        }
 
-                @Override
-                public void onLoadingComplete(String s, View view, Bitmap bitmap) {
-                    if (holder != null) {
-                        holder.progress.setVisibility(View.INVISIBLE);
-                        holder.txtView.setVisibility(View.INVISIBLE);
-                        holder.funcLayout.setVisibility(View.VISIBLE);
-                        holder.imgPhoto.setImageBitmap(bitmap);
-                        new PhotoViewAttacher(holder.imgPhoto);
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            holder.progress.setVisibility(View.INVISIBLE);
+                            holder.txtView.setVisibility(View.INVISIBLE);
+                            holder.funcLayout.setVisibility(View.VISIBLE);
+                            new PhotoViewAttacher(holder.imgPhoto);
 
-                        holder.btnShare.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
-                                if (bitmap == null) {
-                                    Logger.e(TAG, "Warning! bitmap is null");
-                                    return;
-                                }
-                                File cacheFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/tmp_share_image.jpg");
-                                boolean isFileSaved = false;
-                                try {
-                                    cacheFile.createNewFile();
-                                    FileOutputStream fosStream = new FileOutputStream(cacheFile);
-                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fosStream);
-                                    fosStream.close();
-                                    isFileSaved = true;
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                            holder.btnShare.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
 
-                                if (isFileSaved) {
-                                    Intent share = new Intent(Intent.ACTION_SEND);
-                                    share.setType("image/*");
-                                    share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(cacheFile));
-                                    startActivity(Intent.createChooser(share, "사진 공유"));
-                                }
-                            }
-                        });
-                        holder.btnDownload.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
-                                if (bitmap == null) {
-                                    Logger.e(TAG, "Warning! bitmap is null");
-                                    return;
-                                }
-                                File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "/묵동제일앨범");
-                                if (!path.exists()) {
-                                    path.mkdir();
-                                }
+//                                Answers.getInstance().logContentView(new ContentViewEvent()
+//                                        .putContentName("앨범")
+//                                        .putContentType("이벤트")
+//                                        .putContentId("사진 공유하기"));
 
-                                String fileName = "/img_" + new SimpleDateFormat("yyyyMMdd-hhmmss").format(new Date());
-                                Logger.i(TAG, "fileSave name : " + fileName);
-                                File cacheFile = new File(path.toString() + fileName + ".jpg");
-                                boolean isFileSaved = false;
-                                try {
-                                    cacheFile.createNewFile();
-                                    FileOutputStream fosStream = new FileOutputStream(cacheFile);
-                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fosStream);
-                                    fosStream.close();
-                                    isFileSaved = true;
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                                    Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
+                                    if (bitmap == null) {
+                                        Logger.e(TAG, "Warning! bitmap is null");
+                                        return;
+                                    }
+                                    File cacheFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/tmp_share_image.jpg");
+                                    boolean isFileSaved = false;
+                                    try {
+                                        cacheFile.createNewFile();
+                                        FileOutputStream fosStream = new FileOutputStream(cacheFile);
+                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fosStream);
+                                        fosStream.close();
+                                        isFileSaved = true;
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
 
-                                if (isFileSaved) {
-                                    MediaScannerConnection.scanFile(getContext(), new String[] {cacheFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
-                                        @Override
-                                        public void onScanCompleted(String s, Uri uri) {
-                                            Logger.i(TAG, "onScanCompleted s : " + s + ", uri : " + uri.toString());
-                                        }
-                                    });
-                                    Toast.makeText(getContext(), "사진 저장됨", Toast.LENGTH_SHORT).show();
+                                    if (isFileSaved) {
+                                        Intent share = new Intent(Intent.ACTION_SEND);
+                                        share.setType("image/*");
+                                        share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(cacheFile));
+                                        startActivity(Intent.createChooser(share, "사진 공유"));
+                                    }
                                 }
-                            }
-                        });
-                    }
-                }
+                            });
+                            holder.btnDownload.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
 
-                @Override
-                public void onLoadingCancelled(String s, View view) {
-                    if (holder != null) {
-                        holder.progress.setVisibility(View.INVISIBLE);
-                        holder.txtView.setVisibility(View.INVISIBLE);
-                        holder.funcLayout.setVisibility(View.INVISIBLE);
-                        holder.imgPhoto.setImageResource(Const.DEFAULT_IMG_RESOURCE);
-                    }
-                }
-            });
+//                                Answers.getInstance().logContentView(new ContentViewEvent()
+//                                        .putContentName("앨범")
+//                                        .putContentType("이벤트")
+//                                        .putContentId("사진 내려받기"));
+
+                                    Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
+                                    if (bitmap == null) {
+                                        Logger.e(TAG, "Warning! bitmap is null");
+                                        return;
+                                    }
+                                    File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "/묵동제일앨범");
+                                    if (!path.exists()) {
+                                        path.mkdir();
+                                    }
+
+                                    String fileName = "/img_" + new SimpleDateFormat("yyyyMMdd-hhmmss").format(new Date());
+                                    Logger.i(TAG, "fileSave name : " + fileName);
+                                    File cacheFile = new File(path.toString() + fileName + ".jpg");
+                                    boolean isFileSaved = false;
+                                    try {
+                                        cacheFile.createNewFile();
+                                        FileOutputStream fosStream = new FileOutputStream(cacheFile);
+                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fosStream);
+                                        fosStream.close();
+                                        isFileSaved = true;
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    if (isFileSaved) {
+                                        MediaScannerConnection.scanFile(getContext(), new String[] {cacheFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+                                            @Override
+                                            public void onScanCompleted(String s, Uri uri) {
+                                                Logger.i(TAG, "onScanCompleted s : " + s + ", uri : " + uri.toString());
+                                            }
+                                        });
+                                        Toast.makeText(getContext(), "사진 저장됨", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                            return false;
+                        }
+                    })
+                    .into(holder.imgPhoto);
+
 
             View v = holder.layout;
             container.addView(v, 0);
@@ -330,11 +337,10 @@ public class BoardGalleryDetailFragment extends Fragment {
             imgPhoto = new ImageView(context);
             imgPhoto.setLayoutParams(imgPhotoParams);
             imgPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            imgPhoto.setTag("ChildImgView");
 
             RelativeLayout.LayoutParams progressParams =
                     new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-            progress = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
+            progress = new ProgressBar(context, null, android.R.attr.progressBarStyleSmall);
             progressParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
             progress.setId(R.id.viewpager_progress);
             progress.setLayoutParams(progressParams);

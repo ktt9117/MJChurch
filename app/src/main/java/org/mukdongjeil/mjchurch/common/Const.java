@@ -15,7 +15,7 @@ public class Const {
 
     public static final File DIR_PUB_DOWNLOAD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
-    public static final int DEFAULT_IMG_RESOURCE = R.mipmap.ic_launcher;
+    public static final int DEFAULT_IMG_RESOURCE = R.drawable.ic_progressring;
 
     public static final int THANKS_SHARE_LIST_COUNT_PER_PAGE = 20;
     public static final int GALLERY_LIST_COUNT_PER_PAGE = 9;

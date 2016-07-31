@@ -8,13 +8,15 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-    <!-- [START gcm_permission] -->
+
+    <!-- [START gcm_permission]
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <permission android:name="org.mukdongjeil.mjchurch.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
     <uses-permission android:name="org.mukdongjeil.mjchurch.permission.C2D_MESSAGE" />
+    -->
     <!-- [END gcm_permission] -->
 
     <application android:name=".MainApplication"
@@ -28,7 +30,7 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -47,49 +49,14 @@
             </intent-filter>
         </receiver>
 
-        <!-- [START gcm_receiver] -->
-        <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver"
-            android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="org.mukdongjeil.mjchurch" />
-            </intent-filter>
-        </receiver>
-        <!-- [END gcm_receiver] -->
-
-        <!-- [START gcm_listener_service] -->
+        <!-- [START FCM] -->
         <service
-            android:name="org.mukdongjeil.mjchurch.service.GCMListenerService"
-            android:exported="false">
+            android:name=".service.MyFirebaseMessagingService">
             <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <!-- [END gcm_listener_service] -->
-
-        <!-- [START instanceId_listener_service] -->
-        <service
-            android:name="org.mukdongjeil.mjchurch.service.GCMInstanceIDListenerService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID" />
-            </intent-filter>
-        </service>
-        <!-- [END instanceId_listener_service] -->
-
-        <!-- [START gcm_registration_service] -->
-        <service
-            android:name="org.mukdongjeil.mjchurch.service.RegistrationIntentService"
-            android:exported="false">
-        </service>
-        <!-- [END gcm_registration_service] -->
-
-        <!-- for Crashlytics -->
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="1add79cff542a3af31bee447c9f0f99837fc47f8" />
+        <!-- [END FCM] -->
 
     </application>
 

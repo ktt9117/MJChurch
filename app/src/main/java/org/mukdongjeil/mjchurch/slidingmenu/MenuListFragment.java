@@ -8,9 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.board.BoardFragment;
@@ -91,10 +88,10 @@ public class MenuListFragment extends ListFragment {
 				break;
 			case MenuItem.MENU_CATEGORY_BOARD:
 				if (position == BoardFragment.BOARD_TYPE_THANKS_SHARING) {
-					Answers.getInstance().logContentView(new ContentViewEvent()
-							.putContentName("게시판")
-							.putContentType("목록 조회")
-							.putContentId("감사나눔"));
+//					Answers.getInstance().logContentView(new ContentViewEvent()
+//							.putContentName("게시판")
+//							.putContentType("목록 조회")
+//							.putContentId("감사나눔"));
 					newFragment = new BoardFragment();
 				} else {
 					newFragment = new BoardGalleryFragment();

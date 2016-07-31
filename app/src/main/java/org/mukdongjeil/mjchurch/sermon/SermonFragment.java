@@ -19,9 +19,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.ContentViewEvent;
-
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -30,8 +27,6 @@ import org.mukdongjeil.mjchurch.common.util.DownloadUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.NetworkUtil;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
-import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
-import org.mukdongjeil.mjchurch.database.DBManager;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestSermonsTask;
 import org.mukdongjeil.mjchurch.service.MediaService;
@@ -40,7 +35,6 @@ import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
@@ -110,32 +104,32 @@ public class SermonFragment extends ListFragment {
             int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
             switch (selectedMenuIndex) {
                 case 8:
-                    Answers.getInstance().logContentView(new ContentViewEvent()
-                            .putContentName("설교 목록 조회")
-                            .putContentType("목록 조회")
-                            .putContentId("주일 오후 설교"));
+//                    Answers.getInstance().logContentView(new ContentViewEvent()
+//                            .putContentName("설교 목록 조회")
+//                            .putContentType("목록 조회")
+//                            .putContentId("주일 오후 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_SUNDAY_AFTERNOON;
                     break;
                 case 9:
-                    Answers.getInstance().logContentView(new ContentViewEvent()
-                            .putContentName("설교 목록 조회")
-                            .putContentType("목록 조회")
-                            .putContentId("수요 예배 설교"));
+//                    Answers.getInstance().logContentView(new ContentViewEvent()
+//                            .putContentName("설교 목록 조회")
+//                            .putContentType("목록 조회")
+//                            .putContentId("수요 예배 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
                     break;
                 case 10:
-                    Answers.getInstance().logContentView(new ContentViewEvent()
-                            .putContentName("설교 목록 조회")
-                            .putContentType("목록 조회")
-                            .putContentId("금요 기도회 설교"));
+//                    Answers.getInstance().logContentView(new ContentViewEvent()
+//                            .putContentName("설교 목록 조회")
+//                            .putContentType("목록 조회")
+//                            .putContentId("금요 기도회 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_FRIDAY;
                     break;
                 case 7:
                 default:
-                    Answers.getInstance().logContentView(new ContentViewEvent()
-                            .putContentName("설교 목록 조회")
-                            .putContentType("목록 조회")
-                            .putContentId("주일 오전 설교"));
+//                    Answers.getInstance().logContentView(new ContentViewEvent()
+//                            .putContentName("설교 목록 조회")
+//                            .putContentType("목록 조회")
+//                            .putContentId("주일 오전 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_SUNDAY_MORNING;
                     break;
             }

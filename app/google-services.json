@@ -1,21 +1,33 @@
 {
   "project_info": {
-    "project_id": "mjchurch-de25",
     "project_number": "537844475313",
-    "name": "MJChurch"
+    "firebase_url": "https://mjchurch-de25.firebaseio.com",
+    "project_id": "mjchurch-de25",
+    "storage_bucket": "mjchurch-de25.appspot.com"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:537844475313:android:88e52f1b9653ca42",
-        "client_id": "android:org.mukdongjeil.mjchurch",
-        "client_type": 1,
         "android_client_info": {
           "package_name": "org.mukdongjeil.mjchurch"
         }
       },
-      "oauth_client": [],
-      "api_key": [],
+      "oauth_client": [
+        {
+          "client_id": "537844475313-6u3esikkg2v3lf3flas32e05os0p8b5r.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "537844475313-11tl1kndciua16jskmvsgbel3naiac2t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYYw-M2x0bL_rZSR8CceS7vqxxerhO3nA"
+        }
+      ],
       "services": {
         "analytics_service": {
           "status": 2,
@@ -23,23 +35,15 @@
             "tracking_id": "UA-73642933-1"
           }
         },
-        "cloud_messaging_service": {
-          "status": 1,
-          "apns_config": []
-        },
         "appinvite_service": {
           "status": 1,
           "other_platform_oauth_client": []
         },
-        "google_signin_service": {
-          "status": 1
-        },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
   ],
-  "client_info": [],
-  "ARTIFACT_VERSION": "1"
+  "configuration_version": "1"
 }

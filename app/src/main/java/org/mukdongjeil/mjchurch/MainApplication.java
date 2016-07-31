@@ -2,7 +2,6 @@ package org.mukdongjeil.mjchurch;
 
 import android.app.Application;
 
-import com.crashlytics.android.Crashlytics;
 import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -10,7 +9,6 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
-import io.fabric.sdk.android.Fabric;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 
@@ -23,7 +21,7 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        Fabric.with(this, new Crashlytics());
+        //Fabric.with(this, new Crashlytics());
 
         SystemHelpers.init(getApplicationContext());
         PreferenceUtil.init(getApplicationContext());
@@ -33,6 +31,7 @@ public class MainApplication extends Application {
     }
 
     private void initializeImageLoader() {
+
         DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
                 .cacheOnDisk(true)
                 .cacheInMemory(true)
@@ -48,8 +47,9 @@ public class MainApplication extends Application {
                 .memoryCacheSize(2 * 1024 * 1024)
                 .diskCacheSize(50 * 1024 * 1024)
                 .diskCacheFileCount(100)
-                .writeDebugLogs()
+                //.writeDebugLogs()
                 .build();
         ImageLoader.getInstance().init(config);
+
     }
 }
