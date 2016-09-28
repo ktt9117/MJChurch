@@ -5,13 +5,10 @@ import android.text.TextUtils;
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
-import net.htmlparser.jericho.StartTagType;
-import net.htmlparser.jericho.TextExtractor;
 
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.database.DBManager;
 
@@ -54,7 +51,7 @@ public class RequestSermonsTask extends RequestBaseTask {
                 Element contentElement = source.getFirstElementByClass("contents bbs_list");
                 if (contentElement != null) {
                     //Logger.i(TAG, "contentElement : " + contentElement.toString());
-                    List<SermonItem> serverSermonList = new ArrayList<>();
+                    List<SermonItem> serverSermonList = new ArrayList<SermonItem>();
                     List<Element> linkList = contentElement.getAllElementsByClass("list_link");
                     for (Element link : linkList) {
                         String linkAttr = link.getAttributeValue("href");
@@ -62,9 +59,8 @@ public class RequestSermonsTask extends RequestBaseTask {
                         if (!TextUtils.isEmpty(linkAttr)) {
                             SermonItem item = new SermonItem();
                             item.contentUrl = linkAttr;
-                            String bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
                             //Logger.i(TAG, "bbsNo : " + bbsNo);
-                            item.bbsNo = bbsNo;
+                            item.bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
                             serverSermonList.add(item);
                         }
                     }

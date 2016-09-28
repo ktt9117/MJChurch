@@ -22,6 +22,7 @@ import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.database.DBManager;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestListTask;
+import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +51,10 @@ public class BoardFragment extends ListFragment {
             ((MainActivity) getActivity()).showLoadingDialog();
         }
 
+        getActivity().setTitle(MenuListFragment.BOARD_MENUS[0]);
+
         mLocalItemList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getThankShareList();
-        mItemList = new ArrayList<>();
+        mItemList = new ArrayList<BoardItem>();
         mAdapter = new BoardListAdapter(getActivity(), mItemList);
         setListAdapter(mAdapter);
 

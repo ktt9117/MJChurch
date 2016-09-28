@@ -105,6 +105,13 @@ public class BoardGalleryFragment extends Fragment {
 
         mBoardType = (getArguments() != null) ? getArguments().getInt(MenuListFragment.SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
 
+        String title;
+        if (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) {
+            title = MenuListFragment.BOARD_MENUS[1];
+        } else {
+            title = MenuListFragment.BOARD_MENUS[2];
+        }
+        getActivity().setTitle(title);
         /*
         if (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) {
             Answers.getInstance().logContentView(new ContentViewEvent()
@@ -119,7 +126,7 @@ public class BoardGalleryFragment extends Fragment {
         }
         */
 
-        mItemList = new ArrayList<>();
+        mItemList = new ArrayList<GalleryItem>();
         mAdapter = new BoardGridAdapter(mItemList);
         mGridView.setAdapter(mAdapter);
         mGridView.setOnItemClickListener(mOnGridItemClickListener);

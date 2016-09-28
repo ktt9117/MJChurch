@@ -132,42 +132,6 @@ public class MainActivity extends SlidingFragmentActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /*
-    private void showImageShareDialog() {
-        List<Intent> targetedShareIntents = new ArrayList<Intent>();
-        Intent share = new Intent(android.content.Intent.ACTION_SEND);
-        share.setType("image/jpeg");
-        List<ResolveInfo> resInfo = getPackageManager().queryIntentActivities(share, 0);
-        if ( !resInfo.isEmpty() ) {
-            for ( ResolveInfo info : resInfo ) {
-                Intent targetedShare;
-                Logger.i(TAG, "PackageName : " + info.activityInfo.packageName + " / " + info.activityInfo.name);
-
-                if ( info.activityInfo.packageName.toLowerCase().contains(appName) ||
-                        info.activityInfo.name.toLowerCase().contains(appName) ) {
-
-                    targetedShare = ShareCompat.IntentBuilder.from((Activity)get)
-                            .setType("image/jpeg")
-                            .setStream(Uri.fromFile(file))
-                            .getIntent()
-                            .setPackage(info.activityInfo.packageName);
-
-                    targetedShareIntents.add(targetedShare);
-                }
-            }
-
-            if ( targetedShareIntents.size() == 0 ) {
-                // FIXME : Event Dispatch!!
-                Toast.makeText(mContext, "없음 : " + appName, Toast.LENGTH_LONG);
-                return;
-            }
-            Intent chooserIntent = Intent.createChooser(targetedShareIntents.remove(0), "Select app to share");
-            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, targetedShareIntents.toArray(new Parcelable[]{}));
-            mContext.startActivity(chooserIntent);
-        }
-    }
-    */
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -239,38 +203,4 @@ public class MainActivity extends SlidingFragmentActivity {
         mNeedShowCloseMenuItem = true;
         invalidateOptionsMenu();
     }
-
-    /**
-     * Google Play Service를 사용할 수 있는 환경이지를 체크한다.
-     */
-    /*
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Logger.i(TAG, "This device is not supported.");
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-    */
-
-    /**
-     * Instance ID를 이용하여 디바이스 토큰을 가져오는 RegistrationIntentService를 실행한다.
-     */
-    /*
-    public void getInstanceIdToken() {
-        if (checkPlayServices()) {
-            // Start IntentService to register this application with GCM.
-            Intent intent = new Intent(this, RegistrationIntentService.class);
-            startService(intent);
-        }
-    }
-    */
 }
