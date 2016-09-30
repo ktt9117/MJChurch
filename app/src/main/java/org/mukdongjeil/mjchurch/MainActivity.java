@@ -33,6 +33,9 @@ public class MainActivity extends SlidingFragmentActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        String textstr = "옆에 있는 사람이  버럭버럭 화를내고 자꾸 짜증을 낸다 더위탓인가....? 갱년기가 왔을까...? 그런데도 나는 자꾸 피식피식 웃음이 난다... (괜찮아요 저한텐 주님이 있잖아요 주님이 날 보고계셔서 기쁘거든요 제 말 듣고 계시죠?) 아지트나 베일에 쌓인 비밀이란 은밀해서 더 달콤한것이 아닌가? 명상과는 다른 묵상이...그리고 그분과 대화함의 달콤함이 나를 설레이게 한다 길거리에서 차 안에서 카페에서 순간순간. 형식도 없고 질서도 없이 나누는 대화이지만 아주 밀착되어있는 기분이 난 몹시 좋다  옆에 있는 사람이  버럭버럭 화를내고 자꾸 짜증을 낸다 더위탓인가....? 갱년기가 왔을까...? 그런데도 나는 자꾸 피식피식 웃음이 난다... (괜찮아요 저한텐 주님이 있잖아요 주님이 날 보고계셔서 기쁘거든요 제 말 듣고 계시죠?) 아지트나 베일에 쌓인 비밀이란 은밀해서 더 달콤한것이 아닌가? 명상과는 다른 묵상이...그리고 그분과 대화함의 달콤함이 나를 설레이게 한다 길거리에서 차 안에서 카페에서 순간순간. 형식도 없고 질서도 없이 나누는 대화이지만 아주 밀착되어있는 기분이 난 몹시 좋다  옆에 있는 사람이  버럭버럭 화를내고 자꾸 짜증을 낸다더위탓인가....? 갱년기가 왔을까...?그런데도 나는 자꾸 피식피식 웃음이 난다...(괜찮아요 저한텐 주님이 있잖아요 주님이 날 보고계셔서 기쁘거든요 제 말 듣고 계시죠?)아지트나 베일에 쌓인 비밀이란 은밀해서 더 달콤한것이 아닌가?명상과는 다른 묵상이...그리고 그분과 대화함의 달콤함이 나를 설레이게 한다길거리에서 차 안에서 카페에서 순간순간.형식도 없고 질서도 없이 나누는 대화이지만 아주 밀착되어있는 기분이 난 몹시 좋다";
+//        StringUtils.removeDuplicationSentence(textstr);
+
         startActivity(new Intent(this, IntroActivity.class));
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
@@ -55,6 +58,7 @@ public class MainActivity extends SlidingFragmentActivity {
                 toggleTouchMode();
             }
         });
+
     }
 
     public void switchContent(Fragment fragment) {

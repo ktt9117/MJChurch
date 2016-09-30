@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 
 import net.htmlparser.jericho.Source;
 
+import org.mukdongjeil.mjchurch.MainApplication;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 
 import java.io.IOException;
@@ -29,11 +30,13 @@ public abstract class RequestBaseTask extends AsyncTask<String, Void, Source> {
         if (params == null || params[0] == null) {
             return null;
         }
+
         try {
             URL url = new URL(params[0]);
             Logger.d(TAG, "request url : " + url.toString());
             return new Source(url);
         } catch (IOException e) {
+            MainApplication.REQUEST_FAIL_COUNT++;
             e.printStackTrace();
         }
         return null;
@@ -44,6 +47,13 @@ public abstract class RequestBaseTask extends AsyncTask<String, Void, Source> {
         super.onPostExecute(segments);
         Logger.d(TAG, "onPostExecute : " + segments);
         onResult(segments);
+        if (segments == null) {
+            MainApplication.REQUEST_FAIL_COUNT++;
+        }
+
+        if (MainApplication.REQUEST_FAIL_COUNT > 2) {
+            MainApplication.serverDownProcess();
+        }
     }
 
     protected abstract void onResult(Source source);

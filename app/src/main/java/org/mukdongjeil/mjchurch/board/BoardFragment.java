@@ -1,26 +1,24 @@
 package org.mukdongjeil.mjchurch.board;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.text.TextUtils;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 import net.htmlparser.jericho.Element;
-import net.htmlparser.jericho.Source;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.board.adapters.BoardListAdapter;
 import org.mukdongjeil.mjchurch.common.dao.BoardItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 import org.mukdongjeil.mjchurch.database.DBManager;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocol.RequestBoardContentTask;
 import org.mukdongjeil.mjchurch.protocol.RequestListTask;
 import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
@@ -30,7 +28,7 @@ import java.util.List;
 /**
  * Created by Kim SungJoong on 2015-08-25.
  */
-public class BoardFragment extends ListFragment {
+public class BoardFragment extends Fragment {
     private static final String TAG = BoardFragment.class.getSimpleName();
 
     public static final int BOARD_TYPE_THANKS_SHARING = 17;
@@ -40,11 +38,40 @@ public class BoardFragment extends ListFragment {
     private int mPageNo;
     private List<BoardItem> mItemList;
     private List<BoardItem> mLocalItemList;
-    private BoardListAdapter mAdapter;
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Logger.i(TAG, "onCreateView");
+        View v = inflater.inflate(R.layout.layout_recyclerview, null);
+
+        mLocalItemList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getThankShareList();
+        mItemList = new ArrayList<BoardItem>();
+
+        // use a linear layout manager
+        mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        mRecyclerView.setHasFixedSize(true);
+
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        // specify an adapter (see also next example)
+        mAdapter = new BoardListAdapter(mItemList);
+        mRecyclerView.setAdapter(mAdapter);
+
+        return v;
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Logger.i(TAG, "onActivityCreated");
         mPageNo = 1;
 
         if (getActivity() instanceof MainActivity) {
@@ -53,15 +80,9 @@ public class BoardFragment extends ListFragment {
 
         getActivity().setTitle(MenuListFragment.BOARD_MENUS[0]);
 
-        mLocalItemList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getThankShareList();
-        mItemList = new ArrayList<BoardItem>();
-        mAdapter = new BoardListAdapter(getActivity(), mItemList);
-        setListAdapter(mAdapter);
-
         new RequestListTask(BOARD_TYPE_THANKS_SHARING, mPageNo, new RequestBaseTask.OnResultListener() {
             @Override
             public void onResult(Object obj, int position) {
-                setListShown(true);
 
                 if (getActivity() instanceof MainActivity) {
                     ((MainActivity) getActivity()).hideLoadingDialog();
@@ -75,16 +96,18 @@ public class BoardFragment extends ListFragment {
                         // compare between local database and server item list.
                         BoardItem localItem = getItemFromLocalDb(href);
                         if (localItem != null) {
-                            mAdapter.add(localItem);
+                            mItemList.add(localItem);
+                            mAdapter.notifyDataSetChanged();
                         } else {
-                            new RequestBoardContentTask(i, href, new RequestBaseTask.OnResultListener() {
+                            new RequestBoardContentTask(getActivity(), i, href, new RequestBaseTask.OnResultListener() {
                                 @Override
                                 public void onResult(Object obj, int position) {
                                     if (obj != null && obj instanceof BoardItem) {
                                         if (position == POSITION_NONE) {
                                             position = 0;
                                         }
-                                        mAdapter.add(position, (BoardItem) obj);
+                                        mItemList.add(position, (BoardItem) obj);
+                                        mAdapter.notifyDataSetChanged();
                                     }
                                 }
                             });
@@ -104,88 +127,5 @@ public class BoardFragment extends ListFragment {
             }
         }
         return null;
-    }
-
-    private class BoardListAdapter extends ArrayAdapter<BoardItem> {
-
-        private List<BoardItem> itemList;
-
-        public BoardListAdapter(Context context, List<BoardItem> objects) {
-            super(context, 0, objects);
-            itemList = objects;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_list_board, null);
-            }
-
-            TextView title = (TextView) convertView.findViewById(R.id.title);
-            TextView writer = (TextView) convertView.findViewById(R.id.writer);
-            TextView date = (TextView) convertView.findViewById(R.id.date);
-            TextView content = (TextView) convertView.findViewById(R.id.content);
-
-            BoardItem item = getItem(position);
-            title.setText(item.title);
-            writer.setText(item.writer);
-            date.setText(item.date);
-            content.setText(item.content);
-
-            return convertView;
-        }
-
-        public void add(int position, BoardItem item) {
-            itemList.add(position, item);
-            notifyDataSetChanged();
-        }
-    }
-
-    private class RequestBoardContentTask extends RequestBaseTask {
-
-        OnResultListener listener;
-        String contentUrl;
-        int position;
-
-        public RequestBoardContentTask(int position, String contentUrl, OnResultListener listener) {
-            this.listener = listener;
-            this.position = position;
-            this.contentUrl = contentUrl;
-            execute(Const.BASE_URL + contentUrl);
-        }
-
-        @Override
-        protected void onResult(Source source) {
-            if (source != null) {
-                BoardItem item = new BoardItem();
-                item.contentUrl = this.contentUrl;
-                item.title = source.getFirstElementByClass("bbs_ttl").getTextExtractor().toString();
-                item.writer = source.getFirstElementByClass("bbs_writer").getTextExtractor().toString();
-                item.date = source.getFirstElementByClass("bbs_date").getTextExtractor().toString();
-                StringBuffer contentBuffer = new StringBuffer();
-                Element contentElement = source.getFirstElementByClass("bbs_substance_p");
-                if (contentElement != null) {
-                    for (Element divElem : contentElement.getAllElements()) {
-                        String temp = divElem.getTextExtractor().toString();
-                        if (!TextUtils.isEmpty(temp)) {
-                            contentBuffer.append(temp);
-                        }
-                    }
-                }
-                item.content = contentBuffer.toString();
-
-                if (item != null) {
-                    Logger.d(TAG, "add item : " + item.toString());
-                    int res = DBManager.getInstance(getActivity()).insertThankShare(item);
-                    Logger.i(TAG, "insert to local database result : " + res);
-                }
-
-                listener.onResult(item, position);
-
-            } else {
-                Logger.e(TAG, "source is null");
-                listener.onResult(null, OnResultListener.POSITION_NONE);
-            }
-        }
     }
 }

@@ -92,7 +92,7 @@ public class MenuListFragment extends ListFragment {
 //							.putContentName("게시판")
 //							.putContentType("목록 조회")
 //							.putContentId("감사나눔"));
-					newFragment = new BoardFragment();
+					newFragment = new BoardFragment();//check this out
 				} else {
 					newFragment = new BoardGalleryFragment();
 				}
