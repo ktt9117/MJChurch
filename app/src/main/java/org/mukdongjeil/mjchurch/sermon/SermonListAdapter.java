@@ -78,7 +78,7 @@ public class SermonListAdapter extends ArrayAdapter<SermonItem> {
         selectedItemPosition = position;
     }
 
-    public class ViewHolder {
+    public static class ViewHolder {
 
         ImageView imgView;
         TextView title;

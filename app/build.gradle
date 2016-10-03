@@ -16,14 +16,14 @@ repositories {
 apply plugin: 'com.google.gms.google-services'
 //apply plugin: 'io.fabric'
 
-android {
-    compileSdkVersion 21
+ android {
+    compileSdkVersion 23
     buildToolsVersion '21.1.2'
 
     defaultConfig {
         applicationId "org.mukdongjeil.mjchurch"
         minSdkVersion 15
-        targetSdkVersion 21
+        targetSdkVersion 22
         versionCode 5
         versionName "1.4"
         multiDexEnabled true
@@ -37,7 +37,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':SlidingMenu')
     compile files('libs/jericho-html-3.3.jar')
     compile files('libs/gson-2.3.1.jar')
@@ -48,7 +48,12 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:9.0.2'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile files('libs/universal-image-loader-1.9.5.jar')
-//    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
-//        transitive = true;
-//    }
+
+    /* for CardView Dependencies */
+    compile 'com.android.support:cardview-v7:21.0.+'
+    compile 'com.android.support:recyclerview-v7:21.0.+'
+
+    //    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
+    //        transitive = true;
+    //    }
 }

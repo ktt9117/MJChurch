@@ -1,37 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_gravity="center"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/sermon_row_padding">
+    android:layout_margin="12dp"
+    card_view:cardCornerRadius="4dp"
+    card_view:cardElevation="5dp">
 
-    <TextView android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:textSize="20dp"
-        android:textColor="@color/black"
-        android:text="가나다라마다바사아자차카타파하" />
-
-    <TextView android:id="@+id/writer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="가나다라마다바사"
-        android:layout_below="@id/title" />
-
-    <TextView android:id="@+id/date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/light_gray"
-        android:layout_alignBaseline="@id/writer"
-        android:layout_toRightOf="@id/writer"
-        android:layout_marginLeft="10dp"
-        android:text="2015. 08. 25" />
-
-    <TextView android:id="@+id/content"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/writer"
-        android:layout_marginTop="10dp"
-        android:text="동해물과 백두산이 마르고 닳도록 하나님이 보우하사 우리나라 만세 무궁화 삼천리 화려 강산 대한사람 대한으로 길이 보전하세 "/>
+        android:padding="12dp">
 
-</RelativeLayout>
+        <TextView android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:textSize="20dp"
+            android:textColor="@color/black"
+            android:text="abcdefg" />
+
+        <TextView android:id="@+id/writer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="abcdefg"
+            android:layout_below="@id/title" />
+
+        <TextView android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light_gray"
+            android:layout_alignBaseline="@id/writer"
+            android:layout_toRightOf="@id/writer"
+            android:layout_marginLeft="10dp"
+            android:text="2015. 08. 25" />
+
+        <TextView android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/writer"
+            android:layout_marginTop="10dp"
+            android:text="abcdefgabcdefgabcdefgabcdefg abcdefgabcdefgabcdefg abcdefg abcdefgabcdefg"/>
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

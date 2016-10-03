@@ -99,8 +99,15 @@ public class SermonFragment extends ListFragment {
             ((MainActivity) getActivity()).showLoadingDialog();
         }
 
+        String title;
+
         Bundle args = getArguments();
-        if (args != null) {
+
+        if (args == null) {
+            Logger.e(TAG, "arguments is null");
+            mWorshipType = Const.WORSHIP_TYPE_SUNDAY_MORNING;
+            title = MenuListFragment.WORSHIP_MENUS[0];
+        } else {
             int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
             switch (selectedMenuIndex) {
                 case 8:
@@ -109,6 +116,7 @@ public class SermonFragment extends ListFragment {
 //                            .putContentType("목록 조회")
 //                            .putContentId("주일 오후 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_SUNDAY_AFTERNOON;
+                    title = MenuListFragment.WORSHIP_MENUS[1];
                     break;
                 case 9:
 //                    Answers.getInstance().logContentView(new ContentViewEvent()
@@ -116,6 +124,7 @@ public class SermonFragment extends ListFragment {
 //                            .putContentType("목록 조회")
 //                            .putContentId("수요 예배 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_WEDNESDAY;
+                    title = MenuListFragment.WORSHIP_MENUS[2];
                     break;
                 case 10:
 //                    Answers.getInstance().logContentView(new ContentViewEvent()
@@ -123,6 +132,7 @@ public class SermonFragment extends ListFragment {
 //                            .putContentType("목록 조회")
 //                            .putContentId("금요 기도회 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_FRIDAY;
+                    title = MenuListFragment.WORSHIP_MENUS[3];
                     break;
                 case 7:
                 default:
@@ -131,10 +141,12 @@ public class SermonFragment extends ListFragment {
 //                            .putContentType("목록 조회")
 //                            .putContentId("주일 오전 설교"));
                     mWorshipType = Const.WORSHIP_TYPE_SUNDAY_MORNING;
+                    title = MenuListFragment.WORSHIP_MENUS[0];
                     break;
             }
         }
         Logger.d(TAG, "worshipType : " + mWorshipType);
+        getActivity().setTitle(title);
 
         mAdapter = new SermonListAdapter(getActivity(), mService);
         setListAdapter(mAdapter);

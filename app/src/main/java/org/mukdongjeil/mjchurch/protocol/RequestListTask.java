@@ -85,7 +85,7 @@ public class RequestListTask extends RequestBaseTask {
 //        List<Element> dateList = contentElement.getAllElementsByClass("bbs_date");
 
         int loopCount = linkList.size();
-        if (linkList != null && loopCount > 0) {
+        if (loopCount > 0) {
 //            for (int i = 0; i < linkList.size(); i++) {
 //                BoardItem item = new BoardItem();
 //
@@ -124,22 +124,21 @@ public class RequestListTask extends RequestBaseTask {
 
     private void parseGalleryList(Element contentElement) {
         Logger.i(TAG, "contentElement : " + contentElement.toString());
-        List<GalleryItem> itemList = new ArrayList<>();
+        List<GalleryItem> itemList = new ArrayList<GalleryItem>();
         List<Element> linkList = contentElement.getAllElementsByClass("photo_list_a");
         List<Element> photoUrlList = contentElement.getAllElementsByClass("photo_list_img");
         List<Element> titleList = contentElement.getAllElementsByClass("photo_list_ttl");
         List<Element> dateList = contentElement.getAllElementsByClass("photo_list_date");
 
         int loopCount = linkList.size();
-        if (linkList != null && loopCount > 0) {
+        if (loopCount > 0) {
             for (int i = 0; i < loopCount; i++) {
                 GalleryItem item = new GalleryItem();
 
                 String linkAttr = linkList.get(i).getAttributeValue("href");
                 if (!TextUtils.isEmpty(linkAttr)) {
                     item.contentUrl = linkAttr;
-                    String bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
-                    item.bbsNo = bbsNo;
+                    item.bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
                 }
 
                 try {

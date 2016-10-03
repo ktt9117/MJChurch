@@ -32,11 +32,13 @@ public class TrainingFragment extends ImageBaseFragment{
 
         String requestUrl;
         boolean needListRequest = false;
+        String title;
 
         Bundle args = getArguments();
         if (args == null) {
             Logger.e(TAG, "arguments is null");
             requestUrl = Const.TRAINING_HOME_URL;
+            title = MenuListFragment.TRAINING_MENUS[0];
         } else {
             int selectedMenuIndex = args.getInt(MenuListFragment.SELECTED_MENU_INDEX);
             Logger.i(TAG, "selected sliding menu index : " + selectedMenuIndex);
@@ -44,19 +46,25 @@ public class TrainingFragment extends ImageBaseFragment{
             switch(selectedMenuIndex) {
                 case 13:
                     requestUrl = Const.TRAINING_REARING_CLASS_URL;
+                    title = MenuListFragment.TRAINING_MENUS[1];
                     break;
                 case 14:
                     requestUrl = Const.TRAINING_MOTHER_WISE_URL;
+                    title = MenuListFragment.TRAINING_MENUS[2];
                     break;
                 case 15:
                     requestUrl = Const.TRAINING_DISCIPLE_URL;
+                    title = MenuListFragment.TRAINING_MENUS[3];
                     break;
                 case 12:
                 default:
                     requestUrl = Const.TRAINING_BIBLE_STUDY_URL;
+                    title = MenuListFragment.TRAINING_MENUS[0];
                     break;
             }
         }
+
+        getActivity().setTitle(title);
 
         if (needListRequest == true) {
             Toast.makeText(getActivity(), "구현 준비 중입니다.", Toast.LENGTH_LONG).show();

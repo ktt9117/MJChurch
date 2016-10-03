@@ -1,6 +1,8 @@
 package org.mukdongjeil.mjchurch;
 
 import android.app.Application;
+import android.content.Context;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -17,9 +19,15 @@ import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
  */
 public class MainApplication extends Application {
 
+    public static int REQUEST_FAIL_COUNT;
+    public static Context GLOBAL_APPLICATION_CONTEXT;
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+        REQUEST_FAIL_COUNT = 0;
+        GLOBAL_APPLICATION_CONTEXT = getApplicationContext();
 
         //Fabric.with(this, new Crashlytics());
 
@@ -28,6 +36,11 @@ public class MainApplication extends Application {
 
         // init Universal Image Loader
         initializeImageLoader();
+    }
+
+    public static void serverDownProcess() {
+        Toast.makeText(GLOBAL_APPLICATION_CONTEXT, "서버 상태가 원활하지 않아 앱을 종료합니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_LONG).show();
+        System.exit(0);
     }
 
     private void initializeImageLoader() {
@@ -50,6 +63,5 @@ public class MainApplication extends Application {
                 //.writeDebugLogs()
                 .build();
         ImageLoader.getInstance().init(config);
-
     }
 }

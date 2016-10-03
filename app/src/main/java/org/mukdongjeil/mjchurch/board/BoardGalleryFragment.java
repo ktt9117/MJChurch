@@ -1,33 +1,22 @@
 package org.mukdongjeil.mjchurch.board;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
-import com.bumptech.glide.Glide;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
+import org.mukdongjeil.mjchurch.board.adapters.BoardGridAdapter;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.GalleryItem;
 import org.mukdongjeil.mjchurch.common.util.DisplayUtil;
 import org.mukdongjeil.mjchurch.common.util.ExHandler;
-import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestListTask;
 import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
@@ -105,6 +94,13 @@ public class BoardGalleryFragment extends Fragment {
 
         mBoardType = (getArguments() != null) ? getArguments().getInt(MenuListFragment.SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
 
+        String title;
+        if (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) {
+            title = MenuListFragment.BOARD_MENUS[1];
+        } else {
+            title = MenuListFragment.BOARD_MENUS[2];
+        }
+        getActivity().setTitle(title);
         /*
         if (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) {
             Answers.getInstance().logContentView(new ContentViewEvent()
@@ -119,8 +115,8 @@ public class BoardGalleryFragment extends Fragment {
         }
         */
 
-        mItemList = new ArrayList<>();
-        mAdapter = new BoardGridAdapter(mItemList);
+        mItemList = new ArrayList<GalleryItem>();
+        mAdapter = new BoardGridAdapter(getActivity(), mItemList, mColumnWidth);
         mGridView.setAdapter(mAdapter);
         mGridView.setOnItemClickListener(mOnGridItemClickListener);
 
@@ -155,100 +151,4 @@ public class BoardGalleryFragment extends Fragment {
             }
         }
     };
-
-    private class BoardGridAdapter extends BaseAdapter {
-
-        private List<GalleryItem> list;
-
-        public BoardGridAdapter(List<GalleryItem> list) {
-            this.list = list;
-        }
-
-        @Override
-        public int getCount() {
-            return list != null ? list.size() : 0;
-        }
-
-        @Override
-        public GalleryItem getItem(int position) {
-            return list != null ? list.get(position) : null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            final GridViewHolder holder;
-            View v;
-            if (convertView == null) {
-                holder = new GridViewHolder();
-                v = makeGridRowView(holder, getActivity());
-            } else {
-                holder = (GridViewHolder) convertView.getTag();
-                v = holder.layout;
-            }
-
-            final GalleryItem item = getItem(position);
-            if (item != null) {
-                if (!TextUtils.isEmpty(item.photoUrl)) {
-                    Logger.d(TAG, "gridview > getView photoUrl : " + item.photoUrl);
-                    item.photoUrl = item.photoUrl.replaceAll("&amp;", "&");
-                    if (!item.photoUrl.contains("http")) {
-                        item.photoUrl = Const.BASE_URL + item.photoUrl;
-                    }
-
-                    Glide.with(getActivity())
-                            .load(item.photoUrl)
-                            .placeholder(Const.DEFAULT_IMG_RESOURCE)
-                            .crossFade()
-                            .into(holder.imageView);
-
-                }
-                if (holder.textView != null) {
-                    holder.textView.setText(item.title);
-                }
-            }
-            return v;
-        }
-    }
-
-    public static class GridViewHolder {
-        public View layout;
-        public ImageView imageView;
-        public TextView textView;
-    }
-
-    private View makeGridRowView(GridViewHolder holder, Context context) {
-
-        RelativeLayout layout = new RelativeLayout(context);
-        layout.setLayoutParams(new AbsListView.LayoutParams(AbsListView.LayoutParams.WRAP_CONTENT, AbsListView.LayoutParams.WRAP_CONTENT));
-
-        ImageView imageView = new ImageView(context);
-        imageView.setId(R.id.grid_img);
-        imageView.setLayoutParams(new RelativeLayout.LayoutParams(mColumnWidth, mColumnWidth));
-        imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-        layout.addView(imageView);
-        holder.imageView = imageView;
-
-        TextView textView = new TextView(context);
-        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(mColumnWidth, AbsListView.LayoutParams.WRAP_CONTENT);
-        tvParams.addRule(RelativeLayout.BELOW, imageView.getId());
-        textView.setLayoutParams(tvParams);
-        textView.setSingleLine(true);
-        textView.setTextColor(Color.WHITE);
-        textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
-        textView.setGravity(Gravity.CENTER);
-        textView.setEllipsize(TextUtils.TruncateAt.END);
-        textView.setPadding(5, 5, 5, 5);
-        layout.addView(textView);
-
-        holder.textView = textView;
-        holder.layout = layout;
-
-        layout.setTag(holder);
-        return layout;
-    }
 }

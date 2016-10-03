@@ -42,7 +42,7 @@ public class DBManager  {
                 " WHERE " + SermonCols.SERMON_TYPE + " = " + sermonType;
         Cursor cursor = db.rawQuery(sql, null);
         if (cursor != null) {
-            List<SermonItem> list = new ArrayList<>();
+            List<SermonItem> list = new ArrayList<SermonItem>();
             cursor.moveToFirst();
             while (cursor.moveToNext()) {
                 SermonItem item = new SermonItem();
@@ -106,7 +106,7 @@ public class DBManager  {
         String sql = "SELECT * FROM " + DataHelper.TABLE_THANK_SHARE;
         Cursor cursor = db.rawQuery(sql, null);
         if (cursor != null) {
-            List<BoardItem> list = new ArrayList<>();
+            List<BoardItem> list = new ArrayList<BoardItem>();
             cursor.moveToFirst();
             while (cursor.moveToNext()) {
                 BoardItem item = new BoardItem();
