@@ -121,14 +121,6 @@ public class MediaService extends Service {
             }
         });
 
-        mPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-            @Override
-            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                Logger.e(TAG, "onInfo what : " + what + ", extra : " + extra);
-                return false;
-            }
-        });
-
         File file = new File(Const.DIR_PUB_DOWNLOAD, item.title + StringUtils.FILE_EXTENSION_MP3);
         if (file.exists()) {
             mPlayer.setDataSource(file.getPath());
@@ -143,8 +135,6 @@ public class MediaService extends Service {
                 mp.start();
             }
         });
-        mPlayer.prepareAsync();
-
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
@@ -152,6 +142,8 @@ public class MediaService extends Service {
                 mediaPlayer.reset();
             }
         });
+
+        mPlayer.prepareAsync();
 
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(mCallStateListener, PhoneStateListener.LISTEN_CALL_STATE);
