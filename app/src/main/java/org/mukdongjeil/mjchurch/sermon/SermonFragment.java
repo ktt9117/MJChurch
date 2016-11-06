@@ -420,7 +420,7 @@ public class SermonFragment extends ListFragment {
             mPlayerController.updatePlayerInfo(item);
         }
 
-        if (mService.getCurrentPlayerItem() != null) {
+        if (mService != null && mService.getCurrentPlayerItem() != null) {
             mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
             if (mService.isPlaying()) {
                 mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_pause);

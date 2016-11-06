@@ -8,12 +8,15 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.SeekBar;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -37,9 +40,9 @@ public class MediaService extends Service {
     private static final int MEDIA_SERVICE_ID = 101;
 
     private final LocalBinder mBinder = new LocalBinder();
-
     private SermonItem mCurrentItem;
     private PhoneCallStateListener mCallStateListener;
+    private MediaPlayer mPlayer;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -51,8 +54,6 @@ public class MediaService extends Service {
             return MediaService.this;
         }
     }
-
-    private MediaPlayer mPlayer;
 
     @Override
     public void onCreate() {
@@ -96,6 +97,7 @@ public class MediaService extends Service {
     }
 
     public void startPlayer(SermonItem item) throws IOException {
+        Logger.i(TAG, "startPlayer called");
 //        Answers.getInstance().logContentView(new ContentViewEvent()
 //                .putContentName("설교 재생")
 //                .putContentType("설교 재생")
@@ -103,11 +105,29 @@ public class MediaService extends Service {
 //                .putCustomAttribute("downloadStatus", item.downloadStatus.ordinal())
 //        );
 
-        stopPlayer();
+        //stopPlayer();
         mCurrentItem = item;
         startForegroundService(item.title);
-        mPlayer = new MediaPlayer();
+        if (mPlayer == null) {
+            mPlayer = new MediaPlayer();
+        } else {
+            mPlayer.reset();
+        }
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+            @Override
+            public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                Logger.e(TAG, "onBufferingUpdate percent : " + percent);
+            }
+        });
+
+        mPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                Logger.e(TAG, "onInfo what : " + what + ", extra : " + extra);
+                return false;
+            }
+        });
 
         File file = new File(Const.DIR_PUB_DOWNLOAD, item.title + StringUtils.FILE_EXTENSION_MP3);
         if (file.exists()) {
@@ -117,7 +137,6 @@ public class MediaService extends Service {
             mPlayer.setDataSource(Const.BASE_URL + item.audioUrl);
             Logger.i(TAG, "Server File Streaming...");
         }
-
         mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
@@ -125,10 +144,12 @@ public class MediaService extends Service {
             }
         });
         mPlayer.prepareAsync();
+
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                stopPlayer();
+                //stopPlayer();
+                mediaPlayer.reset();
             }
         });
 
@@ -138,7 +159,6 @@ public class MediaService extends Service {
 
     public void stopPlayer() {
         Logger.e(TAG, "stopPlayer called");
-        stopForeground(true);
         if (mPlayer != null) {
             if (mPlayer.isPlaying()) {
                 mPlayer.stop();
@@ -150,6 +170,7 @@ public class MediaService extends Service {
 
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(mCallStateListener, PhoneStateListener.LISTEN_NONE);
+        stopForeground(true);
     }
 
     public boolean isPlaying() {
@@ -199,13 +220,14 @@ public class MediaService extends Service {
         remoteView.setOnClickPendingIntent(R.id.remote_stop, stopPending);
         remoteView.setTextViewText(R.id.remote_title, title);
 
-        Notification notification = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder notiBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(contentPending)
                 .setContent(remoteView)
                 .setOngoing(true)
-                .setWhen(System.currentTimeMillis())
-                .build();
+                .setWhen(System.currentTimeMillis());
+
+        Notification notification = notiBuilder.build();
 
         startForeground(MEDIA_SERVICE_ID, notification);
     }

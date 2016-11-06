@@ -22,7 +22,7 @@ public class IntroActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mImageView = new ImageView(getBaseContext());
-        //mImageView.setImageResource(R.drawable.intro);
+        mImageView.setImageResource(R.drawable.intro);
         mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
         mImageView.setBackgroundColor(Color.TRANSPARENT);
         setContentView(mImageView);

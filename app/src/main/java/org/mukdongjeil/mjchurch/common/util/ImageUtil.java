@@ -7,11 +7,19 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.text.TextUtils;
+import android.transition.Transition;
+import android.widget.ImageView;
+
+import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
+import com.bumptech.glide.request.target.SquaringDrawable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -458,7 +466,36 @@ public class ImageUtil {
     	return degree;
     }
 
-    public static class SizeInfo {
+	public static Bitmap convertDrawableToBitmap(Drawable drawable) {
+		if (drawable == null) {
+			Logger.e(TAG, "convertDrawableToBitmap params error : cannot convert null object to Bitmap");
+			return null;
+		}
+		Bitmap bitmap = null;
+		if (drawable instanceof GlideBitmapDrawable) {
+			bitmap = ((GlideBitmapDrawable) drawable).getBitmap();
+		} else if (drawable instanceof TransitionDrawable) {
+			TransitionDrawable transitionDrawable = (TransitionDrawable) drawable;
+			int length = transitionDrawable.getNumberOfLayers();
+			for (int i = 0; i < length; ++i) {
+				Drawable child = transitionDrawable.getDrawable(i);
+				if (child instanceof GlideBitmapDrawable) {
+					bitmap = ((GlideBitmapDrawable) child).getBitmap();
+					break;
+				} else if (child instanceof SquaringDrawable
+						&& child.getCurrent() instanceof GlideBitmapDrawable) {
+					bitmap = ((GlideBitmapDrawable) child.getCurrent()).getBitmap();
+					break;
+				}
+			}
+		} else if (drawable instanceof SquaringDrawable) {
+			bitmap = ((GlideBitmapDrawable) drawable.getCurrent()).getBitmap();
+		}
+
+		return bitmap;
+	}
+
+	public static class SizeInfo {
     	public int width;
     	public int height;
     	

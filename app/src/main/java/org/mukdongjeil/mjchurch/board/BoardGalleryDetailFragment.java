@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,6 +38,7 @@ import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.ext_view.CirclePageIndicator;
 import org.mukdongjeil.mjchurch.common.ext_view.ExViewPager;
 import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
+import org.mukdongjeil.mjchurch.common.util.ImageUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestImageListTask;
@@ -195,9 +195,11 @@ public class BoardGalleryDetailFragment extends Fragment {
 //                                        .putContentType("이벤트")
 //                                        .putContentId("사진 공유하기"));
 
-                                    Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
+
+                                    Bitmap bitmap = ImageUtil.convertDrawableToBitmap(holder.imgPhoto.getDrawable());
                                     if (bitmap == null) {
                                         Logger.e(TAG, "Warning! bitmap is null");
+                                        Toast.makeText(getActivity(), "이미지를 찾을 수 없습니다.", Toast.LENGTH_LONG).show();
                                         return;
                                     }
                                     File cacheFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/tmp_share_image.jpg");
@@ -220,6 +222,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                                     }
                                 }
                             });
+
                             holder.btnDownload.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -229,9 +232,10 @@ public class BoardGalleryDetailFragment extends Fragment {
 //                                        .putContentType("이벤트")
 //                                        .putContentId("사진 내려받기"));
 
-                                    Bitmap bitmap = ((BitmapDrawable)holder.imgPhoto.getDrawable()).getBitmap();
+                                    Bitmap bitmap = ImageUtil.convertDrawableToBitmap(holder.imgPhoto.getDrawable());
                                     if (bitmap == null) {
                                         Logger.e(TAG, "Warning! bitmap is null");
+                                        Toast.makeText(getActivity(), "이미지를 찾을 수 없습니다.", Toast.LENGTH_LONG).show();
                                         return;
                                     }
                                     File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "/묵동제일앨범");
@@ -254,7 +258,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                                     }
 
                                     if (isFileSaved) {
-                                        MediaScannerConnection.scanFile(getContext(), new String[] {cacheFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+                                        MediaScannerConnection.scanFile(getContext(), new String[]{cacheFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
                                             @Override
                                             public void onScanCompleted(String s, Uri uri) {
                                                 Logger.i(TAG, "onScanCompleted s : " + s + ", uri : " + uri.toString());
