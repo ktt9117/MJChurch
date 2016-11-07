@@ -27,33 +27,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:src="@android:drawable/ic_media_play" />
+            android:src="@drawable/ic_play_small" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
+            android:textColor="@android:color/black"
             android:text="Play" />
         <ImageView
             android:id="@+id/remote_pause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_media_pause"/>
+            android:src="@drawable/ic_pause_small"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
+            android:textColor="@android:color/black"
             android:text="Pause" />
         <ImageView
             android:id="@+id/remote_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_close_clear_cancel"/>
+            android:src="@drawable/ic_stop_small"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
+            android:textColor="@android:color/black"
             android:text="Stop" />
     </LinearLayout>
 
@@ -68,5 +71,6 @@
         android:maxLines="1"
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="marquee_forever"
+        android:textColor="@android:color/black"
         android:text="가나다라마바사아"/>
 </RelativeLayout>
