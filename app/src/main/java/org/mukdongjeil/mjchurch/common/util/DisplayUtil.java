@@ -33,8 +33,7 @@ public class DisplayUtil {
 	public static float convertPixelsToDp(float px){
 	    Resources resources = SystemHelpers.getApplicationContext().getResources();
 	    DisplayMetrics metrics = resources.getDisplayMetrics();
-	    float dp = px / (metrics.densityDpi / 160f);
-	    return dp;
+	    return px / (metrics.densityDpi / 160f);
 	}
 
 	public static int getDisplaySizeWidth(Context context) {

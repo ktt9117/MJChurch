@@ -52,7 +52,7 @@ public abstract class RequestBaseTask extends AsyncTask<String, Void, Source> {
         }
 
         if (MainApplication.REQUEST_FAIL_COUNT > 2) {
-            MainApplication.serverDownProcess();
+            //MainApplication.serverDownProcess(context);
         }
     }
 

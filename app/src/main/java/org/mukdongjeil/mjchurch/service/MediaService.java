@@ -8,15 +8,12 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.SeekBar;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -107,7 +104,7 @@ public class MediaService extends Service {
 
         //stopPlayer();
         mCurrentItem = item;
-        startForegroundService(item.title);
+        startForegroundService(item.titleWithDate);
         if (mPlayer == null) {
             mPlayer = new MediaPlayer();
         } else {
@@ -121,7 +118,7 @@ public class MediaService extends Service {
             }
         });
 
-        File file = new File(Const.DIR_PUB_DOWNLOAD, item.title + StringUtils.FILE_EXTENSION_MP3);
+        File file = new File(Const.DIR_PUB_DOWNLOAD, item.titleWithDate + StringUtils.FILE_EXTENSION_MP3);
         if (file.exists()) {
             mPlayer.setDataSource(file.getPath());
             Logger.i(TAG, "Local File Playing...");

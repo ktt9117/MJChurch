@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ExifInterface;
@@ -15,14 +14,11 @@ import android.net.Uri;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.text.TextUtils;
-import android.transition.Transition;
-import android.widget.ImageView;
 
 import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
 import com.bumptech.glide.request.target.SquaringDrawable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -31,7 +27,7 @@ public class ImageUtil {
 	
 	private static final String TAG = "ImageUtil";
 	
-	public static Bitmap getImage(String path, int sampleWidth) throws IOException, FileNotFoundException {
+	public static Bitmap getImage(String path, int sampleWidth) throws IOException {
 		SizeInfo size = getSizeFixScreenWidth(path, 0);
 		return getOptimizeScreennailImage(path, size.width, size.height, sampleWidth);
 	}
@@ -265,7 +261,7 @@ public class ImageUtil {
 		return bitmap;
 	}
 	
-    public static final Bitmap getThumbnail(String path, int targetWidth, int targetHeight)
+    public static Bitmap getThumbnail(String path, int targetWidth, int targetHeight)
     {
     	BitmapFactory.Options mOptions = new BitmapFactory.Options();
     	
@@ -296,7 +292,7 @@ public class ImageUtil {
     	return bitmap;
     }
     
-	public static final Bitmap getThumbnail(Context context, String path, int sampleWidth) throws IOException, FileNotFoundException {
+	public static Bitmap getThumbnail(Context context, String path, int sampleWidth) throws IOException {
 		Logger.v(TAG, "getThumbnail():path=" + path);
 		if (TextUtils.isEmpty(path)) {
 			return null;
@@ -331,8 +327,7 @@ public class ImageUtil {
             if(degrees == 90 || degrees == 270) {
             	outWidth = options.outHeight;
             }
-            int scale = (int)(outWidth / sampleWidth);
-            options2.inSampleSize = scale;
+            options2.inSampleSize = (int)(outWidth / sampleWidth);
             is2 = context.getContentResolver().openInputStream(uri);
             
             Bitmap bitmap = BitmapFactory.decodeStream(is2, null, options2);

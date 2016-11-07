@@ -81,6 +81,7 @@ public class MenuListFragment extends ListFragment {
 		Fragment newFragment;
 		switch (item.menuCategory) {
 			case MenuItem.MENU_CATEGORY_WORSHIP:
+//				newFragment = new SermonFragment();
 				newFragment = new SermonFragment();
 				break;
 			case MenuItem.MENU_CATEGORY_TRAINING:

@@ -14,7 +14,7 @@ import android.widget.ImageView;
  */
 public class IntroActivity extends Activity {
 
-    ImageView mImageView;
+    private ImageView mImageView;
 
     @Override
     protected void onCreate(Bundle savedInstance) {

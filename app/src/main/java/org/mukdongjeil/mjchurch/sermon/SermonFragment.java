@@ -8,13 +8,14 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,12 +35,13 @@ import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
  */
-public class SermonFragment extends ListFragment {
+public class SermonFragment extends Fragment {
     private static final String TAG = SermonFragment.class.getSimpleName();
 
     public static final String INTENT_ACTION_DOWNLOAD_COMPLETED = "intent_action_download_completed";
@@ -48,9 +50,17 @@ public class SermonFragment extends ListFragment {
     private int mWorshipType;
     private ListPlayerController mPlayerController;
     private TextView listText;
-    private SermonListAdapter mAdapter;
+
     private MediaService mService;
     private BroadcastReceiver mBroadcast;
+
+    private ArrayList<SermonItem> mItemList;
+    private SermonListAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private RecyclerView.LayoutManager mLayoutManager;
+
+    private boolean isItemAdded = false;
+
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -85,6 +95,7 @@ public class SermonFragment extends ListFragment {
         View v = inflater.inflate(R.layout.fragment_worship, null);
         listText = (TextView) v.findViewById(R.id.list_text);
         mPlayerController = new ListPlayerController(v);
+        mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
         Intent service = new Intent(getActivity(), MediaService.class);
         getActivity().startService(service);
         getActivity().bindService(service, mServiceConnection, Context.BIND_AUTO_CREATE);
@@ -148,8 +159,18 @@ public class SermonFragment extends ListFragment {
         Logger.d(TAG, "worshipType : " + mWorshipType);
         getActivity().setTitle(title);
 
-        mAdapter = new SermonListAdapter(getActivity(), mService);
-        setListAdapter(mAdapter);
+        mItemList = new ArrayList<SermonItem>();
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new SermonListAdapter(getActivity(), mService, mItemList, new SermonListAdapter.OnSermonItemClickListener() {
+            @Override
+            public void onSermonItemClicked(SermonItem item) {
+                mPlayerController.updatePlayerInfo(item);
+            }
+        });
+        mRecyclerView.setAdapter(mAdapter);
+
 //        List<SermonItem> localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(mWorshipType);
         //로컬 DB에 저장된 목록이 없거나 오늘 서버에서 리스트 체크를 하지 않은 경우에만 서버로부터 목록을 받아온다.
         //TODO : 하루 한번만 체크했을 때 이상하게 마지막 아이템을 불러오지 못하는 현상이 있다...
@@ -162,8 +183,15 @@ public class SermonFragment extends ListFragment {
                         ((MainActivity) getActivity()).hideLoadingDialog();
                     }
                     if (obj != null && obj instanceof SermonItem) {
-                        mAdapter.add((SermonItem) obj);
-                        updatePlayerControllerIfNecessary((SermonItem) obj);
+                        SermonItem item = (SermonItem) obj;
+                        mItemList.add(item);
+                        mAdapter.notifyDataSetChanged();
+                        updatePlayerControllerIfNecessary(item);
+
+                        if (isItemAdded == false) {
+                            isItemAdded = true;
+                            listText.setVisibility(View.GONE);
+                        }
                     } else {
                         Logger.e(TAG, "obj is null or is not SermonItem at onResult");
                     }
@@ -175,6 +203,7 @@ public class SermonFragment extends ListFragment {
                         ((MainActivity) getActivity()).hideLoadingDialog();
                     }
                     mPlayerController.playerLayout.setVisibility(View.GONE);
+                    listText.setVisibility(View.VISIBLE);
                     listText.setText(R.string.sermon_empty_message);
                     listText.bringToFront();
                 }
@@ -212,12 +241,13 @@ public class SermonFragment extends ListFragment {
         return false;
     }
 
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-        mAdapter.setCurrentItemSelected(position);
-        mPlayerController.updatePlayerInfo(mAdapter.getItem(position));
-    }
+    //TODO : Check this out
+//    @Override
+//    public void onListItemClick(ListView l, View v, int position, long id) {
+//        super.onListItemClick(l, v, position, id);
+//        mAdapter.setCurrentItemSelected(position);
+//        mPlayerController.updatePlayerInfo(mAdapter.getItem(position));
+//    }
 
     @Override
     public void onResume() {
@@ -262,16 +292,12 @@ public class SermonFragment extends ListFragment {
         }
 
         public void updatePlayerInfo(SermonItem item) {
-            txtTitle.setText(item.title);
+            txtTitle.setText(item.titleWithDate);
             txtAuthor.setText(item.preacher);
             currentItem = item;
             if (mService != null) {
                 //현재 서비스에 등록되어 있는 아이템과 사용자가 선택한 아이템이 같은지 체크
-                if (mService.getCurrentPlayerItem() != null && mService.getCurrentPlayerItem().title.equals(item.title)) {
-                    equalsServiceItem = true;
-                } else {
-                    equalsServiceItem = false;
-                }
+                equalsServiceItem = mService.getCurrentPlayerItem() != null && mService.getCurrentPlayerItem().titleWithDate.equals(item.titleWithDate);
 
                 if (equalsServiceItem) {
                     //재생중이면 Pause 버튼으로 표현
@@ -307,11 +333,7 @@ public class SermonFragment extends ListFragment {
                         return;
                     }
 
-                    if (mService.getCurrentPlayerItem() != null && mService.getCurrentPlayerItem().title.equals(currentItem.title)) {
-                        equalsServiceItem = true;
-                    } else {
-                        equalsServiceItem = false;
-                    }
+                    equalsServiceItem = mService.getCurrentPlayerItem() != null && mService.getCurrentPlayerItem().titleWithDate.equals(currentItem.titleWithDate);
 
                     if (v.getTag() != null) {
                         int playerStatus = (int) v.getTag();
@@ -420,7 +442,7 @@ public class SermonFragment extends ListFragment {
             mPlayerController.updatePlayerInfo(item);
         }
 
-        if (mService != null && mService.getCurrentPlayerItem() != null) {
+        if (mService.getCurrentPlayerItem() != null) {
             mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
             if (mService.isPlaying()) {
                 mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_pause);

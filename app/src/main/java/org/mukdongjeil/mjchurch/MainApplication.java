@@ -4,7 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.widget.Toast;
 
-import com.google.firebase.crash.FirebaseCrash;
 import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -21,16 +20,12 @@ import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
 public class MainApplication extends Application {
 
     public static int REQUEST_FAIL_COUNT;
-    public static Context GLOBAL_APPLICATION_CONTEXT;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
         REQUEST_FAIL_COUNT = 0;
-        GLOBAL_APPLICATION_CONTEXT = getApplicationContext();
-
-        //Fabric.with(this, new Crashlytics());
 
         SystemHelpers.init(getApplicationContext());
         PreferenceUtil.init(getApplicationContext());
@@ -39,8 +34,8 @@ public class MainApplication extends Application {
         initializeImageLoader();
     }
 
-    public static void serverDownProcess() {
-        Toast.makeText(GLOBAL_APPLICATION_CONTEXT, "서버 상태가 원활하지 않아 앱을 종료합니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_LONG).show();
+    public static void serverDownProcess(Context context) {
+        Toast.makeText(context, "서버 상태가 원활하지 않아 앱을 종료합니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_LONG).show();
         System.exit(0);
     }
 
@@ -61,7 +56,6 @@ public class MainApplication extends Application {
                 .memoryCacheSize(2 * 1024 * 1024)
                 .diskCacheSize(50 * 1024 * 1024)
                 .diskCacheFileCount(100)
-                //.writeDebugLogs()
                 .build();
         ImageLoader.getInstance().init(config);
     }

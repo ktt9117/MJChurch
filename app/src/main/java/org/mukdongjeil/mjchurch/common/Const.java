@@ -61,7 +61,7 @@ public class Const {
     private static final String BOARD_NEW_PERSON_LIST_URL = BASE_URL + "/m/photo/index.mo?menuId=1770&topMenuId=6&menuType=9&newMenuAt=false&pageNow=";
     private static final String BOARD_NEW_PERSON_CONTENT_URL = BASE_URL + "/m/photo/view.mo?menuId=1770&topMenuId=6&menuType=9&newMenuAt=false&bbsNo=";
 
-    public static final String getWorshipListUrl(int worshipType, int pageNo) {
+    public static String getWorshipListUrl(int worshipType, int pageNo) {
         switch (worshipType) {
             case WORSHIP_TYPE_WEDNESDAY:
                 return WORSHIP_LIST_URL + WEDNESDAY_WORSHIP_ID + WORSHIP_LIST_EXT_URL + pageNo;
@@ -78,7 +78,7 @@ public class Const {
         }
     }
 
-    public static final String getWorshipContentUrl(int worshipType, int pageNo, String contentNo) {
+    public static String getWorshipContentUrl(int worshipType, int pageNo, String contentNo) {
         switch (worshipType) {
             case WORSHIP_TYPE_WEDNESDAY:
                 return WORSHIP_CONTENT_URL + WEDNESDAY_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
@@ -95,23 +95,23 @@ public class Const {
         }
     }
 
-    public static final String getThanksShareListUrl(int pageNo) {
+    public static String getThanksShareListUrl(int pageNo) {
         return BOARD_THANKS_SHARE_URL + pageNo;
     }
 
-    public static final String getGalleryListUrl(int pageNo) {
+    public static String getGalleryListUrl(int pageNo) {
         return BOARD_GALLERY_LIST_URL + pageNo;
     }
 
-    public static final String getGalleryContentUrl(String contentNo) {
+    public static String getGalleryContentUrl(String contentNo) {
         return BOARD_GALLERY_CONTENT_URL + contentNo;
     }
 
-    public static final String getNewPersonListUrl(int pageNo) {
+    public static String getNewPersonListUrl(int pageNo) {
         return BOARD_NEW_PERSON_LIST_URL + pageNo;
     }
 
-    public static final String getNewPersonContentUrl(String contentNo) {
+    public static String getNewPersonContentUrl(String contentNo) {
         return BOARD_NEW_PERSON_CONTENT_URL + contentNo;
     }
 

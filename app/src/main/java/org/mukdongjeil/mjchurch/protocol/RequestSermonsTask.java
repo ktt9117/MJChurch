@@ -144,19 +144,7 @@ public class RequestSermonsTask extends RequestBaseTask {
                     Element ttlElement = contentElement.getFirstElementByClass("bbs_ttl");
                     if (ttlElement != null) {
                         Logger.i(TAG, "onPostExecute > ttlElement : " + ttlElement.getTextExtractor().toString());
-                        String temp = ttlElement.getTextExtractor().toString();
-                        if (!TextUtils.isEmpty(temp) && temp.length() > 12) {
-                            try {
-                                String date = temp.substring(0, 12);
-                                item.title = temp.substring(13, temp.length());
-                                item.date = date;
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                item.title = temp;
-                            }
-                        } else {
-                            item.title = temp;
-                        }
+                        item.titleWithDate = ttlElement.getTextExtractor().toString();
                     } else {
                         Logger.e(TAG, "onPostExecute > cannot find ttlElement element");
                     }
@@ -221,7 +209,10 @@ public class RequestSermonsTask extends RequestBaseTask {
                     Logger.d(TAG, "insert item to local database result : " + insertResult);
 
                     if (listener != null) {
+                        Logger.d(TAG, "send item to listener");
                         listener.onResult(item, OnResultListener.POSITION_NONE);
+                    } else {
+                        Logger.e(TAG, "cannot send item to listener caused by listener is null");
                     }
 
                 } else {

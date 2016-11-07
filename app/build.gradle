@@ -1,20 +1,16 @@
 buildscript {
     repositories {
-        //maven { url 'https://maven.fabric.io/public' }
     }
 
     dependencies {
-        //classpath 'io.fabric.tools:gradle:1.+'
     }
 }
 apply plugin: 'com.android.application'
 
 repositories {
-    //maven { url 'https://maven.fabric.io/public' }
 }
 
 apply plugin: 'com.google.gms.google-services'
-//apply plugin: 'io.fabric'
 
  android {
     compileSdkVersion 21
@@ -23,9 +19,9 @@ apply plugin: 'com.google.gms.google-services'
     defaultConfig {
         applicationId "org.mukdongjeil.mjchurch"
         minSdkVersion 15
-        targetSdkVersion 21
-        versionCode 7
-        versionName "1.6"
+        targetSdkVersion 24
+        versionCode 8
+        versionName "1.7"
         multiDexEnabled true
     }
     buildTypes {
@@ -52,8 +48,4 @@ dependencies {
     /* for CardView Dependencies */
     compile 'com.android.support:cardview-v7:21.0.+'
     compile 'com.android.support:recyclerview-v7:21.0.+'
-
-    //    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
-    //        transitive = true;
-    //    }
 }

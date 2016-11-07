@@ -1,114 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/row_sermon_layout"
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_gravity="center"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/sermon_row_padding">
+    android:layout_margin="12dp"
+    card_view:cardCornerRadius="4dp"
+    card_view:cardElevation="5dp">
 
-    <ImageView android:id="@+id/img_preacher"
-        android:layout_width="@dimen/sermon_row_image_width"
-        android:layout_height="@dimen/sermon_row_image_height"
-        android:scaleType="centerCrop" />
-
-    <LinearLayout
-        android:orientation="vertical"
+    <RelativeLayout
+        android:id="@+id/row_sermon_layout"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/sermon_row_image_height"
-        android:gravity="left|center_vertical"
-        android:padding="@dimen/sermon_row_inside_padding"
-        android:layout_toRightOf="@id/img_preacher">
+        android:layout_height="wrap_content"
+        android:padding="@dimen/sermon_row_padding">
 
-        <TextView android:id="@+id/title"
+        <ImageView android:id="@+id/img_preacher"
+            android:layout_width="@dimen/sermon_row_image_width"
+            android:layout_height="@dimen/sermon_row_image_height"
+            android:scaleType="centerCrop" />
+
+        <TextView android:id="@+id/title_with_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="16dp"
-            android:textColor="@color/black"/>
+            android:textColor="@color/black"
+            android:padding="@dimen/sermon_row_inside_padding"
+            android:gravity="left|center_vertical"
+            android:layout_toRightOf="@id/img_preacher"
+            android:text="가나다라 마바사아 자차카타 파하하하" />
 
-        <TextView android:id="@+id/date"
+        <RelativeLayout android:id="@+id/content"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:textColor="@color/light_gray" />
-    </LinearLayout>
+            android:layout_height="@dimen/sermon_row_content_height"
+            android:layout_marginTop="5dp"
+            android:layout_below="@id/img_preacher" >
 
-    <RelativeLayout android:id="@+id/content"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/sermon_row_content_height"
-        android:layout_marginTop="5dp"
-        android:layout_below="@id/img_preacher" >
+            <TextView android:id="@+id/preacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="가나 다라마바사아 자차"/>
 
-        <TextView android:id="@+id/preacher"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="가나 다라마바사아 자차"/>
+            <TextView android:id="@+id/chapter_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/preacher"
+                android:layout_marginTop="3dp"
+                android:text="가나다라 마바사아 자차"/>
 
-        <TextView android:id="@+id/chapter_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/preacher"
-            android:layout_marginTop="3dp"
-            android:text="가나다라 마바사아 자차"/>
+            <TextView android:id="@+id/content_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/chapter_info"
+                android:layout_marginTop="10dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:text="가나달 마바ㅏ상 동해물과 백두산이 마르고 닳도록 하나님이 보우하사 우리 나라 만세 무궁화 삼천리 화려 강산 대한 사람 대한으로 길이 보전하세"/>
 
-        <TextView android:id="@+id/content_summary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/chapter_info"
-            android:layout_marginTop="10dp"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:text="가나달 마바ㅏ상 동해물과 백두산이 마르고 닳도록 하나님이 보우하사 우리 나라 만세 무궁화 삼천리 화려 강산 대한 사람 대한으로 길이 보전하세"/>
+            <TextView android:id="@+id/content_more"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="3dp"
+                android:gravity="center"
+                android:layout_below="@id/content_summary"
+                android:text="... 더보기 ..."/>
 
-        <TextView android:id="@+id/content_more"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_marginTop="3dp"
-            android:gravity="center"
-            android:layout_below="@id/content_summary"
-            android:text="... 더보기 ..."/>
-
-        <TextView android:id="@+id/play_info_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/preacher"
-            android:layout_alignParentRight="true"
-            android:text="재생중..."/>
-
-        <TextView android:id="@+id/download_info"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/play_info_text"
-            android:layout_alignBaseline="@id/chapter_info"
-            android:layout_alignParentRight="true"
-            android:text="다운로드됨" />
-
-        <!--
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center" >
-
-            <Button android:id="@+id/btn_play"
+            <TextView android:id="@+id/play_info_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
-                android:text="Play" />
+                android:layout_alignBaseline="@id/preacher"
+                android:layout_alignParentRight="true"
+                android:text="재생중..."/>
 
-            <Button android:id="@+id/btn_stop"
+            <TextView android:id="@+id/download_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
-                android:text="Stop" />
+                android:layout_below="@id/play_info_text"
+                android:layout_alignBaseline="@id/chapter_info"
+                android:layout_alignParentRight="true"
+                android:text="다운로드됨" />
 
-            <Button android:id="@+id/btn_download"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Download" />
-
-        </LinearLayout>
-        -->
+        </RelativeLayout>
 
     </RelativeLayout>
 
-</RelativeLayout>
+</android.support.v7.widget.CardView>

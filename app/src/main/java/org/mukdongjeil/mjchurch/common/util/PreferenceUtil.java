@@ -21,16 +21,14 @@ public class PreferenceUtil {
 
 
 	private static SharedPreferences mPreference = null;
-	private static Context mContext = null;
-	
+
 	/**
 	 * Singleton  
 	 * @param context : getApplicationContext();
 	 **/
 	public static void init(Context context) {
-		mContext = context;
 		if (context != null) {
-			mPreference = mContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+			mPreference = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 		}
 	}
 	
@@ -38,25 +36,25 @@ public class PreferenceUtil {
 	private static void setPreferenceValue(String preName, boolean flag) {
 		Editor editor = mPreference.edit();
 		editor.putBoolean(preName, flag);
-		editor.commit();
+		editor.apply();
 	}
 	
 	private static void setPreferenceValue(String preName, String str) {
 		Editor editor = mPreference.edit();
 		editor.putString(preName, str);
-		editor.commit();
+		editor.apply();
 	}
 	
 	private static void setPreferenceValue(String preName, int value) {
 		Editor editor = mPreference.edit();
 		editor.putInt(preName, value);
-		editor.commit();
+		editor.apply();
 	}
 	
 	private static void setPreferenceValue(String preName, long value) {
 		Editor editor = mPreference.edit();
 		editor.putLong(preName, value);
-		editor.commit();
+		editor.apply();
 	}
 
 	// ---------------------- Setter -------------------------- //

@@ -7,12 +7,11 @@ import com.google.gson.Gson;
  */
 public class SermonItem {
     public int _id;
-    public String title;
+    public String titleWithDate;
     public String content;
     public String contentUrl;
     public String preacher;
     public String chapterInfo;
-    public String date;
     public String audioUrl;
     public String docUrl;
     public String bbsNo;

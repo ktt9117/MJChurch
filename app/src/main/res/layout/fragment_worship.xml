@@ -63,21 +63,11 @@
         android:layout_centerInParent="true"
         android:text="@string/loading_sermon_data" />
 
-    <FrameLayout
+    <include
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/player_layout">
-
-        <ListView
-            android:id="@android:id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <TextView
-            android:id="@id/android:empty"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </FrameLayout>
+        android:layout_above="@id/player_layout"
+        layout="@layout/layout_recyclerview" />
 
 </RelativeLayout>

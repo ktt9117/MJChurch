@@ -47,11 +47,10 @@ public class DBManager  {
             while (cursor.moveToNext()) {
                 SermonItem item = new SermonItem();
                 item._id = cursor.getInt(cursor.getColumnIndex(SermonCols.ID));
-                item.title = cursor.getString(cursor.getColumnIndex(SermonCols.TITLE));
+                item.titleWithDate = cursor.getString(cursor.getColumnIndex(SermonCols.TITLE));
                 item.preacher = cursor.getString(cursor.getColumnIndex(SermonCols.PREACHER));
                 item.content = cursor.getString(cursor.getColumnIndex(SermonCols.CONTENT));
                 item.contentUrl = cursor.getString(cursor.getColumnIndex(SermonCols.CONTENT_URL));
-                item.date = cursor.getString(cursor.getColumnIndex(SermonCols.DATE));
                 item.chapterInfo = cursor.getString(cursor.getColumnIndex(SermonCols.CHAPTER));
                 item.audioUrl = cursor.getString(cursor.getColumnIndex(SermonCols.AUDIO_URL));
                 item.docUrl =cursor.getString(cursor.getColumnIndex(SermonCols.DOC_URL));
@@ -144,11 +143,10 @@ public class DBManager  {
 
     private int insertSermon(SQLiteDatabase db, SermonItem item, int sermonType) {
         ContentValues values = new ContentValues();
-        values.put(SermonCols.TITLE, item.title);
+        values.put(SermonCols.TITLE, item.titleWithDate);
         values.put(SermonCols.PREACHER, item.preacher);
         values.put(SermonCols.CONTENT, item.content);
         values.put(SermonCols.CONTENT_URL, item.contentUrl);
-        values.put(SermonCols.DATE, item.date);
         values.put(SermonCols.CHAPTER, item.chapterInfo);
         values.put(SermonCols.AUDIO_URL, item.audioUrl);
         values.put(SermonCols.DOC_URL, item.docUrl);
@@ -160,7 +158,7 @@ public class DBManager  {
     }
 
     private class DataHelper extends SQLiteOpenHelper {
-        private static final int DB_VERSION = 4; // Version must be >= 1
+        private static final int DB_VERSION = 5; // Version must be >= 1
         private static final String DB_NAME = "data.db";
 
         public static final String TABLE_SERMON = "sermon";

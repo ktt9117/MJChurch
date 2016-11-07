@@ -51,17 +51,10 @@ public class BoardFragment extends Fragment {
         mLocalItemList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getThankShareList();
         mItemList = new ArrayList<BoardItem>();
 
-        // use a linear layout manager
         mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
-
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
-
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-        // specify an adapter (see also next example)
         mAdapter = new BoardListAdapter(mItemList);
         mRecyclerView.setAdapter(mAdapter);
 

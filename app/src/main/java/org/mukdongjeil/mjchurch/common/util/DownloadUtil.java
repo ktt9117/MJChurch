@@ -4,7 +4,6 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 
 import org.mukdongjeil.mjchurch.common.Const;
@@ -32,7 +31,7 @@ public class DownloadUtil {
 
     public static boolean isDownloadSuccessItem(Context context, SermonItem item) {
         if (isExistsDownloadFile(item)) {
-            return isDownloadFailedItem(context, item) == true ? false : true;
+            return isDownloadFailedItem(context, item) != true;
         } else {
             return false;
         }
@@ -50,8 +49,8 @@ public class DownloadUtil {
         Uri downloadUri = Uri.parse(Const.BASE_URL + item.audioUrl);
         DownloadManager.Request request = new DownloadManager.Request(downloadUri);
         request.setTitle("설교 다운로드");
-        request.setDescription(item.title);
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, item.title + StringUtils.FILE_EXTENSION_MP3);
+        request.setDescription(item.titleWithDate);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, item.titleWithDate + StringUtils.FILE_EXTENSION_MP3);
 //        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
 //            request.setShowRunningNotification(true);
 //        } else {
@@ -70,7 +69,7 @@ public class DownloadUtil {
         Const.DIR_PUB_DOWNLOAD.mkdirs();
 
         // 2. 다운로드 폴더에 (#title).mp3와 동일한 이름의 파일이 있는지 체크
-        File file = new File(Const.DIR_PUB_DOWNLOAD, item.title + StringUtils.FILE_EXTENSION_MP3);
+        File file = new File(Const.DIR_PUB_DOWNLOAD, item.titleWithDate + StringUtils.FILE_EXTENSION_MP3);
         return (file != null && file.exists());
     }
 
@@ -88,7 +87,7 @@ public class DownloadUtil {
                 Logger.i(TAG, "item.audioUrl : " + Const.BASE_URL + item.audioUrl);
                 if (columnUri.equals(Const.BASE_URL + item.audioUrl)) {
                     //기존에 있던 파일이 정상적으로 다운로드 되지 않은 파일이므로 삭제
-                    File file = new File(Const.DIR_PUB_DOWNLOAD, item.title + StringUtils.FILE_EXTENSION_MP3);
+                    File file = new File(Const.DIR_PUB_DOWNLOAD, item.titleWithDate + StringUtils.FILE_EXTENSION_MP3);
                     file.delete();
                     return true;
                 }
