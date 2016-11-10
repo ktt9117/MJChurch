@@ -55,6 +55,6 @@ public class MenuListAdapter extends ArrayAdapter<MenuItem> {
 
     public void notifySelectedItemChanged(int position) {
         selectedItemPosition = position;
-        notifyDataSetInvalidated();
+        notifyDataSetChanged();
     }
 }
