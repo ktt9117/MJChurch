@@ -1,14 +1,19 @@
 package org.mukdongjeil.mjchurch;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,7 +22,6 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
-import org.mukdongjeil.mjchurch.board.BoardWriteFragment;
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
@@ -82,9 +86,19 @@ public class MainActivity extends SlidingFragmentActivity {
             @Override
             public void onBackStackChanged() {
                 toggleTouchMode();
-                getActionBar().setDisplayHomeAsUpEnabled(true);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // permission check for marshmallow(6.0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //일단 보류
+            //startPermissionCheck();
+        }
     }
 
     public void switchContent(Fragment fragment) {
@@ -246,5 +260,52 @@ public class MainActivity extends SlidingFragmentActivity {
     public void showCloseMenuItem() {
         mNeedShowCloseMenuItem = true;
         invalidateOptionsMenu();
+    }
+
+    private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 100;
+    private static final int REQUEST_CODE_READ_PHONE_STATE = 101;
+    private void startPermissionCheck() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+                // No explanation needed, we can request the permission.
+
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+
+//        PermissionListener permissionListener = new PermissionListener() {
+//            @Override
+//            public void onPermissionGranted() {
+//                Logger.e(TAG, "onPermissionGranted");
+//            }
+//
+//            @Override
+//            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+//                Logger.e(TAG, "onPermissionDenied");
+//                Toast.makeText(getApplicationContext(), "필요한 권한이 허용되지 않아 어플리케이션을 종료합니다.", Toast.LENGTH_LONG).show();
+//                finish();
+//            }
+//        };
+//
+//        new TedPermission(this)
+//                .setPermissionListener(permissionListener)
+//                .setDeniedMessage("권한이 없으면 어플리케이션을 실행할 수 없습니다. 설정 화면으로 이동하여 필요한 권한을 모두 \"허용\"으로 설정하세요")
+//                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE)
+//                .check();
     }
 }

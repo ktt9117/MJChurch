@@ -9,8 +9,8 @@ apply plugin: 'com.google.gms.google-services'
         applicationId "org.mukdongjeil.mjchurch"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 9
-        versionName "1.8"
+        versionCode 11
+        versionName "2.0"
         multiDexEnabled true
     }
     buildTypes {

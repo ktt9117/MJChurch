@@ -11,7 +11,7 @@ import java.io.File;
  */
 public class Const {
 
-    public static boolean DEBUG_MODE = true;
+    public static boolean DEBUG_MODE = false;
 
     public static final File DIR_PUB_DOWNLOAD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
