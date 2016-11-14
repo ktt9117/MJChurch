@@ -19,7 +19,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="동해물과 백두산이 마르고 닳도록"
             android:textSize="18dp" />
     </ScrollView>
 
@@ -29,7 +28,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/scroll_view"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="6dp"
         android:text="@android:string/ok" />
 
 </RelativeLayout>
