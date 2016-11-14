@@ -1,63 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.mukdongjeil.mjchurch" >
+    package="org.mukdongjeil.mjchurch">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- These are Dangerous Permissions -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-
-    <!-- [START gcm_permission]
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-    <permission android:name="org.mukdongjeil.mjchurch.permission.C2D_MESSAGE"
-        android:protectionLevel="signature" />
-    <uses-permission android:name="org.mukdongjeil.mjchurch.permission.C2D_MESSAGE" />
-    -->
-    <!-- [END gcm_permission] -->
-
-    <application android:name=".MainApplication"
+    <application
+        android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".IntroActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen" />
 
-        <activity android:name=".IntroActivity"
-            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen"
-            android:screenOrientation="portrait" />
+        <service android:name=".service.MediaService" />
 
-        <service
-            android:name=".service.MediaService" />
-
-        <receiver
-            android:name=".receiver.DownloadCompleteReceiver" >
+        <receiver android:name=".receiver.DownloadCompleteReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
             </intent-filter>
         </receiver>
 
         <!-- [START FCM] -->
-        <service
-            android:name=".service.MyFirebaseMessagingService">
+        <service android:name=".service.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <service
+            android:name=".service.MyFirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
         <!-- [END FCM] -->
 
+        <activity android:name=".PushMessageActivity"
+            android:theme="@android:style/Theme.DeviceDefault.Light.Dialog" >
+        </activity>
     </application>
 
 </manifest>

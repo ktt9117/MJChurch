@@ -1,27 +1,16 @@
-buildscript {
-    repositories {
-    }
-
-    dependencies {
-    }
-}
 apply plugin: 'com.android.application'
-
-repositories {
-}
-
 apply plugin: 'com.google.gms.google-services'
 
  android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
         applicationId "org.mukdongjeil.mjchurch"
         minSdkVersion 15
-        targetSdkVersion 24
-        versionCode 8
-        versionName "1.7"
+        targetSdkVersion 23
+        versionCode 9
+        versionName "1.8"
         multiDexEnabled true
     }
     buildTypes {

@@ -5,6 +5,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -58,6 +61,7 @@ public class BoardFragment extends Fragment {
         mAdapter = new BoardListAdapter(mItemList);
         mRecyclerView.setAdapter(mAdapter);
 
+        //setHasOptionsMenu(true);
         return v;
     }
 
@@ -120,5 +124,20 @@ public class BoardFragment extends Fragment {
             }
         }
         return null;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        Logger.e(TAG, "write Menu Item created");
+        inflater.inflate(R.menu.menu_write, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Logger.e(TAG, "write Menu Item clicked");
+        BoardWriteFragment fragment = new BoardWriteFragment();
+        ((MainActivity) getActivity()).switchContentWithBackStack(fragment);
+        return true;
     }
 }

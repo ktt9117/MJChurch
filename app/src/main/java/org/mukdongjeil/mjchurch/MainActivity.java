@@ -9,15 +9,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.crash.FirebaseCrash;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
+import org.mukdongjeil.mjchurch.board.BoardWriteFragment;
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
+import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
 
 public class MainActivity extends SlidingFragmentActivity {
@@ -34,8 +36,31 @@ public class MainActivity extends SlidingFragmentActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        String textstr = "옆에 있는 사람이  버럭버럭 화를내고 자꾸 짜증을 낸다 더위탓인가....? 갱년기가 왔을까...? 그런데도 나는 자꾸 피식피식 웃음이 난다... (괜찮아요 저한텐 주님이 있잖아요 주님이 날 보고계셔서 기쁘거든요 제 말 듣고 계시죠?) 아지트나 베일에 쌓인 비밀이란 은밀해서 더 달콤한것이 아닌가? 명상과는 다른 묵상이...그리고 그분과 대화함의 달콤함이 나를 설레이게 한다 길거리에서 차 안에서 카페에서 순간순간. 형식도 없고 질서도 없이 나누는 대화이지만 아주 밀착되어있는 기분이 난 몹시 좋다  옆에 있는 사람이  버럭버럭 화를내고 자꾸 짜증을 낸다 더위탓인가....? 갱년기가 왔을까...? 그런데도 나는 자꾸 피식피식 웃음이 난다... (괜찮아요 저한텐 주님이 있잖아요 주님이 날 보고계셔서 기쁘거든요 제 말 듣고 계시죠?) 아지트나 베일에 쌓인 비밀이란 은밀해서 더 달콤한것이 아닌가? 명상과는 다른 묵상이...그리고 그분과 대화함의 달콤함이 나를 설레이게 한다 길거리에서 차 안에서 카페에서 순간순간. 형식도 없고 질서도 없이 나누는 대화이지만 아주 밀착되어있는 기분이 난 몹시 좋다  옆에 있는 사람이  버럭버럭 화를내고 자꾸 짜증을 낸다더위탓인가....? 갱년기가 왔을까...?그런데도 나는 자꾸 피식피식 웃음이 난다...(괜찮아요 저한텐 주님이 있잖아요 주님이 날 보고계셔서 기쁘거든요 제 말 듣고 계시죠?)아지트나 베일에 쌓인 비밀이란 은밀해서 더 달콤한것이 아닌가?명상과는 다른 묵상이...그리고 그분과 대화함의 달콤함이 나를 설레이게 한다길거리에서 차 안에서 카페에서 순간순간.형식도 없고 질서도 없이 나누는 대화이지만 아주 밀착되어있는 기분이 난 몹시 좋다";
-//        StringUtils.removeDuplicationSentence(textstr);
+        // for fcm notification click action.
+        Intent getIntent = getIntent();
+        if (getIntent != null) {
+            Bundle bundle = getIntent.getExtras();
+            if (bundle != null) {
+                final String message = bundle.getString("message");
+                if (TextUtils.isEmpty(message) == false) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (isFinishing() == false) {
+                                Intent intent = new Intent(MainActivity.this, PushMessageActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("message", message);
+                                startActivity(intent);
+                            } else {
+                                Logger.i(TAG, "isFinishing() : " + isFinishing());
+                            }
+                        }
+                    }, 2300);
+                }
+            } else {
+                Logger.e(TAG, "bundle is null");
+            }
+        }
 
         startActivity(new Intent(this, IntroActivity.class));
 
@@ -57,14 +82,25 @@ public class MainActivity extends SlidingFragmentActivity {
             @Override
             public void onBackStackChanged() {
                 toggleTouchMode();
+                getActionBar().setDisplayHomeAsUpEnabled(true);
             }
         });
-
     }
 
     public void switchContent(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
+        getActionBar().setDisplayHomeAsUpEnabled(true);
         showContent();
+    }
+
+    public void switchContentWithBackStack(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+        getActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     public void hideSlideMenu() {
@@ -118,9 +154,11 @@ public class MainActivity extends SlidingFragmentActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (mNeedShowCloseMenuItem) {
+            Logger.e(TAG, "onPrepareOptionsMenu : needToCloseMenuItem");
             getMenuInflater().inflate(R.menu.menu_close, menu);
             return true;
         }
+        Logger.e(TAG, "onPrepareOptionsMenu : there is no need to show menu items");
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -201,6 +239,7 @@ public class MainActivity extends SlidingFragmentActivity {
                 listener.onClick(false);
             }
         });
+        ab.create().show();
         ab.create().show();
     }
 
