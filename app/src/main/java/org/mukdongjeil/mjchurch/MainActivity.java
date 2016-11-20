@@ -3,6 +3,7 @@ package org.mukdongjeil.mjchurch;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
@@ -26,7 +28,13 @@ import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
 
+import java.security.Permission;
+import java.util.HashMap;
+
 public class MainActivity extends SlidingFragmentActivity {
+    public interface PermissionCheckResultListener {
+        void onResult(boolean isGranted);
+    }
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -35,6 +43,9 @@ public class MainActivity extends SlidingFragmentActivity {
     private boolean mNeedShowCloseMenuItem = false;
 
     private FirebaseAnalytics mFirebaseAnalytics;
+
+    private static final int REQUEST_CODE_PERMISSION_CHECK = 100;
+    private PermissionCheckResultListener mPermissionResultListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -254,7 +265,6 @@ public class MainActivity extends SlidingFragmentActivity {
             }
         });
         ab.create().show();
-        ab.create().show();
     }
 
     public void showCloseMenuItem() {
@@ -262,50 +272,58 @@ public class MainActivity extends SlidingFragmentActivity {
         invalidateOptionsMenu();
     }
 
-    private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 100;
-    private static final int REQUEST_CODE_READ_PHONE_STATE = 101;
-    private void startPermissionCheck() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE);
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-                // No explanation needed, we can request the permission.
-
-
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
+    public void startPermissionCheck(final String checkPermission, PermissionCheckResultListener listener) {
+        if (TextUtils.isEmpty(checkPermission) || listener == null) {
+            Logger.e(TAG, "cannot check permission caused by permission parameter or listener is not valid");
+            listener.onResult(false);
+            return;
         }
 
-//        PermissionListener permissionListener = new PermissionListener() {
-//            @Override
-//            public void onPermissionGranted() {
-//                Logger.e(TAG, "onPermissionGranted");
-//            }
-//
-//            @Override
-//            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
-//                Logger.e(TAG, "onPermissionDenied");
-//                Toast.makeText(getApplicationContext(), "필요한 권한이 허용되지 않아 어플리케이션을 종료합니다.", Toast.LENGTH_LONG).show();
-//                finish();
-//            }
-//        };
-//
-//        new TedPermission(this)
-//                .setPermissionListener(permissionListener)
-//                .setDeniedMessage("권한이 없으면 어플리케이션을 실행할 수 없습니다. 설정 화면으로 이동하여 필요한 권한을 모두 \"허용\"으로 설정하세요")
-//                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE)
-//                .check();
+        if (ContextCompat.checkSelfPermission(this, checkPermission) != PackageManager.PERMISSION_GRANTED) {
+
+            mPermissionResultListener = listener;
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, checkPermission)) {
+                AlertDialog.Builder ab = new AlertDialog.Builder(MainActivity.this);
+                String rationale;
+                if (checkPermission.equals(Manifest.permission.READ_PHONE_STATE)) {
+                    rationale = "오디오 재생을 위해서는 \"통화 상태 조회\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.";
+                } else if (checkPermission.equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    rationale = "설교 다운로드를 위해서는 \"쓰기\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.";
+                } else {
+                    Logger.e(TAG, "cannot check permission caused by checkPermission parameter is not valid");
+                    mPermissionResultListener = null;
+                    return;
+                }
+                ab.setTitle("권한이 필요합니다.");
+                ab.setMessage(rationale);
+                ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{checkPermission}, REQUEST_CODE_PERMISSION_CHECK);
+
+                    }
+                });
+                ab.create().show();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{checkPermission}, REQUEST_CODE_PERMISSION_CHECK);
+            }
+        } else {
+            listener.onResult(true);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (mPermissionResultListener == null) {
+            Logger.e(TAG, "onRequestPermissionResult just pass. caused by resultListener is null");
+            return;
+        }
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            mPermissionResultListener.onResult(true);
+        } else {
+            mPermissionResultListener.onResult(false);
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

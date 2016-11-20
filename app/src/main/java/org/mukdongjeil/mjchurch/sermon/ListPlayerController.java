@@ -1,8 +1,14 @@
 package org.mukdongjeil.mjchurch.sermon;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -27,7 +33,7 @@ public class ListPlayerController {
 
     private final String TAG = ListPlayerController.class.getSimpleName();
 
-    private Context context;
+    private FragmentActivity parentActivity;
     private MediaService service;
     private ServiceConnection connection;
 
@@ -42,8 +48,8 @@ public class ListPlayerController {
 
     private boolean equalsServiceItem;
 
-    public ListPlayerController(Context context, View containerView) {
-        this.context = context;
+    public ListPlayerController(FragmentActivity context, View containerView) {
+        this.parentActivity = context;
         playerLayout = (RelativeLayout) containerView.findViewById(R.id.player_layout);
         btnDownload = (ImageView) containerView.findViewById(R.id.btn_download);
         btnPlayOrPause = (ImageView) containerView.findViewById(R.id.btn_play_or_pause);
@@ -93,6 +99,11 @@ public class ListPlayerController {
             updatePlayerInfo(item);
         }
 
+        if (service == null) {
+            Logger.e(TAG, "updatePlayerControllerIfNeccessary pass. caused by service is null");
+            return;
+        }
+
         if (service.getCurrentPlayerItem() != null) {
             updatePlayerInfo(service.getCurrentPlayerItem());
         }
@@ -106,15 +117,15 @@ public class ListPlayerController {
         @Override
         public void onClick(View v) {
             if (currentItem == null) {
-                Toast.makeText(context, "설교가 선택되지 않았습니다. 목록에서 설교를 선택해주세요.", Toast.LENGTH_LONG).show();
+                Toast.makeText(parentActivity, "설교가 선택되지 않았습니다. 목록에서 설교를 선택해주세요.", Toast.LENGTH_LONG).show();
                 return;
             }
 
             if (v.getId() == R.id.btn_play_or_pause) {
                 if (service == null) {
-                    Intent service = new Intent(context, MediaService.class);
-                    context.bindService(service, connection, Context.BIND_AUTO_CREATE);
-                    Toast.makeText(context, "플레이어가 아직 준비중입니다. 잠시 후 다시 시도해주세요", Toast.LENGTH_LONG).show();
+                    Intent service = new Intent(parentActivity, MediaService.class);
+                    parentActivity.bindService(service, connection, Context.BIND_AUTO_CREATE);
+                    Toast.makeText(parentActivity, "플레이어가 아직 준비중입니다. 잠시 후 다시 시도해주세요", Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -136,51 +147,24 @@ public class ListPlayerController {
                             btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
                         } else {
                             Logger.i(TAG, "resumeResult == false maybe");
-                            if (currentItem.downloadStatus == SermonItem.DownloadStatus.DOWNLOAD_SUCCESS) {
+                            if (DownloadUtil.isDownloadSuccessItem(parentActivity, currentItem)) {
                                 //다운로드 된 아이템은 그냥 재생한다.
-                                try {
-                                    service.startPlayer(currentItem);
-                                    btnPlayOrPause.setImageResource(R.drawable.ic_pause);
-                                    btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
-                                    return;
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            //다운로드 되지 않은 아이템은 네트워크에 연결되어 있는지 체크
-                            if (NetworkUtil.getNetwork(context) == NetworkUtil.NETWORK_NONE) {
-                                Toast.makeText(context, "네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요", Toast.LENGTH_LONG).show();
-                                return;
-                            }
-
-                            if (!NetworkUtil.isWifi(context)) {
-                                //와이파이에 연결되지 않은 상태에서 재생을 누르면 경고 문구를 보여준다.
-                                if (context instanceof MainActivity) {
-                                    ((MainActivity) context).showNetworkAlertDialog("와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 요금이 부과될 수도 있습니다.\n(다운로드 하거나 와이파이에서 재생하기를 권장합니다.)\n 재생 하시겠습니까?",
-                                            new MainActivity.NetworkAlertResultListener() {
-                                                @Override
-                                                public void onClick(boolean positiveButtonClick) {
-                                                    if (positiveButtonClick) {
-                                                        try {
-                                                            service.startPlayer(currentItem);
-                                                            btnPlayOrPause.setImageResource(R.drawable.ic_pause);
-                                                            btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
-                                                        } catch (IOException e) {
-                                                            e.printStackTrace();
-                                                        }
-                                                    }
-                                                }
-                                            });
-                                }
+                                playCurrentItem();
                             } else {
-                                //와이파이라면 그냥 재생한다.
-                                try {
-                                    service.startPlayer(currentItem);
-                                    btnPlayOrPause.setImageResource(R.drawable.ic_pause);
-                                    btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                                //다운로드 되지 않은 아이템은 네트워크에 연결되어 있는지 체크
+                                boolean res = isWifiConnected(new MainActivity.NetworkAlertResultListener() {
+                                    @Override
+                                    public void onClick(boolean positiveButtonClick) {
+                                        if (positiveButtonClick) {
+                                            playCurrentItem();
+                                        }
+                                    }
+                                });
+                                Logger.i(TAG, "isWifiConnected : " + res);
+
+                                if (res == true) {
+                                    //와이파이라면 그냥 재생한다.
+                                    playCurrentItem();
                                 }
                             }
                         }
@@ -191,33 +175,90 @@ public class ListPlayerController {
                     }
                 }
             } else if (v.getId() == R.id.btn_download) {
-                if (DownloadUtil.isNecessaryDownload(context, currentItem)) {
-                    if (NetworkUtil.getNetwork(context) == NetworkUtil.NETWORK_NONE) {
-                        Toast.makeText(context, "네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    if (!NetworkUtil.isWifi(context)) {
-                        if (context instanceof MainActivity) {
-                            ((MainActivity) context).showNetworkAlertDialog("와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 요금이 부과될 수도 있습니다.\n(와이파이에서 다운로드를 권장합니다.)\n 다운로드 하시겠습니까?",
-                                    new MainActivity.NetworkAlertResultListener() {
-                                        @Override
-                                        public void onClick(boolean positiveButtonClick) {
-                                            if (positiveButtonClick) {
-                                                DownloadUtil.requestDownload(context, currentItem);
-                                            }
-                                        }
-                                    });
-                        }
-                    } else {
-                        DownloadUtil.requestDownload(context, currentItem);
+                if (DownloadUtil.isNecessaryDownload(parentActivity, currentItem)) {
+                    boolean res = isWifiConnected(new MainActivity.NetworkAlertResultListener() {
+                        @Override
+                        public void onClick(boolean positiveButtonClick) {
+                            if (positiveButtonClick) {
+                                downloadCurrentItem();
+                            }
+                        }}
+                    );
+                    if (res == true) {
+                        downloadCurrentItem();
                     }
                 } else {
-                    Toast.makeText(context, "다운로드 중이거나 이미 다운로드 완료된 파일입니다.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(parentActivity, "다운로드 중이거나 이미 다운로드 완료된 파일입니다.", Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(context, "구현 준비중입니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(parentActivity, "구현 준비중입니다.", Toast.LENGTH_LONG).show();
             }
         }
     };
+
+    private boolean isWifiConnected(MainActivity.NetworkAlertResultListener listener) {
+        if (NetworkUtil.getNetwork(parentActivity) == NetworkUtil.NETWORK_NONE) {
+            Toast.makeText(parentActivity, "네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        if (!NetworkUtil.isWifi(parentActivity)) {
+            //와이파이에 연결되지 않은 상태에서 재생을 누르면 경고 문구를 보여준다.
+            if (parentActivity instanceof MainActivity) {
+                ((MainActivity) parentActivity).showNetworkAlertDialog(
+                        "와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 " +
+                                "요금이 부과될 수도 있습니다.\n(와이파이 환경에서 이용하시길 권장합니다.)\n " +
+                                "계속 진행 하시겠습니까?", listener);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void playCurrentItem() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ((MainActivity) parentActivity).startPermissionCheck(Manifest.permission.READ_PHONE_STATE,
+                    new MainActivity.PermissionCheckResultListener() {
+                @Override
+                public void onResult(boolean isGranted) {
+                    Logger.i(TAG, "onResult isGranted : " + isGranted);
+                    if (isGranted) {
+                        try {
+                            service.startPlayer(currentItem);
+                            btnPlayOrPause.setImageResource(R.drawable.ic_pause);
+                            btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Toast.makeText(parentActivity, "\"통화 상태 조회\" 권한이 없으면 재생할 수 없습니다.", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        } else {
+            try {
+                service.startPlayer(currentItem);
+                btnPlayOrPause.setImageResource(R.drawable.ic_pause);
+                btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void downloadCurrentItem() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ((MainActivity) parentActivity).startPermissionCheck(Manifest.permission.WRITE_EXTERNAL_STORAGE, new MainActivity.PermissionCheckResultListener() {
+                @Override
+                public void onResult(boolean isGranted) {
+                    if (isGranted) {
+                        DownloadUtil.requestDownload(parentActivity, currentItem);
+                    } else {
+                        Toast.makeText(parentActivity, "\"쓰기\" 권한이 없으면 다운로드를 진행할 수 없습니다.", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+    }
 }

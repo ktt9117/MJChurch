@@ -119,7 +119,7 @@ public class MediaService extends Service {
         });
 
         File file = new File(Const.DIR_PUB_DOWNLOAD, item.titleWithDate + StringUtils.FILE_EXTENSION_MP3);
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             mPlayer.setDataSource(file.getPath());
             Logger.i(TAG, "Local File Playing...");
         } else {

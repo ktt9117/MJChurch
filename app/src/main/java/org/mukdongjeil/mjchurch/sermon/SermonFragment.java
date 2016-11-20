@@ -64,13 +64,6 @@ public class SermonFragment extends Fragment {
                 mPlayerController.setMediaService(mService);
                 if (mService.getCurrentPlayerItem() != null) {
                     mPlayerController.updatePlayerInfo(mService.getCurrentPlayerItem());
-//                    if (mService.isPlaying()) {
-//                        mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_pause);
-//                        mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
-//                    } else {
-//                        mPlayerController.btnPlayOrPause.setImageResource(R.drawable.ic_play);
-//                        mPlayerController.btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_STOP);
-//                    }
                 }
             } else {
                 Logger.e(TAG, "cannot set ListPlayerController info caused by ListPlayerController is not initialized yet!");
