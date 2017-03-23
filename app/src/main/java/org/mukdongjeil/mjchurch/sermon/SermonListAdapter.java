@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
@@ -58,7 +57,7 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
         holder.titleWithDate.setText(item.titleWithDate);
         holder.preacher.setText(item.preacher);
         holder.playInfo.setText("");
-        holder.content.setText(item.content);
+//        holder.content.setText(item.content);
         if (item.downloadStatus.name().equals(SermonItem.DownloadStatus.DOWNLOAD_SUCCESS.name())) {
             holder.downloadInfo.setText("다운로드 됨");
         } else {
@@ -100,8 +99,8 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
         TextView titleWithDate;
         TextView preacher;
         TextView chapterInfo;
-        TextView content;
-        TextView btnMore;
+        //TextView content;
+        //TextView btnMore;
         TextView playInfo;
         TextView downloadInfo;
         MediaService player;
@@ -114,17 +113,18 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
             titleWithDate = (TextView) v.findViewById(R.id.title_with_date);
             preacher = (TextView) v.findViewById(R.id.preacher);
             chapterInfo = (TextView) v.findViewById(R.id.chapter_info);
-            content = (TextView) v.findViewById(R.id.content_summary);
+            //content = (TextView) v.findViewById(R.id.content_summary);
             playInfo = (TextView) v.findViewById(R.id.play_info_text);
             downloadInfo = (TextView) v.findViewById(R.id.download_info);
             player = service;
-            btnMore = (TextView) v.findViewById(R.id.content_more);
-            btnMore.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(context, "구현 준비중 입니다.", Toast.LENGTH_SHORT).show();
-                }
-            });
+
+//            btnMore = (TextView) v.findViewById(R.id.content_more);
+//            btnMore.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    Toast.makeText(context, "구현 준비중 입니다.", Toast.LENGTH_SHORT).show();
+//                }
+//            });
 
         }
     }
