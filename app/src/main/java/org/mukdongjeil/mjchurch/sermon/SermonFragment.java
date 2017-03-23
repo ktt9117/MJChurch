@@ -23,6 +23,8 @@ import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
+import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
+import org.mukdongjeil.mjchurch.database.DBManager;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocol.RequestSermonsTask;
 import org.mukdongjeil.mjchurch.service.MediaService;
@@ -31,6 +33,7 @@ import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
@@ -148,7 +151,7 @@ public class SermonFragment extends Fragment {
         Logger.d(TAG, "worshipType : " + mWorshipType);
         getActivity().setTitle(title);
 
-        mItemList = new ArrayList<SermonItem>();
+        mItemList = new ArrayList<>();
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -159,44 +162,47 @@ public class SermonFragment extends Fragment {
             }
         });
         mRecyclerView.setAdapter(mAdapter);
+        loadSermonList();
+    }
 
-//        List<SermonItem> localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(mWorshipType);
+    private void loadSermonList() {
+        //        List<SermonItem> localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(mWorshipType);
         //로컬 DB에 저장된 목록이 없거나 오늘 서버에서 리스트 체크를 하지 않은 경우에만 서버로부터 목록을 받아온다.
         //TODO : 하루 한번만 체크했을 때 이상하게 마지막 아이템을 불러오지 못하는 현상이 있다...
 //        if ((localSermonList != null && localSermonList.size() < 1) || isAlreadyCheckToday(mWorshipType) == false) {
-            new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
-                @Override
-                public void onResult(Object obj, int position) {
-                    PreferenceUtil.setWorshipListCheckTimeInMillis(mWorshipType, System.currentTimeMillis());
-                    if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).hideLoadingDialog();
-                    }
-                    if (obj != null && obj instanceof SermonItem) {
-                        SermonItem item = (SermonItem) obj;
-                        mItemList.add(item);
-                        mAdapter.notifyDataSetChanged();
-                        mPlayerController.updatePlayerControllerIfNecessary(item);
+        new RequestSermonsTask(mWorshipType, mPageNo, new RequestBaseTask.OnResultListener() {
+            @Override
+            public void onResult(Object obj, int position) {
+                PreferenceUtil.setWorshipListCheckTimeInMillis(mWorshipType, System.currentTimeMillis());
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).hideLoadingDialog();
+                }
+                if (obj != null && obj instanceof SermonItem) {
+                    SermonItem item = (SermonItem) obj;
+                    mItemList.add(item);
+                    mAdapter.notifyDataSetChanged();
+                    mPlayerController.updatePlayerControllerIfNecessary(item);
 
-                        if (isItemAdded == false) {
-                            isItemAdded = true;
-                            listText.setVisibility(View.GONE);
-                        }
-                    } else {
-                        Logger.e(TAG, "obj is null or is not SermonItem at onResult");
+                    if (isItemAdded == false) {
+                        isItemAdded = true;
+                        listText.setVisibility(View.GONE);
                     }
+                } else {
+                    Logger.e(TAG, "obj is null or is not SermonItem at onResult");
                 }
-            }, new RequestBaseTask.OnResultNoneListener() {
-                @Override
-                public void onResultNone() {
-                    if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).hideLoadingDialog();
-                    }
-                    mPlayerController.hidePlayerController();
-                    listText.setVisibility(View.VISIBLE);
-                    listText.setText(R.string.sermon_empty_message);
-                    listText.bringToFront();
+            }
+        }, new RequestBaseTask.OnResultNoneListener() {
+            @Override
+            public void onResultNone() {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).hideLoadingDialog();
                 }
-            });
+                mPlayerController.hidePlayerController();
+                listText.setVisibility(View.VISIBLE);
+                listText.setText(R.string.sermon_empty_message);
+                listText.bringToFront();
+            }
+        });
 //        } else {
 //            Logger.i(TAG, "already check today");
 //            if (getActivity() instanceof MainActivity) {
@@ -253,9 +259,7 @@ public class SermonFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mServiceConnection != null) {
-            getActivity().unbindService(mServiceConnection);
-        }
+        getActivity().unbindService(mServiceConnection);
     }
 
     private void registerBroadcastReceiver() {
@@ -263,13 +267,19 @@ public class SermonFragment extends Fragment {
             mBroadcast = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    //TODO : item download done. so refresh list
                     Logger.e(TAG, "onReceive Intent_action_download_completed");
-                    //아래와 같이 해도 다운로드 상태가 갱신되지 않음
-                    //mAdapter.notifyDataSetChanged();
+                    if (mItemList == null) {
+                        return;
+                    }
+
+                    mItemList.clear();
+                    List<SermonItem> list = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(mWorshipType);
+                    mItemList.addAll(list);
+                    mAdapter.notifyDataSetChanged();
                 }
             };
         }
+
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mBroadcast, new IntentFilter(INTENT_ACTION_DOWNLOAD_COMPLETED));
     }
 
