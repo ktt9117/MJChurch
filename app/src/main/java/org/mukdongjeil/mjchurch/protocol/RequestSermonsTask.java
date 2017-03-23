@@ -28,10 +28,15 @@ public class RequestSermonsTask extends RequestBaseTask {
     private int sermonType;
     private int pageNo;
 
+    private List<SermonItem> localSermonList;
+    private boolean existsLocalItem;
+
     public RequestSermonsTask(int sermonType, int pageNo, OnResultListener listener) {
         this.listener = listener;
         this.sermonType = sermonType;
         this.pageNo = pageNo;
+        localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(sermonType);
+        existsLocalItem = (localSermonList == null || localSermonList.size() == 0) ? false : true;
         execute(Const.getWorshipListUrl(sermonType, pageNo));
     }
 
@@ -40,6 +45,8 @@ public class RequestSermonsTask extends RequestBaseTask {
         this.noneListener = noneListener;
         this.sermonType = sermonType;
         this.pageNo = pageNo;
+        localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(sermonType);
+        existsLocalItem = (localSermonList == null || localSermonList.size() == 0) ? false : true;
         execute(Const.getWorshipListUrl(sermonType, pageNo));
     }
 
@@ -66,23 +73,17 @@ public class RequestSermonsTask extends RequestBaseTask {
                     }
 
                     // compare between local database and server item list.
-                    List<SermonItem> localSermonList = DBManager.getInstance(SystemHelpers.getApplicationContext()).getSermonList(sermonType);
-                    boolean existLocalItem = false;
-                    if (localSermonList != null && localSermonList.size() > 0) {
-                        existLocalItem = true;
-                    }
-
                     if (serverSermonList.size() > 0) {
                         for (SermonItem serverItem : serverSermonList) {
                             boolean isExistItem = false;
-                            if (existLocalItem) {
+                            if (existsLocalItem) {
                                 for (SermonItem localItem : localSermonList) {
                                     if (localItem.bbsNo.equals(serverItem.bbsNo)) {
                                         isExistItem = true;
                                         if (listener != null) {
                                             listener.onResult(localItem, OnResultListener.POSITION_NONE);
                                         }
-                                        break;
+                                        continue;
                                     }
                                 }
                             }
