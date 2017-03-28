@@ -42,8 +42,7 @@ public class DBManager  {
                 " WHERE " + SermonCols.SERMON_TYPE + " = " + sermonType;
         Cursor cursor = db.rawQuery(sql, null);
         if (cursor != null) {
-            List<SermonItem> list = new ArrayList<SermonItem>();
-            cursor.moveToFirst();
+            List<SermonItem> list = new ArrayList<>();
             while (cursor.moveToNext()) {
                 SermonItem item = new SermonItem();
                 item._id = cursor.getInt(cursor.getColumnIndex(SermonCols.ID));

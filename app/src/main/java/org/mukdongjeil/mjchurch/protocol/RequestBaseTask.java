@@ -52,6 +52,7 @@ public abstract class RequestBaseTask extends AsyncTask<String, Void, Source> {
         }
 
         if (MainApplication.REQUEST_FAIL_COUNT > 2) {
+            // TODO: 앱 실행 후 네트워크 요청이 3번 이상 실패 처리되는 경우, 경고 토스트 발생
             //MainApplication.serverDownProcess(context);
         }
     }

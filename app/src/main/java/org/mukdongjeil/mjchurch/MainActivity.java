@@ -3,12 +3,10 @@ package org.mukdongjeil.mjchurch;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
@@ -18,7 +16,6 @@ import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
@@ -27,9 +24,6 @@ import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
-
-import java.security.Permission;
-import java.util.HashMap;
 
 public class MainActivity extends SlidingFragmentActivity {
     public interface PermissionCheckResultListener {
@@ -81,9 +75,6 @@ public class MainActivity extends SlidingFragmentActivity {
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-        // get the GCM Token > no needs to GCM Token getting bcuz using change for FCM
-        //getInstanceIdToken();
-
         // init SlidingMenu
         initializeSlidingMenu();
 
@@ -104,12 +95,6 @@ public class MainActivity extends SlidingFragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        // permission check for marshmallow(6.0)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //일단 보류
-            //startPermissionCheck();
-        }
     }
 
     public void switchContent(Fragment fragment) {

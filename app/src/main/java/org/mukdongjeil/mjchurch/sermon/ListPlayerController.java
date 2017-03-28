@@ -1,12 +1,9 @@
 package org.mukdongjeil.mjchurch.sermon;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -259,6 +256,8 @@ public class ListPlayerController {
                     }
                 }
             });
+        } else {
+            DownloadUtil.requestDownload(parentActivity, currentItem);
         }
     }
 }
