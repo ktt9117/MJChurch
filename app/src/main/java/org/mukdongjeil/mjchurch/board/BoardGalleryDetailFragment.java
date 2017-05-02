@@ -28,16 +28,14 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
+import com.github.chrisbanes.photoview.PhotoViewAttacher;
 
 import net.htmlparser.jericho.Element;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.ext_view.CirclePageIndicator;
 import org.mukdongjeil.mjchurch.common.ext_view.ExViewPager;
-import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
 import org.mukdongjeil.mjchurch.common.util.ImageUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
@@ -60,7 +58,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     private int mBoardType;
     private String mContentNo;
     private ExViewPager mPager;
-    private CirclePageIndicator mPagerIndicator;
+    //private CirclePageIndicator mPagerIndicator;
     private ProgressBar mProgressBar;
     //private Button shareItemButton;
 
@@ -92,7 +90,7 @@ public class BoardGalleryDetailFragment extends Fragment {
         final View v = inflater.inflate(R.layout.fragment_board_gallery_detail, container, false);
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
         mPager.addOnPageChangeListener(mOnPageChangeListener);
-        mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
+        //mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
         mProgressBar = (ProgressBar) v.findViewById(R.id.detail_page_progress);
 
         String requestUrl = (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
@@ -103,7 +101,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                 if (obj != null && obj instanceof List && ((List) obj).size() > 0) {
                     DetailPagerAdapter adapter = new DetailPagerAdapter(getActivity(), (List<Element>) obj);
                     mPager.setAdapter(adapter);
-                    mPagerIndicator.setViewPager(mPager);
+                    //mPagerIndicator.setViewPager(mPager);
                 } else {
 
                     Toast.makeText(getActivity(), "사진을 불러올 수 없습니다.", Toast.LENGTH_LONG).show();
@@ -128,7 +126,7 @@ public class BoardGalleryDetailFragment extends Fragment {
         @Override
         public void onPageSelected(int position) {
             if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).setSlidingTouchMode((position == 0) ? SlidingMenu.TOUCHMODE_FULLSCREEN : SlidingMenu.TOUCHMODE_MARGIN);
+                //((MainActivity) getActivity()).setSlidingTouchMode((position == 0) ? SlidingMenu.TOUCHMODE_FULLSCREEN : SlidingMenu.TOUCHMODE_MARGIN);
             }
         }
         @Override

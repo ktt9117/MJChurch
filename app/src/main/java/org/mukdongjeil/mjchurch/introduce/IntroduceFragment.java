@@ -5,15 +5,16 @@ import android.os.Bundle;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
-import org.mukdongjeil.mjchurch.protocol.RequestImageTask;
-import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
-import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
+import org.mukdongjeil.mjchurch.common.ext_fragment.ImageBaseFragment;
 import org.mukdongjeil.mjchurch.common.util.DisplayUtil;
 import org.mukdongjeil.mjchurch.common.util.ImageUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
-import org.mukdongjeil.mjchurch.common.ext_fragment.ImageBaseFragment;
+import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocol.RequestImageTask;
+import org.mukdongjeil.mjchurch.slidingmenu.MenuListFragment;
+
+//import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
 
 /**
  * Created by Kim SungJoong on 2015-07-31.
@@ -79,7 +80,6 @@ public class IntroduceFragment extends ImageBaseFragment {
                     Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage((Bitmap)obj, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
                     if (getImageView() != null) {
                         getImageView().setImageBitmap(resizedBitmap);
-                        new PhotoViewAttacher(getImageView());
                     } else {
                         Logger.e(TAG, "getImageView is null at onResult");
                     }

@@ -1,10 +1,15 @@
 <resources>
     <string name="app_name">묵동제일교회</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-
     <string name="loading_sermon_data">설교를 불러오는 중입니다.</string>
     <string name="sermon_empty_message">설교 목록이 없습니다.</string>
+
+    <string name="navigation_drawer_open">메뉴 열기</string>
+    <string name="navigation_drawer_close">메뉴 닫기</string>
+
+    <string name="menu_welcome">환영합니다</string>
+    <string name="menu_worship">예배와 말씀</string>
+    <string name="menu_training">양육과 훈련</string>
+    <string name="menu_board">게시판</string>
 
 </resources>

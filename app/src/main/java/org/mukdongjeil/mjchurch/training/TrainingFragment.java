@@ -7,7 +7,6 @@ import android.widget.Toast;
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.ext_fragment.ImageBaseFragment;
-import org.mukdongjeil.mjchurch.common.photoview.PhotoViewAttacher;
 import org.mukdongjeil.mjchurch.common.util.DisplayUtil;
 import org.mukdongjeil.mjchurch.common.util.ImageUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
@@ -81,7 +80,6 @@ public class TrainingFragment extends ImageBaseFragment{
                         Bitmap resizedBitmap = ImageUtil.getResizeBitmapImage((Bitmap) obj, DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext()));
                         if (getImageView() != null) {
                             getImageView().setImageBitmap(resizedBitmap);
-                            new PhotoViewAttacher(getImageView());
                         } else {
                             Logger.e(TAG, "getImageView is null at onResult");
                         }

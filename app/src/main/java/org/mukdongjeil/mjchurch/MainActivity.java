@@ -6,26 +6,68 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
-import com.jeremyfeinstein.slidingmenu.lib.app.SlidingFragmentActivity;
 
+import org.mukdongjeil.mjchurch.board.BoardFragment;
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
+import org.mukdongjeil.mjchurch.sermon.SermonFragment;
+import org.mukdongjeil.mjchurch.training.TrainingFragment;
 
-public class MainActivity extends SlidingFragmentActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+
+        Fragment newFragment = null;
+
+        int id = item.getItemId();
+
+        if (id == R.id.nav_welcome) {
+            newFragment = new IntroduceFragment();
+
+        } else if (id == R.id.nav_worship) {
+            newFragment = new SermonFragment();
+
+        } else if (id == R.id.nav_training) {
+            newFragment = new TrainingFragment();
+
+        } else if (id == R.id.nav_board) {
+            newFragment = new BoardFragment();
+        }
+
+        // notify to main fragment container for replace content
+        if (newFragment != null) {
+            Bundle args = new Bundle();
+//            args.putInt(SELECTED_MENU_INDEX, position);
+//            newFragment.setArguments(args);
+            switchContent(newFragment);
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
     public interface PermissionCheckResultListener {
         void onResult(boolean isGranted);
     }
@@ -40,6 +82,8 @@ public class MainActivity extends SlidingFragmentActivity {
 
     private static final int REQUEST_CODE_PERMISSION_CHECK = 100;
     private PermissionCheckResultListener mPermissionResultListener;
+
+    private DrawerLayout mDrawerLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -73,13 +117,24 @@ public class MainActivity extends SlidingFragmentActivity {
 
         startActivity(new Intent(this, IntroActivity.class));
 
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
-        // init SlidingMenu
-        initializeSlidingMenu();
+        //mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         // set the Content View
         setContentView(R.layout.activity_main);
+
+        // Adding Toolbar to Main screen
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Create Navigation drawer and inlfate layout
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
         // set the current Fragment
         Fragment fragment = new IntroduceFragment();
@@ -101,8 +156,6 @@ public class MainActivity extends SlidingFragmentActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .commit();
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        showContent();
     }
 
     public void switchContentWithBackStack(Fragment fragment) {
@@ -110,21 +163,24 @@ public class MainActivity extends SlidingFragmentActivity {
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
-        getActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     public void hideSlideMenu() {
+        /*
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 getSlidingMenu().showContent();
             }
         }, 100);
+        */
+
+        mDrawerLayout.closeDrawers();
     }
 
     public void addContent(Fragment fragment) {
-        getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
+//        getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment).addToBackStack("detail").commit();
-        showContent();
+//        showContent();
     }
 
     public void showLoadingDialog() {
@@ -144,21 +200,21 @@ public class MainActivity extends SlidingFragmentActivity {
     }
 
     public void setSlidingTouchMode(int touchMode) {
-        if (getSlidingMenu() != null) {
-            getSlidingMenu().setTouchModeAbove(touchMode);
-        }
+//        if (getSlidingMenu() != null) {
+//            getSlidingMenu().setTouchModeAbove(touchMode);
+//        }
     }
 
     private void toggleTouchMode() {
-        if (getSlidingMenu() != null) {
-            if (isTouchModeFullScreen) {
-                isTouchModeFullScreen = false;
-                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
-            } else {
-                isTouchModeFullScreen = true;
-                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-            }
-        }
+//        if (getSlidingMenu() != null) {
+//            if (isTouchModeFullScreen) {
+//                isTouchModeFullScreen = false;
+//                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
+//            } else {
+//                isTouchModeFullScreen = true;
+//                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+//            }
+//        }
     }
 
     @Override
@@ -176,7 +232,8 @@ public class MainActivity extends SlidingFragmentActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case android.R.id.home:
-                getSlidingMenu().toggle(true);
+                //getSlidingMenu().toggle(true);
+                mDrawerLayout.showContextMenu();
                 return true;
             case R.id.action_mode_close_button:
                 onBackPressed();
@@ -187,14 +244,16 @@ public class MainActivity extends SlidingFragmentActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        if (mNeedShowCloseMenuItem) {
-            mNeedShowCloseMenuItem = false;
-            invalidateOptionsMenu();
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
     }
 
     private void initializeSlidingMenu() {
+        /*
         // set the Behind View
         setBehindContentView(R.layout.fragment_slide_menu);
 
@@ -214,9 +273,10 @@ public class MainActivity extends SlidingFragmentActivity {
                 canvas.scale(percentOpen, 1, 0, 0);
             }
         });
-
-        getActionBar().setDisplayHomeAsUpEnabled(true);
         setSlidingActionBarEnabled(true);
+        */
+
+        //getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void releaseDialog(Dialog dialog) {
