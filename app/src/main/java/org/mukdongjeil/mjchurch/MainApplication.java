@@ -12,7 +12,9 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
-import org.mukdongjeil.mjchurch.common.util.SystemHelpers;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 /**
  * Created by John Kim on 2016-02-11.
@@ -24,10 +26,14 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Realm.init(getApplicationContext());
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
+                .deleteRealmIfMigrationNeeded()
+                .build();
+        Realm.setDefaultConfiguration(realmConfiguration);
 
         REQUEST_FAIL_COUNT = 0;
 
-        SystemHelpers.init(getApplicationContext());
         PreferenceUtil.init(getApplicationContext());
 
         // init Universal Image Loader
@@ -49,7 +55,7 @@ public class MainApplication extends Application {
                 .build();
 
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
-                SystemHelpers.getApplicationContext())
+                getApplicationContext())
                 .denyCacheImageMultipleSizesInMemory()
                 .defaultDisplayImageOptions(defaultOptions)
                 .memoryCache(new WeakMemoryCache())

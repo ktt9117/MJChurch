@@ -6,10 +6,10 @@ import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
 
-import org.mukdongjeil.mjchurch.board.BoardFragment;
 import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.dao.GalleryItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.fragments.BoardFragment;
+import org.mukdongjeil.mjchurch.models.Gallery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,42 +78,10 @@ public class RequestListTask extends RequestBaseTask {
 
     private void parseBoardList(Element contentElement) {
         Logger.i(TAG, "contentElement : " + contentElement.toString());
-//        List<BoardItem> itemList = new ArrayList<>();
         List<Element> linkList = contentElement.getAllElementsByClass("list_link");
-//        List<Element> titleList = contentElement.getAllElementsByClass("bbs_ttl");
-//        List<Element> writerList = contentElement.getAllElementsByClass("bbs_writer");
-//        List<Element> dateList = contentElement.getAllElementsByClass("bbs_date");
 
         int loopCount = linkList.size();
         if (loopCount > 0) {
-//            for (int i = 0; i < linkList.size(); i++) {
-//                BoardItem item = new BoardItem();
-//
-//                String linkAttr = linkList.get(i).getAttributeValue("href");
-//                //Logger.i(TAG, "link : " + linkAttr);
-//                if (!TextUtils.isEmpty(linkAttr)) {
-//                    item.contentUrl = linkAttr;
-//                    String bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
-//                    item.bbsNo = bbsNo;
-//                }
-//                try {
-//                    item.title = titleList.get(i).getTextExtractor().toString();
-//                    item.writer = writerList.get(i).getTextExtractor().toString();
-//                    item.date = dateList.get(i).getTextExtractor().toString();
-//                } catch (ArrayIndexOutOfBoundsException aiobe) {
-//                    aiobe.printStackTrace();
-//                    item = null;
-//                } catch (NullPointerException npe) {
-//                    npe.printStackTrace();
-//                    item = null;
-//                }
-//
-//                if (item != null) {
-//                    Logger.d(TAG, "add item : " + item.toString());
-//                    itemList.add(item);
-//                }
-//            }
-//            listener.onResult(itemList);
             listener.onResult(linkList, OnResultListener.POSITION_NONE);
 
         } else {
@@ -124,7 +92,7 @@ public class RequestListTask extends RequestBaseTask {
 
     private void parseGalleryList(Element contentElement) {
         Logger.i(TAG, "contentElement : " + contentElement.toString());
-        List<GalleryItem> itemList = new ArrayList<GalleryItem>();
+        List<Gallery> itemList = new ArrayList<Gallery>();
         List<Element> linkList = contentElement.getAllElementsByClass("photo_list_a");
         List<Element> photoUrlList = contentElement.getAllElementsByClass("photo_list_img");
         List<Element> titleList = contentElement.getAllElementsByClass("photo_list_ttl");
@@ -133,8 +101,8 @@ public class RequestListTask extends RequestBaseTask {
         int loopCount = linkList.size();
         if (loopCount > 0) {
             for (int i = 0; i < loopCount; i++) {
-                GalleryItem item = new GalleryItem();
-
+                Gallery item = new Gallery();
+                item.boardType = this.boardType;
                 String linkAttr = linkList.get(i).getAttributeValue("href");
                 if (!TextUtils.isEmpty(linkAttr)) {
                     item.contentUrl = linkAttr;
@@ -145,7 +113,12 @@ public class RequestListTask extends RequestBaseTask {
                     String src = photoUrlList.get(i).getFirstElement(HTMLElementName.IMG).getAttributeValue("src");
                     if (!TextUtils.isEmpty(src)) {
                         src = src.replaceAll("&amp;", "&");
-                        item.photoUrl = src;
+                        if (!src.contains("http")) {
+                            item.photoUrl = Const.BASE_URL + src;
+                        } else {
+                            item.photoUrl = src;
+                        }
+
                         Logger.d(TAG, "parseGalleryList photoUrl : " + src);
                     }
                     item.title = titleList.get(i).getTextExtractor().toString();
@@ -155,6 +128,9 @@ public class RequestListTask extends RequestBaseTask {
                     item = null;
                 } catch (NullPointerException npe) {
                     npe.printStackTrace();
+                    item = null;
+                } catch (Exception e) {
+                    e.printStackTrace();
                     item = null;
                 }
 

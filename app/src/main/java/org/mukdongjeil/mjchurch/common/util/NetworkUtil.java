@@ -17,7 +17,7 @@ public class NetworkUtil {
     public static final int NETWORK_3G		= 3;
 
     public static String getMacAddress(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifiManager == null) {
             return "";
         }
@@ -35,7 +35,7 @@ public class NetworkUtil {
             } else if (info.getTypeName().equalsIgnoreCase("mobile") && info.getSubtypeName() != null) {
                 if (info.getSubtypeName().equalsIgnoreCase("LTE")) {	// LTE에 연결되었을때
                     return NETWORK_LTE;
-                } else if(info.getSubtypeName().indexOf("CDMA") >= 0) { // 3G에 연결되었을때
+                } else if(info.getSubtypeName().contains("CDMA")) { // 3G에 연결되었을때
                     return NETWORK_3G;
                 }
             }

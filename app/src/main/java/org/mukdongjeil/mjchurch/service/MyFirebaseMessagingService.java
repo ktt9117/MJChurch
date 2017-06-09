@@ -1,9 +1,7 @@
 package org.mukdongjeil.mjchurch.service;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 

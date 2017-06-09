@@ -8,10 +8,13 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.database.DBManager;
-import org.mukdongjeil.mjchurch.sermon.SermonFragment;
+import org.mukdongjeil.mjchurch.fragments.SermonFragment;
+import org.mukdongjeil.mjchurch.models.DownloadStatus;
+import org.mukdongjeil.mjchurch.models.Sermon;
+import org.mukdongjeil.mjchurch.service.DataService;
+
+import io.realm.Realm;
 
 /**
  * Created by Kim SungJoong on 2015-09-10.
@@ -32,9 +35,19 @@ public class DownloadCompleteReceiver extends BroadcastReceiver{
             Toast.makeText(context, "다운로드 완료", Toast.LENGTH_LONG).show();
             //로컬 DB에 있는 설교 목록에서 downloadId에 해당하는 항목을 찾아 downloadStatus값을 갱신한다.
             if (intent.hasExtra(DownloadManager.EXTRA_DOWNLOAD_ID)) {
-                long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
-                int res = DBManager.getInstance(context).updateSermonDownloadStatus(downloadId, SermonItem.DownloadStatus.DOWNLOAD_SUCCESS);
-                Logger.i(TAG, "update download status result : " + res);
+                final long downloadQueryId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+                Realm realm = Realm.getDefaultInstance();
+                realm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        Sermon item = DataService.getSermonByDownloadQueryId(realm, downloadQueryId);
+                        if (item != null) {
+                            item.downloadStatus = DownloadStatus.DOWNLOAD_SUCCESS.ordinal();
+                        }
+                        realm.close();
+                    }
+                });
+
             } else {
                 Logger.e(TAG, "download done but do nothing! caused by there is no EXTRA_DOWNLOAD_ID");
             }

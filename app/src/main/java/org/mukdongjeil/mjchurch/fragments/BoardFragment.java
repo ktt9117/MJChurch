@@ -1,0 +1,133 @@
+package org.mukdongjeil.mjchurch.fragments;
+
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import net.htmlparser.jericho.Element;
+
+import org.mukdongjeil.mjchurch.R;
+import org.mukdongjeil.mjchurch.adapters.BoardListAdapter;
+import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
+import org.mukdongjeil.mjchurch.models.Board;
+import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocol.RequestBoardContentTask;
+import org.mukdongjeil.mjchurch.protocol.RequestListTask;
+import org.mukdongjeil.mjchurch.service.DataService;
+
+import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
+
+/**
+ * Created by Kim SungJoong on 2015-08-25.
+ */
+public class BoardFragment extends Fragment {
+    private static final String TAG = BoardFragment.class.getSimpleName();
+
+    public static final int BOARD_TYPE_THANKS_SHARING = 17;
+    public static final int BOARD_TYPE_GALLERY = 18;
+    public static final int BOARD_TYPE_NEW_PERSON = 19;
+
+    private int mPageNo;
+    private Realm realm;
+    private RealmResults<Board> mLocalItemList;
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+
+    public BoardFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        realm = Realm.getDefaultInstance();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        realm.close();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Logger.i(TAG, "onCreateView");
+        View v = inflater.inflate(R.layout.layout_recyclerview, null);
+
+        mLocalItemList = DataService.getBoardList(realm);
+        Logger.e(TAG, "mLocalItemList count : " + mLocalItemList.size());
+
+        mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new BoardListAdapter(mLocalItemList);
+        mRecyclerView.setAdapter(mAdapter);
+
+        return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Logger.i(TAG, "onActivityCreated");
+        mPageNo = 1;
+        loadBoardList();
+    }
+
+    private boolean isAlreadyCheckToday() {
+        long lastCheckTimeInMillis = PreferenceUtil.getBoardListCheckTimeInMillis();
+        if (lastCheckTimeInMillis > 0) {
+            long oneDayGap = System.currentTimeMillis() - Const.DAY_IN_MILLIS;
+            return lastCheckTimeInMillis > oneDayGap;
+        }
+
+        return false;
+    }
+
+    private void loadBoardList() {
+        if (mLocalItemList.size() != 0 && isAlreadyCheckToday()) {
+            return;
+        }
+
+        new RequestListTask(BOARD_TYPE_THANKS_SHARING, mPageNo, new RequestBaseTask.OnResultListener() {
+            @Override
+            public void onResult(Object obj, int position) {
+                if (obj != null && obj instanceof List) {
+                    PreferenceUtil.setBoardListCheckTimeInMillis(System.currentTimeMillis());
+                    List<Element> linkList = (List) obj;
+                    for (int i = 0; i < linkList.size(); i++) {
+                        Element link = linkList.get(i);
+                        String href = link.getAttributeValue("href");
+                        // compare between local database and server item list.
+                        Board localItem = DataService.getBoard(realm, href);
+                        if (localItem != null) {
+                            Logger.e(TAG, "the item is already inside local DB");
+                        } else {
+                            new RequestBoardContentTask(getActivity(), i, href, new RequestBaseTask.OnResultListener() {
+                                @Override
+                                public void onResult(Object obj, int position) {
+                                    if (obj != null && obj instanceof Board) {
+                                        DataService.insertToRealm(realm, (Board) obj);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        });
+    }
+}

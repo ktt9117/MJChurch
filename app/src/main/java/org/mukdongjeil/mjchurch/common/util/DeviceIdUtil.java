@@ -55,7 +55,7 @@ public class DeviceIdUtil {
                         // Write the value out to the prefs file
                         prefs.edit()
                                 .putString(PREFS_DEVICE_ID, uuid.toString())
-                                .commit();
+                                .apply();
                     }
                 }
             }

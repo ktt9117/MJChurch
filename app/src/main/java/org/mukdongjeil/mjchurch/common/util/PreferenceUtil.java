@@ -19,6 +19,9 @@ public class PreferenceUtil {
 	private static final String SUNDAY_AFTERNOON_WORSHIP_CHECK_DATE = "sundayAfternoonWorshipCheckDate";
 	private static final String WEDNESDAY_WORSHIP_CHECK_DATE = "WednesdayWorshipCheckDate";
 
+	private static final String BOARD_CHECK_DATE = "boardListCheckDate";
+	private static final String GALLERY_CHECK_DATE = "galleryListCheckDate";
+	private static final String GALLERY_NEW_PERSON_CHECK_DATE = "galleryNewPersonListCheckDate";
 
 	private static SharedPreferences mPreference = null;
 
@@ -76,6 +79,18 @@ public class PreferenceUtil {
 		}
 	}
 
+	public static void setBoardListCheckTimeInMillis(long currentTimeInMillis) {
+		setPreferenceValue(BOARD_CHECK_DATE, currentTimeInMillis);
+	}
+
+	public static void setGalleryListCheckTimeInMillis(long currentTimeInMillis) {
+		setPreferenceValue(GALLERY_CHECK_DATE, currentTimeInMillis);
+	}
+
+	public static void setGalleryNewPersonListTimeInMillis(long currentTimeInMillis) {
+		setPreferenceValue(GALLERY_NEW_PERSON_CHECK_DATE, currentTimeInMillis);
+	}
+
 	// ---------------------- Getter -------------------------- //
 
 	public static int getIntroduceLastSelectedMenuIndex() {
@@ -95,4 +110,17 @@ public class PreferenceUtil {
 			return mPreference.getLong(WEDNESDAY_WORSHIP_CHECK_DATE, 0);
 		}
 	}
+
+	public static long getBoardListCheckTimeInMillis() {
+		return mPreference.getLong(BOARD_CHECK_DATE, 0);
+	}
+
+	public static long getGalleryListCheckTimeInMillis() {
+		return mPreference.getLong(BOARD_CHECK_DATE, 0);
+	}
+
+	public static long getGalleryNewPersonListTimeInMillis() {
+		return mPreference.getLong(BOARD_CHECK_DATE, 0);
+	}
+
 }

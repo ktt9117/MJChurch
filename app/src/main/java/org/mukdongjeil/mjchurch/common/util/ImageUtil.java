@@ -27,8 +27,8 @@ public class ImageUtil {
 	
 	private static final String TAG = "ImageUtil";
 	
-	public static Bitmap getImage(String path, int sampleWidth) throws IOException {
-		SizeInfo size = getSizeFixScreenWidth(path, 0);
+	public static Bitmap getImage(Context context, String path, int sampleWidth) {
+		SizeInfo size = getSizeFixScreenWidth(context, path, 0);
 		return getOptimizeScreennailImage(path, size.width, size.height, sampleWidth);
 	}
 	
@@ -82,8 +82,7 @@ public class ImageUtil {
 		options.inJustDecodeBounds = false;
 		options.inPurgeable = true;
 		options.inDither = true;
-//		Bitmap bitmap = BitmapFactory.decodeFile(path, options);
-		Bitmap bitmap = null;
+		Bitmap bitmap;
 		try {
 			bitmap = BitmapFactory.decodeFile(path, options);
 		} catch (OutOfMemoryError e) {
@@ -186,7 +185,7 @@ public class ImageUtil {
 		options.inJustDecodeBounds = false;
 		options.inPurgeable = true;
 		options.inDither = true;
-		Bitmap bitmap = null;
+		Bitmap bitmap;
 		try {
 			bitmap = BitmapFactory.decodeFile(path, options);
 		} catch (OutOfMemoryError e) {
@@ -297,8 +296,9 @@ public class ImageUtil {
 		if (TextUtils.isEmpty(path)) {
 			return null;
 		}
-		Uri uri = null;
-		if(!StringUtils.isFileUri(path)) {
+
+		Uri uri;
+		if (!StringUtils.isFileUri(path)) {
 			path = StringUtils.setPrefixforFileUri(path);
 		}
 		uri = Uri.parse(path);
@@ -384,16 +384,14 @@ public class ImageUtil {
 	    int height = source.getHeight();
 	    int newWidth = width;
 	    int newHeight = height;
-	    float rate = 0.0f;
+	    float rate;
 	    
 	    if (width < maxWidth) {
 	    	rate = maxWidth / (float) width;
 	    	newHeight = (int) (height * rate);
 	    	newWidth = maxWidth;
 	    	Bitmap newBitmap = Bitmap.createScaledBitmap(source, newWidth, newHeight, true);
-	    	if (source != null) {
-	    		source.recycle();
-	    	}
+			source.recycle();
 	    	return newBitmap;
 	    } else {
 	    	return source;
@@ -414,16 +412,16 @@ public class ImageUtil {
     	return bitmap;
     }
 	
-	public static SizeInfo getSizeFixScreenWidth(String path, int paddingWidth) {
+	public static SizeInfo getSizeFixScreenWidth(Context context, String path, int paddingWidth) {
 		BitmapFactory.Options opts = new BitmapFactory.Options();
 		opts.inJustDecodeBounds = true;
 		BitmapFactory.decodeFile(path, opts);
 		
-		return getSizeFixScreenWidth(opts.outWidth, opts.outHeight, paddingWidth);
+		return getSizeFixScreenWidth(context, opts.outWidth, opts.outHeight, paddingWidth);
 	}
 	
-	public static SizeInfo getSizeFixScreenWidth(int width, int height, int paddingWidth) {
-		int screenWidth = DisplayUtil.getDisplaySizeWidth(SystemHelpers.getApplicationContext());
+	public static SizeInfo getSizeFixScreenWidth(Context context, int width, int height, int paddingWidth) {
+		int screenWidth = DisplayUtil.getDisplaySizeWidth(context);
 		int adjustWidth = screenWidth - paddingWidth;
 		float scale = adjustWidth / (float)width;
 		

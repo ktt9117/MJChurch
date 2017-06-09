@@ -4,8 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -14,13 +19,16 @@ import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.dao.SermonItem;
+import org.mukdongjeil.mjchurch.common.util.BlurFilter;
 import org.mukdongjeil.mjchurch.common.util.DownloadUtil;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.NetworkUtil;
+import org.mukdongjeil.mjchurch.models.Sermon;
 import org.mukdongjeil.mjchurch.service.MediaService;
 
 import java.io.IOException;
+
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 
 /**
  * Created by gradler on 2016. 11. 7..
@@ -34,14 +42,14 @@ public class ListPlayerController {
     private MediaService service;
     private ServiceConnection connection;
 
-
     private RelativeLayout playerLayout;
     private ImageView btnPlayOrPause;
     private ImageView btnDownload;
-    private SermonItem currentItem;
+    private SmoothProgressBar smoothProgressBar;
+    private Sermon currentItem;
 
     private TextView txtTitle;
-    private TextView txtAuthor;
+    //private TextView txtAuthor;
 
     private boolean equalsServiceItem;
 
@@ -51,10 +59,21 @@ public class ListPlayerController {
         btnDownload = (ImageView) containerView.findViewById(R.id.btn_download);
         btnPlayOrPause = (ImageView) containerView.findViewById(R.id.btn_play_or_pause);
         txtTitle = (TextView) containerView.findViewById(R.id.title);
-        txtAuthor = (TextView) containerView.findViewById(R.id.preacher);
+        //txtAuthor = (TextView) containerView.findViewById(R.id.preacher);
+        smoothProgressBar = (SmoothProgressBar) containerView.findViewById(R.id.smoothProgressBar);
+        smoothProgressBar.progressiveStop();
         btnDownload.setOnClickListener(onClickListener);
         btnPlayOrPause.setOnClickListener(onClickListener);
         equalsServiceItem = false;
+
+        setBlurBackground();
+    }
+
+    private void setBlurBackground() {
+        Bitmap bgBitmap = BitmapFactory.decodeResource(parentActivity.getResources(), R.drawable.bg_player);
+        Drawable d = new BitmapDrawable(parentActivity.getResources(), BlurFilter.fastblur(bgBitmap, 10));
+        bgBitmap.recycle();
+        ViewCompat.setBackground(playerLayout, d);
     }
 
     public void setMediaService(MediaService service) {
@@ -65,33 +84,43 @@ public class ListPlayerController {
         this.connection = connection;
     }
 
-    public void updatePlayerInfo(SermonItem item) {
-        txtTitle.setText(item.titleWithDate);
-        txtAuthor.setText(item.preacher);
+    public void updatePlayerInfo(final Sermon item) {
         currentItem = item;
+
+        txtTitle.setText(currentItem.titleWithDate);
+        //txtAuthor.setText(item.preacher);
+
         if (service != null) {
             //현재 서비스에 등록되어 있는 아이템과 사용자가 선택한 아이템이 같은지 체크
-            equalsServiceItem = service.getCurrentPlayerItem() != null && service.getCurrentPlayerItem().titleWithDate.equals(item.titleWithDate);
+            equalsServiceItem = service.getCurrentPlayerItem() != null && service.getCurrentPlayerItem().titleWithDate.equals(currentItem.titleWithDate);
 
             if (equalsServiceItem) {
                 //재생중이면 Pause 버튼으로 표현
                 if (service.isPlaying()) {
+                    setPlayerControllerVisibility(View.VISIBLE);
                     btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                     btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                    smoothProgressBar.progressiveStart();
                 } else {
                     //재생중이 아니면 Play 버튼으로 표현
                     btnPlayOrPause.setImageResource(R.drawable.ic_play);
                     btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                    smoothProgressBar.progressiveStop();
                 }
             } else {
                 //서비스에 등록된 아이템이 아니면 Play 버튼으로 표현
                 btnPlayOrPause.setImageResource(R.drawable.ic_play);
                 btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                smoothProgressBar.progressiveStop();
             }
         }
     }
 
-    public void updatePlayerControllerIfNecessary(SermonItem item) {
+    public void updatePlayerControllerIfNecessary(Sermon item) {
+        if (item == null) {
+            return;
+        }
+
         if (currentItem == null) {
             updatePlayerInfo(item);
         }
@@ -106,8 +135,8 @@ public class ListPlayerController {
         }
     }
 
-    public void hidePlayerController() {
-        playerLayout.setVisibility(View.GONE);
+    public void setPlayerControllerVisibility(int visibility) {
+        playerLayout.setVisibility(visibility);
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -136,12 +165,14 @@ public class ListPlayerController {
                         if (service.pausePlayer()) {
                             btnPlayOrPause.setImageResource(R.drawable.ic_play);
                             btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                            smoothProgressBar.progressiveStop();
                         }
                     } else if (playerStatus == MediaService.PLAYER_STATUS_PLAY) {
                         if (equalsServiceItem && service.resumePlayer()) {
                             Logger.i(TAG, "equalsServiceItem == true && resumeResult == true");
                             btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                             btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                            smoothProgressBar.progressiveStart();
                         } else {
                             Logger.i(TAG, "resumeResult == false maybe");
                             if (DownloadUtil.isDownloadSuccessItem(parentActivity, currentItem)) {
@@ -169,6 +200,7 @@ public class ListPlayerController {
                         service.stopPlayer();
                         btnPlayOrPause.setImageResource(R.drawable.ic_play);
                         btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PLAY);
+                        smoothProgressBar.progressiveStop();
                     }
                 }
             } else if (v.getId() == R.id.btn_download) {
@@ -181,6 +213,7 @@ public class ListPlayerController {
                             }
                         }}
                     );
+
                     if (res == true) {
                         downloadCurrentItem();
                     }
@@ -225,6 +258,7 @@ public class ListPlayerController {
                             service.startPlayer(currentItem);
                             btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                             btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                            smoothProgressBar.progressiveStart();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -238,6 +272,7 @@ public class ListPlayerController {
                 service.startPlayer(currentItem);
                 btnPlayOrPause.setImageResource(R.drawable.ic_pause);
                 btnPlayOrPause.setTag(MediaService.PLAYER_STATUS_PAUSE);
+                smoothProgressBar.progressiveStart();
             } catch (IOException e) {
                 e.printStackTrace();
             }

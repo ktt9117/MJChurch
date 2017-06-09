@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,54 +19,18 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-import org.mukdongjeil.mjchurch.board.BoardFragment;
+import org.mukdongjeil.mjchurch.common.Const;
 import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
 import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.introduce.IntroduceFragment;
-import org.mukdongjeil.mjchurch.sermon.SermonFragment;
-import org.mukdongjeil.mjchurch.training.TrainingFragment;
+import org.mukdongjeil.mjchurch.fragments.BoardPagerFragment;
+import org.mukdongjeil.mjchurch.fragments.ImagePagerFragment;
+import org.mukdongjeil.mjchurch.fragments.SermonPagerFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-
-        Fragment newFragment = null;
-
-        int id = item.getItemId();
-
-        if (id == R.id.nav_welcome) {
-            newFragment = new IntroduceFragment();
-
-        } else if (id == R.id.nav_worship) {
-            newFragment = new SermonFragment();
-
-        } else if (id == R.id.nav_training) {
-            newFragment = new TrainingFragment();
-
-        } else if (id == R.id.nav_board) {
-            newFragment = new BoardFragment();
-        }
-
-        // notify to main fragment container for replace content
-        if (newFragment != null) {
-            Bundle args = new Bundle();
-//            args.putInt(SELECTED_MENU_INDEX, position);
-//            newFragment.setArguments(args);
-            switchContent(newFragment);
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
 
     public interface PermissionCheckResultListener {
         void onResult(boolean isGranted);
@@ -75,8 +39,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private CycleProgressDialog mLoadingDialog;
-    private boolean isTouchModeFullScreen = true;
-    private boolean mNeedShowCloseMenuItem = false;
 
     private FirebaseAnalytics mFirebaseAnalytics;
 
@@ -90,66 +52,67 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
 
         // for fcm notification click action.
-        Intent getIntent = getIntent();
-        if (getIntent != null) {
-            Bundle bundle = getIntent.getExtras();
-            if (bundle != null) {
-                final String message = bundle.getString("message");
-                if (TextUtils.isEmpty(message) == false) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (isFinishing() == false) {
-                                Intent intent = new Intent(MainActivity.this, PushMessageActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.putExtra("message", message);
-                                startActivity(intent);
-                            } else {
-                                Logger.i(TAG, "isFinishing() : " + isFinishing());
-                            }
-                        }
-                    }, 2300);
-                }
-            } else {
-                Logger.e(TAG, "bundle is null");
-            }
-        }
+        showPushMessageIfNecessary(getIntent());
 
         startActivity(new Intent(this, IntroActivity.class));
-
-        //mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         // set the Content View
         setContentView(R.layout.activity_main);
 
-        // Adding Toolbar to Main screen
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        // Create Navigation drawer and inlfate layout
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        // set SideMenu
+        initializeSlidingMenu();
 
         // set the current Fragment
-        Fragment fragment = new IntroduceFragment();
+        Fragment fragment = new ImagePagerFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_INTRODUCE);
+        bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.INTRODUCE_MENU_NAMES);
+        bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.INTRODUCE_MENU_URLS);
+        fragment.setArguments(bundle);
         switchContent(fragment);
-        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                toggleTouchMode();
-            }
-        });
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    protected void onResume() {
-        super.onResume();
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle navigation view item clicks here.
+
+        Fragment newFragment = null;
+
+        int id = item.getItemId();
+
+        if (id == R.id.nav_welcome) {
+            newFragment = new ImagePagerFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_INTRODUCE);
+            bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.INTRODUCE_MENU_NAMES);
+            bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.INTRODUCE_MENU_URLS);
+            newFragment.setArguments(bundle);
+
+        } else if (id == R.id.nav_worship) {
+            newFragment = new SermonPagerFragment();
+
+        } else if (id == R.id.nav_training) {
+            newFragment = new ImagePagerFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_TRAINING);
+            bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.TRAINING_MENU_NAMES);
+            bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.TRAINING_MENU_URLS);
+            newFragment.setArguments(bundle);
+
+        } else if (id == R.id.nav_board) {
+            newFragment = new BoardPagerFragment();
+        }
+
+        // notify to main fragment container for replace content
+        if (newFragment == null) {
+            return false;
+        }
+
+        switchContent(newFragment);
+        hideSlideMenu();
+        return true;
     }
 
     public void switchContent(Fragment fragment) {
@@ -166,21 +129,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void hideSlideMenu() {
-        /*
-        new Handler().postDelayed(new Runnable() {
-            public void run() {
-                getSlidingMenu().showContent();
-            }
-        }, 100);
-        */
-
+        if (mDrawerLayout == null) { return; }
         mDrawerLayout.closeDrawers();
     }
 
     public void addContent(Fragment fragment) {
-//        getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment).addToBackStack("detail").commit();
-//        showContent();
     }
 
     public void showLoadingDialog() {
@@ -199,84 +153,60 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         releaseDialog(mLoadingDialog);
     }
 
-    public void setSlidingTouchMode(int touchMode) {
-//        if (getSlidingMenu() != null) {
-//            getSlidingMenu().setTouchModeAbove(touchMode);
-//        }
-    }
-
-    private void toggleTouchMode() {
-//        if (getSlidingMenu() != null) {
-//            if (isTouchModeFullScreen) {
-//                isTouchModeFullScreen = false;
-//                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
-//            } else {
-//                isTouchModeFullScreen = true;
-//                getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-//            }
-//        }
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        if (mNeedShowCloseMenuItem) {
-            Logger.e(TAG, "onPrepareOptionsMenu : needToCloseMenuItem");
-            getMenuInflater().inflate(R.menu.menu_close, menu);
-            return true;
-        }
-        Logger.e(TAG, "onPrepareOptionsMenu : there is no need to show menu items");
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                //getSlidingMenu().toggle(true);
-                mDrawerLayout.showContextMenu();
-                return true;
-            case R.id.action_mode_close_button:
-                onBackPressed();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+            hideLoadingDialog();
+            return;
+        }
+
+        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
     }
 
+    private void showPushMessageIfNecessary(Intent intent) {
+        Bundle bundle = intent.getExtras();
+        if (bundle == null) {
+            Logger.e(TAG, "bundle is null");
+            return;
+        }
+
+        final String message = bundle.getString("message");
+        if (TextUtils.isEmpty(message) == false) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (isFinishing() == false) {
+                        Intent intent = new Intent(MainActivity.this, PushMessageActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("message", message);
+                        startActivity(intent);
+                    } else {
+                        Logger.i(TAG, "isFinishing() : " + isFinishing());
+                    }
+                }
+            }, 2300);
+        }
+    }
+
     private void initializeSlidingMenu() {
-        /*
-        // set the Behind View
-        setBehindContentView(R.layout.fragment_slide_menu);
+        // Adding Toolbar to Main screen
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        // customize the SlidingMenu
-        SlidingMenu sm = getSlidingMenu();
-        sm.setShadowWidthRes(R.dimen.shadow_width);
-        sm.setShadowDrawable(R.drawable.shadow);
-        sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
-        sm.setFadeDegree(0.35f);
-        sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-        sm.setBehindScrollScale(0.0f);
+        // Create Navigation drawer and inlfate layout
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawerLayout.setDrawerListener(toggle);
 
-        // set scale animation transformer
-        sm.setBehindCanvasTransformer(new SlidingMenu.CanvasTransformer() {
-            @Override
-            public void transformCanvas(Canvas canvas, float percentOpen) {
-                canvas.scale(percentOpen, 1, 0, 0);
-            }
-        });
-        setSlidingActionBarEnabled(true);
-        */
+        toggle.syncState();
 
-        //getActionBar().setDisplayHomeAsUpEnabled(true);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     private void releaseDialog(Dialog dialog) {
@@ -284,7 +214,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
-            dialog = null;
         }
     }
 
@@ -312,14 +241,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ab.create().show();
     }
 
-    public void showCloseMenuItem() {
-        mNeedShowCloseMenuItem = true;
-        invalidateOptionsMenu();
-    }
-
     public void startPermissionCheck(final String checkPermission, PermissionCheckResultListener listener) {
-        if (TextUtils.isEmpty(checkPermission) || listener == null) {
-            Logger.e(TAG, "cannot check permission caused by permission parameter or listener is not valid");
+        if (listener == null) {
+            Logger.e(TAG, "cannot check permission caused by listener is not valid");
+            return;
+        }
+
+        if (TextUtils.isEmpty(checkPermission)) {
+            Logger.e(TAG, "cannot check permission caused by permission parameter");
             listener.onResult(false);
             return;
         }
@@ -359,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (mPermissionResultListener == null) {
             Logger.e(TAG, "onRequestPermissionResult just pass. caused by resultListener is null");
             return;

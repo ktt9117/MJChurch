@@ -1,7 +1,6 @@
 package org.mukdongjeil.mjchurch;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,9 +8,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.mukdongjeil.mjchurch.common.util.Logger;
-
-import java.util.Iterator;
-import java.util.Set;
 
 public class PushMessageActivity extends Activity {
     private static final String TAG = PushMessageActivity.class.getSimpleName();

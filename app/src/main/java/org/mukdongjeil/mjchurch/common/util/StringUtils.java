@@ -29,8 +29,8 @@ public class StringUtils {
 	 */
 	public static String convertToDisplayVersionCode(String versionName) {
 		String[] versions = versionName.split("[.]");
-		StringBuffer sb = new StringBuffer();
-		if(versions != null && versions.length == 3) {			
+		StringBuilder sb = new StringBuilder();
+		if (versions.length == 3) {
 			for(int i = 0; i < 3; i++) {
 				if(Integer.parseInt(versions[i]) < 10) {
 					versions[i] = versions[i].replace("0", "");
@@ -41,6 +41,7 @@ public class StringUtils {
 				}
 			}			
 		}
+
 		return sb.toString();
 	}
 

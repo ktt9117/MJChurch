@@ -14,12 +14,13 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.dao.SermonItem;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.common.util.StringUtils;
+import org.mukdongjeil.mjchurch.models.Sermon;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,10 @@ import java.io.IOException;
 public class MediaService extends Service {
     private static final String TAG = MediaService.class.getSimpleName();
 
+    public interface MediaStatusChangedListener {
+        void onStatusChanged(int status, Sermon item);
+    }
+
     public static final int PLAYER_STATUS_PLAY = 1;
     public static final int PLAYER_STATUS_PAUSE = 2;
     public static final int PLAYER_STATUS_STOP = 3;
@@ -37,9 +42,10 @@ public class MediaService extends Service {
     private static final int MEDIA_SERVICE_ID = 101;
 
     private final LocalBinder mBinder = new LocalBinder();
-    private SermonItem mCurrentItem;
+    private Sermon mCurrentItem;
     private PhoneCallStateListener mCallStateListener;
     private MediaPlayer mPlayer;
+    private MediaStatusChangedListener mMediaStatusChangedListener;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -49,6 +55,10 @@ public class MediaService extends Service {
     public class LocalBinder extends Binder {
         public MediaService getService() {
             return MediaService.this;
+        }
+
+        public void setMediaStatusChangedListener(MediaStatusChangedListener listener) {
+            mMediaStatusChangedListener = listener;
         }
     }
 
@@ -93,7 +103,7 @@ public class MediaService extends Service {
         stopPlayer();
     }
 
-    public void startPlayer(SermonItem item) throws IOException {
+    public void startPlayer(Sermon item) throws IOException {
         Logger.i(TAG, "startPlayer called");
 //        Answers.getInstance().logContentView(new ContentViewEvent()
 //                .putContentName("설교 재생")
@@ -119,24 +129,47 @@ public class MediaService extends Service {
         });
 
         File file = new File(Const.DIR_PUB_DOWNLOAD, item.titleWithDate + StringUtils.FILE_EXTENSION_MP3);
-        if (file != null && file.exists()) {
+        if (file.exists()) {
             mPlayer.setDataSource(file.getPath());
             Logger.i(TAG, "Local File Playing...");
         } else {
-            mPlayer.setDataSource(Const.BASE_URL + item.audioUrl);
-            Logger.i(TAG, "Server File Streaming...");
+            String audioUri = Const.BASE_URL + item.audioUrl;
+            mPlayer.setDataSource(audioUri);
+            Logger.i(TAG, "Server File Streaming audioUri : " + audioUri);
         }
         mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mp.start();
+                if (mMediaStatusChangedListener != null) {
+                    mMediaStatusChangedListener.onStatusChanged(PLAYER_STATUS_PLAY, mCurrentItem);
+                }
             }
         });
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 //stopPlayer();
+                Logger.i(TAG, "onCompletion");
                 mediaPlayer.reset();
+                TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+                tm.listen(mCallStateListener, PhoneStateListener.LISTEN_NONE);
+            }
+        });
+        mPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+                Toast.makeText(getApplicationContext(), "시스템 문제로 재생할 수 없습니다", Toast.LENGTH_LONG).show();
+                Logger.e(TAG, "onError : " + what + ", " + extra);
+                stopPlayer();
+                return false;
+            }
+        });
+        mPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(MediaPlayer mediaPlayer, int what, int extra) {
+                Logger.e(TAG, "onInfo : " + what + ", " + extra);
+                return false;
             }
         });
 
@@ -155,6 +188,11 @@ public class MediaService extends Service {
             mPlayer.release();
             mPlayer = null;
         }
+
+        if (mMediaStatusChangedListener != null) {
+            mMediaStatusChangedListener.onStatusChanged(PLAYER_STATUS_STOP, mCurrentItem);
+        }
+
         mCurrentItem = null;
 
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -172,6 +210,9 @@ public class MediaService extends Service {
         }
 
         mPlayer.pause();
+        if (mMediaStatusChangedListener != null) {
+            mMediaStatusChangedListener.onStatusChanged(PLAYER_STATUS_PAUSE, mCurrentItem);
+        }
         return true;
     }
 
@@ -180,10 +221,13 @@ public class MediaService extends Service {
             return false;
         }
         mPlayer.start();
+        if (mMediaStatusChangedListener != null) {
+            mMediaStatusChangedListener.onStatusChanged(PLAYER_STATUS_PLAY, mCurrentItem);
+        }
         return true;
     }
 
-    public SermonItem getCurrentPlayerItem() {
+    public Sermon getCurrentPlayerItem() {
         return mCurrentItem;
     }
 

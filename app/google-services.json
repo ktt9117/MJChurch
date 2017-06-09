@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "537844475313-tq5kq6p2u92jkrd9eevqkmq1rq8r9h07.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.mukdongjeil.mjchurch",
+            "certificate_hash": "c33a9e46e660048e49cc81373fd864f76f50aac1"
+          }
+        },
+        {
           "client_id": "537844475313-6u3esikkg2v3lf3flas32e05os0p8b5r.apps.googleusercontent.com",
           "client_type": 3
         },

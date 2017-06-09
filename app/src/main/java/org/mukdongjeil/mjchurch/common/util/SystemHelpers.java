@@ -5,7 +5,6 @@ import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
@@ -13,18 +12,8 @@ import java.util.List;
 
 public class SystemHelpers {
 
-	private static Context mContext = null;
-	
-	public static void init(Context context) {
-		mContext = context;
-	}
-	
-	public static Context getApplicationContext() {
-		return mContext;
-	}
-	
-	public static String getPhoneNumber() {
-		TelephonyManager telManager = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
+	public static String getPhoneNumber(Context context) {
+		TelephonyManager telManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		String telNumber = telManager.getLine1Number();
 		if(!TextUtils.isEmpty(telNumber) && telNumber.startsWith("+82")) {
 			telNumber = telNumber.replace("+82", "0");
@@ -32,8 +21,8 @@ public class SystemHelpers {
 		return telNumber;
 	}
 	
-	public static String getPinCode() {
-		String phoneNumber = getPhoneNumber();
+	public static String getPinCode(Context context) {
+		String phoneNumber = getPhoneNumber(context);
 		if (!TextUtils.isEmpty(phoneNumber) &&
 				phoneNumber.length() > 4) {
 			return phoneNumber.substring(phoneNumber.length()-4, phoneNumber.length());
@@ -67,15 +56,11 @@ public class SystemHelpers {
 		
 		return false;
 	}
-	
-	public static String getSdkVersion() {
-		return Build.VERSION.RELEASE;
-	}
 
-	public static String getAppVersion() {
+	public static String getAppVersion(Context context) {
 		PackageInfo packageInfo;
         try {
-            packageInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (NameNotFoundException e) {
             throw new IllegalStateException("getPackageInfo failed");
         }

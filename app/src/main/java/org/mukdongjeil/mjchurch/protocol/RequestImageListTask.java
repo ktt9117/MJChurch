@@ -27,11 +27,10 @@ public class RequestImageListTask extends RequestBaseTask {
             if (source != null) {
                 Element imgBoxElement = source.getFirstElementByClass("img_box");
                 Logger.e(TAG, "imgBoxElement : " + imgBoxElement.toString());
-                if (imgBoxElement != null) {
-                    List<Element> imgTagList = imgBoxElement.getAllElements(HTMLElementName.IMG);
-                    Logger.e(TAG, "imgTagList count : " + ((imgTagList != null) ? imgTagList.size() : -1));
-                    listener.onResult(imgTagList, OnResultListener.POSITION_NONE);
-                }
+                List<Element> imgTagList = imgBoxElement.getAllElements(HTMLElementName.IMG);
+                Logger.e(TAG, "imgTagList count : " + ((imgTagList != null) ? imgTagList.size() : -1));
+                listener.onResult(imgTagList, OnResultListener.POSITION_NONE);
+
             } else {
                 Logger.e(TAG, "source is null");
                 listener.onResult(null, OnResultListener.POSITION_NONE);
