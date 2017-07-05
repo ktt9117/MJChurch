@@ -1,6 +1,7 @@
 package org.mukdongjeil.mjchurch.service;
 
 import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.models.Board;
 import org.mukdongjeil.mjchurch.models.Gallery;
 import org.mukdongjeil.mjchurch.models.GalleryDetail;
@@ -16,14 +17,25 @@ import io.realm.RealmResults;
  */
 
 public class DataService {
+    private static final String TAG = DataService.class.getSimpleName();
 
     public static void insertToRealm(Realm realm, final RealmObject object) {
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                realm.copyToRealmOrUpdate(object);
-            }
-        });
+        try {
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    if (realm.isClosed()) {
+                        Logger.e(TAG, "Cannot insert item to realm db caused by realm instance is already closed");
+                        return;
+                    }
+
+                    realm.copyToRealmOrUpdate(object);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.e(TAG, "error occured when insert data into realm database");
+        }
     }
 
     public static RealmResults<ImagePageUrl> getImagePageUrls(Realm realm, int pageType) {
