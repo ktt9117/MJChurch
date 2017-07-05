@@ -41,10 +41,6 @@ public class BoardFragment extends Fragment {
     private Realm realm;
     private RealmResults<Board> mLocalItemList;
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
-
     public BoardFragment() {
         // Required empty public constructor
     }
@@ -64,17 +60,17 @@ public class BoardFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Logger.i(TAG, "onCreateView");
-        View v = inflater.inflate(R.layout.layout_recyclerview, null);
+        View v = inflater.inflate(R.layout.layout_recyclerview, container, false);
 
         mLocalItemList = DataService.getBoardList(realm);
         Logger.e(TAG, "mLocalItemList count : " + mLocalItemList.size());
 
-        mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new BoardListAdapter(mLocalItemList);
-        mRecyclerView.setAdapter(mAdapter);
+        RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+        RecyclerView.Adapter adapter = new BoardListAdapter(mLocalItemList);
+        recyclerView.setAdapter(adapter);
 
         return v;
     }
@@ -116,7 +112,7 @@ public class BoardFragment extends Fragment {
                         if (localItem != null) {
                             Logger.e(TAG, "the item is already inside local DB");
                         } else {
-                            new RequestBoardContentTask(getActivity(), i, href, new RequestBaseTask.OnResultListener() {
+                            new RequestBoardContentTask(i, href, new RequestBaseTask.OnResultListener() {
                                 @Override
                                 public void onResult(Object obj, int position) {
                                     if (obj != null && obj instanceof Board) {

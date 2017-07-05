@@ -80,7 +80,7 @@ public class MediaService extends Service {
             }
 
             if (action.equals("playAction")) {
-                if (resumePlayer() == false) {
+                if (!resumePlayer()) {
                     try {
                         startPlayer(mCurrentItem);
                     } catch (IOException e) {

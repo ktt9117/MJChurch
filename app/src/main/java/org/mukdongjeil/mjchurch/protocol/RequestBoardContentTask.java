@@ -1,6 +1,5 @@
 package org.mukdongjeil.mjchurch.protocol;
 
-import android.content.Context;
 import android.text.TextUtils;
 
 import net.htmlparser.jericho.Element;
@@ -17,13 +16,11 @@ import org.mukdongjeil.mjchurch.models.Board;
 public class RequestBoardContentTask extends RequestBaseTask {
     private static final String TAG = RequestBoardContentTask.class.getSimpleName();
 
-    private Context context;
     private OnResultListener listener;
     private String contentUrl;
     private int position;
 
-    public RequestBoardContentTask(Context context, int position, String contentUrl, OnResultListener listener) {
-        this.context = context;
+    public RequestBoardContentTask(int position, String contentUrl, OnResultListener listener) {
         this.listener = listener;
         this.position = position;
         this.contentUrl = contentUrl;

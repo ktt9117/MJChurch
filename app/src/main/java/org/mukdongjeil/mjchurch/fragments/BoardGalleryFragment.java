@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.bumptech.glide.Glide;
+
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.adapters.BoardGridAdapter;
@@ -48,10 +50,11 @@ public class BoardGalleryFragment extends Fragment {
 
     private Realm realm;
 
-    private ExHandler<BoardGalleryFragment> mHandler = new ExHandler<BoardGalleryFragment>(this) {
+    final private ExHandler<BoardGalleryFragment> mHandler = new ExHandler<BoardGalleryFragment>(this) {
         @Override
         protected void handleMessage(BoardGalleryFragment reference, Message msg) {
             if (isDetached) return;
+
             mPageNo++;
             new RequestListTask(mBoardType, mPageNo, new RequestBaseTask.OnResultListener() {
                 @Override
@@ -86,7 +89,7 @@ public class BoardGalleryFragment extends Fragment {
                         hasMorePage = false;
                     }
 
-                    if (hasMorePage == true) {
+                    if (hasMorePage) {
                         mHandler.sendEmptyMessage(HANDLE_WHAT_GET_CONTENTS);
                     }
                 }
@@ -112,7 +115,7 @@ public class BoardGalleryFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_grid_board, null);
+        View v = inflater.inflate(R.layout.fragment_grid_board, container, false);
         mGridView = (GridView) v.findViewById(R.id.gridview);
 
         int displayWidth = DisplayUtil.getDisplaySizeWidth(getActivity());
@@ -132,7 +135,7 @@ public class BoardGalleryFragment extends Fragment {
                 getArguments().getInt(Const.INTENT_KEY_SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
 
         mItemList = new ArrayList<>();
-        mAdapter = new BoardGridAdapter(getActivity(), mItemList, mColumnWidth);
+        mAdapter = new BoardGridAdapter(getActivity(), Glide.with(this), mItemList, mColumnWidth);
         mGridView.setAdapter(mAdapter);
         mGridView.setOnItemClickListener(mOnGridItemClickListener);
 
@@ -177,7 +180,7 @@ public class BoardGalleryFragment extends Fragment {
         hasMorePage = false;
     }
 
-    private AdapterView.OnItemClickListener mOnGridItemClickListener = new AdapterView.OnItemClickListener() {
+    final private AdapterView.OnItemClickListener mOnGridItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Gallery item = mItemList.get(position);

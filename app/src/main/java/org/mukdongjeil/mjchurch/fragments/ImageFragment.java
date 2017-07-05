@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import org.mukdongjeil.mjchurch.R;
@@ -35,7 +36,7 @@ public class ImageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_image_url, container, false);
         PhotoView photoView = (PhotoView) v.findViewById(R.id.photoView);
-        Glide.with(this).load(imgUrl).crossFade().into(photoView);
+        Glide.with(this).load(imgUrl).crossFade().diskCacheStrategy(DiskCacheStrategy.ALL).into(photoView);
         return v;
     }
 }

@@ -10,7 +10,7 @@ public class PreferenceUtil {
 	
 	private static final String TAG = PreferenceUtil.class.getSimpleName();
 
-	public static final String PREF_NAME = "save_instance_pref"; // Preference Name
+	private static final String PREF_NAME = "save_instance_pref"; // Preference Name
 
 	private static final String INTRODUCE_LAST_SELECTED_MENU_INDEX = "introduceLastSelectedMenuIndex";
 	private static final String WORSHIP_LAST_SELECTED_MENU_INDEX = "worshipLastSelectedMenuIndex";

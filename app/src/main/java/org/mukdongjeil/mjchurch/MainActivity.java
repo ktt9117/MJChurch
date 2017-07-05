@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -31,20 +32,12 @@ import org.mukdongjeil.mjchurch.fragments.ImagePagerFragment;
 import org.mukdongjeil.mjchurch.fragments.SermonPagerFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
-    public interface PermissionCheckResultListener {
-        void onResult(boolean isGranted);
-    }
-
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private CycleProgressDialog mLoadingDialog;
-
-    private FirebaseAnalytics mFirebaseAnalytics;
-
     private static final int REQUEST_CODE_PERMISSION_CHECK = 100;
-    private PermissionCheckResultListener mPermissionResultListener;
 
+    private PermissionCheckResultListener mPermissionResultListener;
+    private CycleProgressDialog mLoadingDialog;
     private DrawerLayout mDrawerLayout;
 
     @Override
@@ -54,16 +47,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // for fcm notification click action.
         showPushMessageIfNecessary(getIntent());
 
+        // start intro activity
         startActivity(new Intent(this, IntroActivity.class));
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-        // set the Content View
+        // get the firebase instance
+        FirebaseAnalytics.getInstance(this);
+
+        // set the content view
         setContentView(R.layout.activity_main);
 
-        // set SideMenu
+        // set the slide menu
         initializeSlidingMenu();
 
-        // set the current Fragment
+        // set the start fragment
         Fragment fragment = new ImagePagerFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_INTRODUCE);
@@ -73,11 +69,45 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switchContent(fragment);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releaseDialog(mLoadingDialog);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+            hideLoadingDialog();
+            return;
+        }
+
+        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (mPermissionResultListener == null) {
+            Logger.e(TAG, "onRequestPermissionResult just pass. caused by resultListener is null");
+            return;
+        }
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            mPermissionResultListener.onResult(true);
+
+        } else {
+            mPermissionResultListener.onResult(false);
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here.
-
         Fragment newFragment = null;
 
         int id = item.getItemId();
@@ -105,36 +135,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             newFragment = new BoardPagerFragment();
         }
 
-        // notify to main fragment container for replace content
         if (newFragment == null) {
+            Logger.e(TAG, "There is no fragment to switch");
             return false;
         }
 
+        // notify to main fragment container for replace content
         switchContent(newFragment);
         hideSlideMenu();
+
         return true;
     }
 
-    public void switchContent(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
+    private void switchContent(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment)
                 .commit();
     }
 
-    public void switchContentWithBackStack(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
-    }
-
-    public void hideSlideMenu() {
+    private void hideSlideMenu() {
         if (mDrawerLayout == null) { return; }
         mDrawerLayout.closeDrawers();
     }
 
     public void addContent(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment).addToBackStack("detail").commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment)
+                .addToBackStack("detail").commit();
     }
 
     public void showLoadingDialog() {
@@ -147,23 +172,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         releaseDialog(mLoadingDialog);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        releaseDialog(mLoadingDialog);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
-            hideLoadingDialog();
-            return;
-        }
-
-        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+    private void releaseDialog(Dialog dialog) {
+        if (dialog != null) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
         }
     }
 
@@ -175,11 +188,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         final String message = bundle.getString("message");
-        if (TextUtils.isEmpty(message) == false) {
+        if (!TextUtils.isEmpty(message)) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (isFinishing() == false) {
+                    if (!isFinishing()) {
                         Intent intent = new Intent(MainActivity.this, PushMessageActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra("message", message);
@@ -188,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         Logger.i(TAG, "isFinishing() : " + isFinishing());
                     }
                 }
-            }, 2300);
+            }, 3000);
         }
     }
 
@@ -209,37 +222,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void releaseDialog(Dialog dialog) {
-        if (dialog != null) {
-            if (dialog.isShowing()) {
-                dialog.dismiss();
-            }
-        }
+    public interface PermissionCheckResultListener {
+        void onResult(boolean isGranted);
     }
 
-    public interface NetworkAlertResultListener {
-        void onClick(boolean positiveButtonClick);
-    }
-
-    public void showNetworkAlertDialog(String message, final NetworkAlertResultListener listener) {
-        AlertDialog.Builder ab = new AlertDialog.Builder(MainActivity.this);
-        ab.setTitle("경고");
-        ab.setCancelable(false);
-        ab.setMessage(message);
-        ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                listener.onClick(true);
-            }
-        });
-        ab.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                listener.onClick(false);
-            }
-        });
-        ab.create().show();
-    }
 
     public void startPermissionCheck(final String checkPermission, PermissionCheckResultListener listener) {
         if (listener == null) {
@@ -248,27 +234,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         if (TextUtils.isEmpty(checkPermission)) {
-            Logger.e(TAG, "cannot check permission caused by permission parameter");
+            Logger.e(TAG, "cannot check permission caused by wrong permission parameter");
             listener.onResult(false);
             return;
         }
 
-        if (ContextCompat.checkSelfPermission(this, checkPermission) != PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            Logger.i(TAG, "There is no need to check permission. The device platform version under Marshmallow");
+            listener.onResult(true);
+            return;
+        }
 
+        if (ContextCompat.checkSelfPermission(this, checkPermission) != PackageManager.PERMISSION_GRANTED) {
             mPermissionResultListener = listener;
 
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, checkPermission)) {
                 AlertDialog.Builder ab = new AlertDialog.Builder(MainActivity.this);
+
                 String rationale;
                 if (checkPermission.equals(Manifest.permission.READ_PHONE_STATE)) {
                     rationale = "오디오 재생을 위해서는 \"통화 상태 조회\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.";
+
                 } else if (checkPermission.equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     rationale = "설교 다운로드를 위해서는 \"쓰기\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.";
+
                 } else {
                     Logger.e(TAG, "cannot check permission caused by checkPermission parameter is not valid");
                     mPermissionResultListener = null;
                     return;
                 }
+
                 ab.setTitle("권한이 필요합니다.");
                 ab.setMessage(rationale);
                 ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -279,25 +274,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
                 ab.create().show();
+
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{checkPermission}, REQUEST_CODE_PERMISSION_CHECK);
             }
         } else {
             listener.onResult(true);
         }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (mPermissionResultListener == null) {
-            Logger.e(TAG, "onRequestPermissionResult just pass. caused by resultListener is null");
-            return;
-        }
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            mPermissionResultListener.onResult(true);
-        } else {
-            mPermissionResultListener.onResult(false);
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

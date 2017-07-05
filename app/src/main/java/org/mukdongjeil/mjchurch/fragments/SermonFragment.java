@@ -37,6 +37,7 @@ public class SermonFragment extends BaseFragment {
     public static final String INTENT_ACTION_DOWNLOAD_COMPLETED = "intent_action_download_completed";
 
     private Realm mRealm;
+    // TODO: currently not used value, but It needs later
     private int mPageNo;
     private int mSermonType;
     private TextView listLoadingText;
@@ -44,7 +45,6 @@ public class SermonFragment extends BaseFragment {
     private ArrayList<Sermon> mItemList;
     private SermonListAdapter mAdapter;
     private RecyclerView mRecyclerView;
-    private RecyclerView.LayoutManager mLayoutManager;
 
     private boolean isItemAdded = false;
 
@@ -52,7 +52,7 @@ public class SermonFragment extends BaseFragment {
 
     private SermonPagerFragment.SermonSelectedListener mSermonSelectedListener;
 
-    private RealmChangeListener onRealmChangedListener = new RealmChangeListener<Realm>() {
+    private final RealmChangeListener onRealmChangedListener = new RealmChangeListener<Realm>() {
         @Override
         public void onChange(Realm element) {
             Logger.e(TAG, "RealmChangeListener > onChange called");
@@ -72,7 +72,8 @@ public class SermonFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mRealm = Realm.getDefaultInstance();
         mPageNo = 1;
-        View v = inflater.inflate(R.layout.fragment_sermon, null);
+
+        View v = inflater.inflate(R.layout.fragment_sermon, container, false);
         listLoadingText = (TextView) v.findViewById(R.id.list_loading_text);
         mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
         return v;
@@ -109,9 +110,9 @@ public class SermonFragment extends BaseFragment {
 
         mItemList = new ArrayList<>();
         mRecyclerView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mAdapter = new SermonListAdapter(getActivity(), mItemList, new SermonListAdapter.OnSermonClickListener() {
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(layoutManager);
+        mAdapter = new SermonListAdapter(mItemList, new SermonListAdapter.OnSermonClickListener() {
             @Override
             public void onSermonClicked(Sermon item) {
                 mSermonSelectedListener.onItemSelected(item);
@@ -137,15 +138,11 @@ public class SermonFragment extends BaseFragment {
         Logger.e(TAG, "localPageUrls.size() : " + localSermonList.size());
 
         //로컬 DB에 저장된 목록이 없거나 24시간 이내에 서버에서 리스트 체크를 하지 않은 경우에만 서버로부터 목록을 받아온다.
-        if (localSermonList.size() < 1 || isAlreadyCheckToday(mSermonType) == false) {
+        if (localSermonList.size() < 1 || !isAlreadyCheckToday(mSermonType)) {
             new RequestSermonListTask(mSermonType, localSermonList, new RequestSermonListTask.OnSermonResultListener() {
                 @Override
                 public void onResult(boolean hasItem, Sermon item) {
-                    if (hasItem == false) {
-                        listLoadingText.setVisibility(View.VISIBLE);
-                        listLoadingText.setText(R.string.sermon_empty_message);
-                        listLoadingText.bringToFront();
-                    } else {
+                    if (hasItem) {
                         PreferenceUtil.setWorshipListCheckTimeInMillis(mSermonType, System.currentTimeMillis());
                         DataService.insertToRealm(mRealm, item);
 
@@ -153,6 +150,10 @@ public class SermonFragment extends BaseFragment {
                         mAdapter.notifyDataSetChanged();
                         listLoadingText.setVisibility(View.GONE);
 
+                    } else {
+                        listLoadingText.setVisibility(View.VISIBLE);
+                        listLoadingText.setText(R.string.sermon_empty_message);
+                        listLoadingText.bringToFront();
                     }
                 }
             });

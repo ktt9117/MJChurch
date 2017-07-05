@@ -12,7 +12,7 @@ import org.mukdongjeil.mjchurch.common.util.Logger;
  * Created by gradler on 2016. 6. 3..
  */
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
-    public static final String TAG = MyFirebaseMessagingService.class.getSimpleName();
+    private static final String TAG = MyFirebaseMessagingService.class.getSimpleName();
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {

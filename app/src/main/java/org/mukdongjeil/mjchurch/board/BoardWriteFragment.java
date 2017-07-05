@@ -16,15 +16,13 @@ import org.mukdongjeil.mjchurch.common.util.Logger;
 public class BoardWriteFragment extends Fragment {
     private static final String TAG = BoardWriteFragment.class.getSimpleName();
 
-    EditText edtWriter;
-    EditText edtContent;
+    private EditText edtWriter;
+    private EditText edtContent;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Logger.i(TAG, "onCreateView");
-
-        View v = inflater.inflate(R.layout.fragment_write_board, null);
-
+        View v = inflater.inflate(R.layout.fragment_write_board, container, false);
         edtWriter = (EditText) v.findViewById(R.id.edt_writer);
         edtContent = (EditText) v.findViewById(R.id.edt_content);
         v.findViewById(R.id.btn_write).setOnClickListener(new View.OnClickListener() {

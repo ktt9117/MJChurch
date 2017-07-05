@@ -92,7 +92,7 @@ public class RequestListTask extends RequestBaseTask {
 
     private void parseGalleryList(Element contentElement) {
         Logger.i(TAG, "contentElement : " + contentElement.toString());
-        List<Gallery> itemList = new ArrayList<Gallery>();
+        List<Gallery> itemList = new ArrayList<>();
         List<Element> linkList = contentElement.getAllElementsByClass("photo_list_a");
         List<Element> photoUrlList = contentElement.getAllElementsByClass("photo_list_img");
         List<Element> titleList = contentElement.getAllElementsByClass("photo_list_ttl");
@@ -123,6 +123,7 @@ public class RequestListTask extends RequestBaseTask {
                     }
                     item.title = titleList.get(i).getTextExtractor().toString();
                     item.date = dateList.get(i).getTextExtractor().toString();
+
                 } catch (ArrayIndexOutOfBoundsException aiobe) {
                     aiobe.printStackTrace();
                     item = null;

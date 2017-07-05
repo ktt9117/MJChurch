@@ -35,9 +35,6 @@ public class ImagePagerFragment extends BaseFragment {
     private TabLayout tabs;
 
     private Realm realm;
-    private int pageType;
-    private String[] pageTitles;
-    private String[] pageUrls;
 
     public ImagePagerFragment() {
         // Required empty public constructor
@@ -54,16 +51,15 @@ public class ImagePagerFragment extends BaseFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         Bundle bundle = getArguments();
-        if (bundle != null) {
-            pageType = bundle.getInt(Const.INTENT_KEY_PAGE_TYPE);
-            pageTitles = bundle.getStringArray(Const.INTENT_KEY_PAGE_TITLES);
-            pageUrls = bundle.getStringArray(Const.INTENT_KEY_PAGE_URLS);
-        } else {
+        if (bundle == null) {
             Logger.e(TAG, "bundle is null");
             return;
         }
+
+        final int pageType = bundle.getInt(Const.INTENT_KEY_PAGE_TYPE);
+        final String[] pageTitles = bundle.getStringArray(Const.INTENT_KEY_PAGE_TITLES);
+        final String[] pageUrls = bundle.getStringArray(Const.INTENT_KEY_PAGE_URLS);
 
         getActivity().setTitle(pageType == Const.PAGE_TYPE_INTRODUCE ? "환영합니다" : "양육과 훈련");
 

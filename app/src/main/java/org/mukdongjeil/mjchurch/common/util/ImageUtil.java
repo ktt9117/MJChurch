@@ -32,7 +32,7 @@ public class ImageUtil {
 		return getOptimizeScreennailImage(path, size.width, size.height, sampleWidth);
 	}
 	
-	public static synchronized Bitmap getOptimizeScreennailImage(String path, float width, float height, int sampleWidth) {
+	private static synchronized Bitmap getOptimizeScreennailImage(String path, float width, float height, int sampleWidth) {
 		if(path == null) {
 			return null;
 		}
@@ -45,15 +45,19 @@ public class ImageUtil {
 		options.inJustDecodeBounds = true;
 		BitmapFactory.decodeFile(path, options);
 		
-		int outWidth = options.outWidth;
-		int outHeight = options.outHeight;
+		int outWidth;
+		int outHeight;
 		int degrees = getExifOrientation(path);
-		if(degrees == 90 || degrees == 270) {
+
+		if (degrees == 90 || degrees == 270) {
 			outWidth = options.outHeight;
 			outHeight = options.outWidth;
+		} else {
+			outWidth = options.outWidth;
+			outHeight = options.outHeight;
 		}
 		
-		if(sampleWidth > 0) {
+		if (sampleWidth > 0) {
 			double sampleSize = outWidth / sampleWidth;
 			options.inSampleSize = (int)Math.pow(2d, Math.floor(Math.log(sampleSize)/Math.log(2d)));
 		} else {
@@ -98,13 +102,14 @@ public class ImageUtil {
 				}
 			}
 			
-			float dstWidth = width;
-			float dstHeight = height;
+			float dstWidth;
+			float dstHeight;
 			int srcWidth = bitmap.getWidth();
 			int srcHeight = bitmap.getHeight();
 			float rateWidth = width / (float)srcWidth;
 			float rateHeight = height / (float)srcHeight;
-			if(rateWidth > rateHeight) {
+
+			if (rateWidth > rateHeight) {
 				dstWidth = (int)(srcWidth * rateWidth);
 				dstHeight = (int)(srcHeight * rateWidth);
 			} else {
@@ -119,7 +124,6 @@ public class ImageUtil {
 					bitmap = bitmap2;
 				}
 			} catch (OutOfMemoryError e) {
-				// TODO: handle exception
 				Logger.e(TAG, "getOptimizeScreennailImage():OutOfMemoryError=" + e);
 			}
 		}
@@ -192,23 +196,24 @@ public class ImageUtil {
 			Logger.e(TAG, "getOptimizeScreennailImage():OutOfMemoryError=" + e);
 			return null;
 		}
-		if(bitmap != null) {
+
+		if (bitmap != null) {
 			if(degrees != 0) {
 				Bitmap bitmap1 = getRotatedBitmap(bitmap, degrees);
-				if(bitmap != bitmap1) {
+				if (bitmap != bitmap1) {
 					bitmap.recycle();
 					bitmap = bitmap1;
 				}
 			}
 			
-			float dstWidth = width;
-			float dstHeight = height;
+			float dstWidth;
+			float dstHeight;
 			int srcWidth = bitmap.getWidth();
 			int srcHeight = bitmap.getHeight();
 			float rateWidth = width / (float)srcWidth;
 			float rateHeight = height / (float)srcHeight;
 			
-			if(rateWidth < rateHeight) {
+			if (rateWidth < rateHeight) {
 				dstWidth = (int)(srcWidth * rateWidth);
 				dstHeight = (int)(srcHeight * rateWidth);
 			} else {
@@ -223,7 +228,6 @@ public class ImageUtil {
 					bitmap = bitmap2;
 				}
 			} catch (OutOfMemoryError e) {
-				// TODO: handle exception
 				Logger.e(TAG, "getOptimizeScreennailImage():OutOfMemoryError=" + e);
 			}
 		}
@@ -234,16 +238,17 @@ public class ImageUtil {
 	public static synchronized Bitmap getOptimizeScreennailImageForSmall(Bitmap source, float width, float height, int sampleWidth) {
 		if(source == null) { return null; }
 		
-		float dstWidth = width;
-		float dstHeight = height;
+		float dstWidth;
+		float dstHeight;
 		int srcWidth = source.getWidth();
 		int srcHeight = source.getHeight();
 		float rateWidth = width / (float)srcWidth;
 		float rateHeight = height / (float)srcHeight;
 		
-		if(rateWidth < rateHeight) {
+		if (rateWidth < rateHeight) {
 			dstWidth = (int)(srcWidth * rateWidth);
 			dstHeight = (int)(srcHeight * rateWidth);
+
 		} else {
 			dstWidth = (int)(srcWidth * rateHeight);
 			dstHeight = (int)(srcHeight * rateHeight);
@@ -253,7 +258,6 @@ public class ImageUtil {
 		try {
 			bitmap = Bitmap.createScaledBitmap(source, Math.round(dstWidth), Math.round(dstHeight), true);
 		} catch (OutOfMemoryError e) {
-			// TODO: handle exception
 			Logger.e(TAG, "getOptimizeScreennailImage():OutOfMemoryError=" + e);
 		}
 		
@@ -297,12 +301,7 @@ public class ImageUtil {
 			return null;
 		}
 
-		Uri uri;
-		if (!StringUtils.isFileUri(path)) {
-			path = StringUtils.setPrefixforFileUri(path);
-		}
-		uri = Uri.parse(path);
-			
+		Uri uri = Uri.parse(StringUtils.setPrefixforFileUri(path));
 		InputStream is = null;
 		InputStream is2 = null;
         BitmapFactory.Options options = null;
@@ -322,16 +321,14 @@ public class ImageUtil {
         }
         try {
             BitmapFactory.Options options2 = new BitmapFactory.Options();
-            float outWidth = options.outWidth;
+
             int degrees = getExifOrientation(path.substring(StringUtils.PREFIX_FILE_URL.length()));
-            if(degrees == 90 || degrees == 270) {
-            	outWidth = options.outHeight;
-            }
+			float outWidth = (degrees == 90 || degrees == 270) ? options.outHeight : options.outWidth;
             options2.inSampleSize = (int)(outWidth / sampleWidth);
             is2 = context.getContentResolver().openInputStream(uri);
             
             Bitmap bitmap = BitmapFactory.decodeStream(is2, null, options2);
-            if(bitmap != null) {
+            if (bitmap != null) {
             	Bitmap rotate = getRotatedBitmap(bitmap, degrees);
             
             	if(rotate != null && bitmap != rotate) {
@@ -382,8 +379,8 @@ public class ImageUtil {
 		
 		int width = source.getWidth();
 	    int height = source.getHeight();
-	    int newWidth = width;
-	    int newHeight = height;
+	    int newWidth;
+	    int newHeight;
 	    float rate;
 	    
 	    if (width < maxWidth) {
@@ -393,12 +390,13 @@ public class ImageUtil {
 	    	Bitmap newBitmap = Bitmap.createScaledBitmap(source, newWidth, newHeight, true);
 			source.recycle();
 	    	return newBitmap;
+
 	    } else {
 	    	return source;
 	    }
 	}
 
-    public synchronized static Bitmap getRotatedBitmap(Bitmap bitmap, int degrees) {
+    private synchronized static Bitmap getRotatedBitmap(Bitmap bitmap, int degrees) {
     	if (degrees != 0 && bitmap != null) {
     		Matrix m = new Matrix();
     		m.setRotate(degrees, (float) bitmap.getWidth() / 2, (float) bitmap.getHeight() / 2 );
@@ -412,7 +410,7 @@ public class ImageUtil {
     	return bitmap;
     }
 	
-	public static SizeInfo getSizeFixScreenWidth(Context context, String path, int paddingWidth) {
+	private static SizeInfo getSizeFixScreenWidth(Context context, String path, int paddingWidth) {
 		BitmapFactory.Options opts = new BitmapFactory.Options();
 		opts.inJustDecodeBounds = true;
 		BitmapFactory.decodeFile(path, opts);
@@ -420,7 +418,7 @@ public class ImageUtil {
 		return getSizeFixScreenWidth(context, opts.outWidth, opts.outHeight, paddingWidth);
 	}
 	
-	public static SizeInfo getSizeFixScreenWidth(Context context, int width, int height, int paddingWidth) {
+	private static SizeInfo getSizeFixScreenWidth(Context context, int width, int height, int paddingWidth) {
 		int screenWidth = DisplayUtil.getDisplaySizeWidth(context);
 		int adjustWidth = screenWidth - paddingWidth;
 		float scale = adjustWidth / (float)width;
@@ -428,7 +426,7 @@ public class ImageUtil {
 		return new SizeInfo(Math.round(width * scale), Math.round(height * scale));
 	}
 	
-    public synchronized static int getExifOrientation(String filepath) {
+    private synchronized static int getExifOrientation(String filepath) {
     	int degree = 0;
     	ExifInterface exif = null;
     	

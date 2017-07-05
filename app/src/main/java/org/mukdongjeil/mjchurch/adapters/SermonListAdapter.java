@@ -1,6 +1,5 @@
 package org.mukdongjeil.mjchurch.adapters;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -49,13 +48,10 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
         void onSermonClicked(Sermon item);
     }
 
-    private Context context;
     private ArrayList<Sermon> itemList;
-    private int selectedItemPosition = -1;
     private OnSermonClickListener listener;
 
-    public SermonListAdapter(Context context, ArrayList<Sermon> items, OnSermonClickListener listener) {
-        this.context = context;
+    public SermonListAdapter(ArrayList<Sermon> items, OnSermonClickListener listener) {
         this.itemList = items;
         this.listener = listener;
     }
@@ -114,9 +110,4 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
 //            convertView.setBackgroundColor(Color.WHITE);
 //        }
     }
-
-    public void setCurrentItemSelected(int position) {
-        selectedItemPosition = position;
-    }
-
 }

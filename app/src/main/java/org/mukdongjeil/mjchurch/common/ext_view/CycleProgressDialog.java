@@ -36,10 +36,13 @@ public class CycleProgressDialog extends Dialog {
 
 	private void init(Context context) {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+		Window window = getWindow();
+		if (window != null) window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
 		setCanceledOnTouchOutside(false);
-		
-		View view = getLayoutInflater().inflate(R.layout.dialog_loading_cycle, null);
+
+		final ViewGroup nullViewGroup = null;
+		View view = getLayoutInflater().inflate(R.layout.dialog_loading_cycle, nullViewGroup);
 		setContentView(view, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		
 		mCycleIcon = (ImageView) view.findViewById(R.id.cycle_icon);

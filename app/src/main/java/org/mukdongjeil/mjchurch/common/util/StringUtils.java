@@ -18,9 +18,10 @@ public class StringUtils {
     }
 	
 	public static String setPrefixforFileUri(String str) {
-    	if(!isFileUri(str)) {
+    	if (!isFileUri(str)) {
     		return PREFIX_FILE_URL + str;
     	}
+
     	return str;
     }
 	

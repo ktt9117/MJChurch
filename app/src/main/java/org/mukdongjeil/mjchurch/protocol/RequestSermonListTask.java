@@ -89,7 +89,7 @@ public class RequestSermonListTask extends RequestBaseTask {
                     }
                 }
 
-                if (isExistItem == false) {
+                if (!isExistItem) {
                     Logger.d(TAG, "The sermon is not exist local db. request new bbs " + serverItem.bbsNo);
                     new RequestSermonListTask.RequestSermonTask(serverItem).execute(Const.getWorshipContentUrl(sermonType, 1, serverItem.bbsNo));
                 }

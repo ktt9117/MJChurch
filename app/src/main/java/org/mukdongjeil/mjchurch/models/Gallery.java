@@ -1,7 +1,5 @@
 package org.mukdongjeil.mjchurch.models;
 
-import android.support.annotation.NonNull;
-
 import com.google.gson.Gson;
 
 import io.realm.RealmObject;
@@ -19,7 +17,6 @@ public class Gallery extends RealmObject {
     public String bbsNo;
 
     @PrimaryKey
-    @NonNull
     public String photoUrl;
 
     public String toString() {

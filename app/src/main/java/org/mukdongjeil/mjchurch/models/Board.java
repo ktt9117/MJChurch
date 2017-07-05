@@ -1,7 +1,5 @@
 package org.mukdongjeil.mjchurch.models;
 
-import android.support.annotation.NonNull;
-
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -11,7 +9,6 @@ import io.realm.annotations.PrimaryKey;
 
 public class Board extends RealmObject {
     @PrimaryKey
-    @NonNull
     public String contentUrl;
 
     public String title;

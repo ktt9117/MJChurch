@@ -22,11 +22,11 @@ import java.util.List;
 public class BoardPagerFragment extends BaseFragment {
     private static final String TAG = BoardPagerFragment.class.getSimpleName();
 
-    ViewPager pager;
-    TabLayout tabs;
+    private ViewPager pager;
+    private TabLayout tabs;
 
     // Board menu names
-    public static final String[] BOARD_TAP_NAMES = {"감사 나눔", "교회앨범", "새신자앨범"};
+    private static final String[] BOARD_TAP_NAMES = {"감사 나눔", "교회앨범", "새신자앨범"};
 
     public BoardPagerFragment() {
         // Required empty public constructor

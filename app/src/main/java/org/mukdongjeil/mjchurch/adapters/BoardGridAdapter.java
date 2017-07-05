@@ -12,7 +12,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -29,9 +30,11 @@ public class BoardGridAdapter extends BaseAdapter {
     private Context context;
     private List<Gallery> list;
     private int columnWidth;
+    private RequestManager requestManager;
 
-    public BoardGridAdapter(Context context, List<Gallery> list, int columnWidth) {
+    public BoardGridAdapter(Context context, RequestManager requestManager, List<Gallery> list, int columnWidth) {
         this.context = context;
+        this.requestManager = requestManager;
         this.list = list;
         this.columnWidth = columnWidth;
     }
@@ -66,12 +69,8 @@ public class BoardGridAdapter extends BaseAdapter {
         final Gallery item = getItem(position);
         if (item != null) {
             if (!TextUtils.isEmpty(item.photoUrl)) {
-                Glide.with(context)
-                        .load(item.photoUrl)
-                        .placeholder(Const.DEFAULT_IMG_RESOURCE)
-                        .crossFade()
-                        .into(holder.imageView);
-
+                requestManager.load(item.photoUrl).placeholder(Const.DEFAULT_IMG_RESOURCE)
+                        .crossFade().diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.imageView);
             }
             if (holder.textView != null) {
                 holder.textView.setText(item.title);

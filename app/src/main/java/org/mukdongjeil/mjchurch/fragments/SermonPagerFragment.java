@@ -1,7 +1,9 @@
 package org.mukdongjeil.mjchurch.fragments;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.common.Const;
@@ -30,7 +33,7 @@ import io.realm.Realm;
 /**
  * Created by Kim SungJoong on 2015-07-31.
  */
-public class SermonPagerFragment extends BaseFragment {
+public class SermonPagerFragment extends BaseFragment implements ListPlayerController.NetworkAlertListener {
     private static final String TAG = SermonPagerFragment.class.getSimpleName();
 
     public interface SermonSelectedListener {
@@ -88,7 +91,7 @@ public class SermonPagerFragment extends BaseFragment {
         pager = (ViewPager) v.findViewById(R.id.viewpager);
         tabs = (TabLayout) v.findViewById(R.id.tabs);
 
-        mPlayerController = new ListPlayerController(getActivity(), v);
+        mPlayerController = new ListPlayerController(getActivity(), v, this);
         mPlayerController.setMediaServiceConnection(mServiceConnection);
         return v;
     }
@@ -141,6 +144,43 @@ public class SermonPagerFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         realm.close();
+    }
+
+    @Override
+    public void onNetworkNotConnected() {
+        Toast.makeText(getActivity(),
+                "네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요",
+                Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onDataAlert(final boolean isDownloadAction) {
+        AlertDialog.Builder ab = new AlertDialog.Builder(getActivity());
+        ab.setTitle("경고");
+        ab.setCancelable(false);
+        ab.setMessage("와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 " +
+                "요금이 부과될 수도 있습니다.\n(와이파이 환경에서 이용하시길 권장합니다.)\n " +
+                "계속 진행 하시겠습니까?");
+
+        ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (isDownloadAction) {
+                    mPlayerController.downloadCurrentItem();
+
+                } else {
+                    mPlayerController.playCurrentItem();
+                }
+            }
+        });
+
+        ab.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        ab.create().show();
     }
 
     static class SermonPagerAdapter extends FragmentPagerAdapter {

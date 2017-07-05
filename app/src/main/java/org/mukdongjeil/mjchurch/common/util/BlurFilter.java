@@ -379,8 +379,8 @@ public class BlurFilter {
 				Bitmap.Config.ARGB_8888);
 	}
 
-	final static int KERNAL_WIDTH = 7;
-	final static int KERNAL_HEIGHT = 7;
+	private final static int KERNAL_WIDTH = 7;
+	private final static int KERNAL_HEIGHT = 7;
 
 	public static int[][] kernal_GaussianMatrix = {
 			{ 67, 2292, 19117, 38771, 19117, 2292, 67 },

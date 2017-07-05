@@ -12,10 +12,8 @@ import io.realm.annotations.PrimaryKey;
 public class ImagePageUrl extends RealmObject {
 
     @PrimaryKey
-    @NonNull
     public String title;
 
-    @NonNull
     public String url;
 
     public int type; // 1: introduce, 3: training

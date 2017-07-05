@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
@@ -66,7 +67,6 @@ public class BoardGalleryDetailFragment extends Fragment {
     private ExViewPager mPager;
     private CirclePageIndicator mPagerIndicator;
     private ProgressBar mProgressBar;
-    private ImageView mBtnClose;
     private DetailPagerAdapter mAdapter;
     private Realm realm;
 
@@ -107,8 +107,7 @@ public class BoardGalleryDetailFragment extends Fragment {
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
         mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
         mProgressBar = (ProgressBar) v.findViewById(R.id.detail_page_progress);
-        mBtnClose = (ImageView) v.findViewById(R.id.btn_close);
-        mBtnClose.setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 getActivity().onBackPressed();
@@ -186,6 +185,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                 }
             }
             return true;
+
         case R.id.action_btn_download:
             Logger.i(TAG, "actionBtnDownload");
             v = mAdapter.currentView;
@@ -229,6 +229,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                     .load(itemList.get(position).getValue())
                     .placeholder(Const.DEFAULT_IMG_RESOURCE)
                     .crossFade()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -288,8 +289,10 @@ public class BoardGalleryDetailFragment extends Fragment {
                 Toast.makeText(getActivity(), "이미지를 찾을 수 없습니다.", Toast.LENGTH_LONG).show();
                 return;
             }
+
+
             File cacheFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/tmp_share_image.jpg");
-            boolean isFileSaved = false;
+            boolean isFileSaved;
             try {
                 cacheFile.createNewFile();
                 FileOutputStream fosStream = new FileOutputStream(cacheFile);
@@ -298,6 +301,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                 isFileSaved = true;
             } catch (Exception e) {
                 e.printStackTrace();
+                isFileSaved = false;
             }
 
             if (isFileSaved) {
@@ -317,6 +321,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                 return;
             }
             File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "/묵동제일앨범");
+
             if (!path.exists()) {
                 path.mkdir();
             }
@@ -324,15 +329,17 @@ public class BoardGalleryDetailFragment extends Fragment {
             String fileName = "/img_" + new SimpleDateFormat("yyyyMMdd-hhmmss").format(new Date());
             Logger.i(TAG, "fileSave name : " + fileName);
             File cacheFile = new File(path.toString() + fileName + ".jpg");
-            boolean isFileSaved = false;
+            boolean isFileSaved;
             try {
                 cacheFile.createNewFile();
                 FileOutputStream fosStream = new FileOutputStream(cacheFile);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fosStream);
                 fosStream.close();
                 isFileSaved = true;
+
             } catch (Exception e) {
                 e.printStackTrace();
+                isFileSaved = false;
             }
 
             if (isFileSaved) {
