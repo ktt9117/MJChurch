@@ -11,5 +11,19 @@
     <string name="menu_worship">예배와 말씀</string>
     <string name="menu_training">양육과 훈련</string>
     <string name="menu_board">사진과 게시글</string>
+    <string name="menu_chat">채팅</string>
+
+    <string name="worship_sunday_morning">주일 오전</string>
+    <string name="worship_sunday_afternoon">주일 오후</string>
+    <string name="worship_wednesday">수요 예배</string>
+    <string name="worship_friday">금요 기도회</string>
+
+    <string name="download_start">설교 다운로드를 시작합니다\n진행상황은 상단 알림바를 확인하세요</string>
+    <string name="download_done">다운로드 됨</string>
+    <string name="downloading">다운로드 중 %1$d%</string>
+    <string name="worship_download_complete_message">설교 다운로드가 완료되었습니</string>
+
+    <string name="application_quit_message">앱을 종료하려면 뒤로가기를 한번 더 누르세요</string>
+
 
 </resources>

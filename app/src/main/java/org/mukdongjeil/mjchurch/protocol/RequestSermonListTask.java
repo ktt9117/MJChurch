@@ -137,7 +137,7 @@ public class RequestSermonListTask extends RequestBaseTask {
                 return;
             }
 
-            //extract title & date
+            // extract title & date
             Element ttlElement = contentElement.getFirstElementByClass("bbs_ttl");
             if (ttlElement != null) {
                 Logger.i(TAG, "onPostExecute > ttlElement : " + ttlElement.getTextExtractor().toString());
@@ -146,7 +146,7 @@ public class RequestSermonListTask extends RequestBaseTask {
                 Logger.e(TAG, "onPostExecute > cannot find ttlElement element");
             }
 
-            //extract preacher and chapterInfo
+            // extract preacher and chapterInfo
             Element temp = contentElement.getFirstElementByClass("bbs_substance_p");
 
             for (Element element : temp.getAllElements(HTMLElementName.STRONG)) {
@@ -178,12 +178,7 @@ public class RequestSermonListTask extends RequestBaseTask {
                 }
             }
 
-            //extract content text
-            //TODO : 아래와 같이 하면 설교 본문이 중복되어 표시되어 일단 주석처리함. 추후 수정필요
-            //TextExtractor contentText = temp.getTextExtractor();
-            //item.content = contentText.toString();
-
-            //extract attached file
+            // extract attached file
             List<Element> fileElement = contentElement.getAllElementsByClass("attch_file");
             for (Element elem : fileElement) {
                 String href = elem.getFirstElement(HTMLElementName.A).getAttributeValue("href");

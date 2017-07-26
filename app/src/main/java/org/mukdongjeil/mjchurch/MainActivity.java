@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -29,7 +30,7 @@ import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
 import org.mukdongjeil.mjchurch.common.util.Logger;
 import org.mukdongjeil.mjchurch.fragments.BoardPagerFragment;
 import org.mukdongjeil.mjchurch.fragments.ImagePagerFragment;
-import org.mukdongjeil.mjchurch.fragments.SermonPagerFragment;
+import org.mukdongjeil.mjchurch.fragments.SermonFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private PermissionCheckResultListener mPermissionResultListener;
     private CycleProgressDialog mLoadingDialog;
     private DrawerLayout mDrawerLayout;
+    private boolean exitCheckTwice = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,6 +72,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         releaseDialog(mLoadingDialog);
@@ -85,7 +92,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                getSupportFragmentManager().popBackStack();
+                return;
+            }
+
+            if (exitCheckTwice) {
+                super.onBackPressed();
+            } else {
+                exitCheckTwice = true;
+                Toast.makeText(getApplicationContext(), R.string.application_quit_message, Toast.LENGTH_LONG).show();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        exitCheckTwice = false;
+                    }
+                }, 2000);
+            }
         }
     }
 
@@ -108,36 +131,59 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Fragment newFragment = null;
+        Fragment newFragment;
+        Bundle bundle;
 
         int id = item.getItemId();
-
-        if (id == R.id.nav_welcome) {
-            newFragment = new ImagePagerFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_INTRODUCE);
-            bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.INTRODUCE_MENU_NAMES);
-            bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.INTRODUCE_MENU_URLS);
-            newFragment.setArguments(bundle);
-
-        } else if (id == R.id.nav_worship) {
-            newFragment = new SermonPagerFragment();
-
-        } else if (id == R.id.nav_training) {
-            newFragment = new ImagePagerFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_TRAINING);
-            bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.TRAINING_MENU_NAMES);
-            bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.TRAINING_MENU_URLS);
-            newFragment.setArguments(bundle);
-
-        } else if (id == R.id.nav_board) {
-            newFragment = new BoardPagerFragment();
-        }
-
-        if (newFragment == null) {
-            Logger.e(TAG, "There is no fragment to switch");
-            return false;
+        switch (item.getItemId()) {
+            default:
+            case R.id.nav_welcome:
+                newFragment = new ImagePagerFragment();
+                bundle = new Bundle();
+                bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_INTRODUCE);
+                bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.INTRODUCE_MENU_NAMES);
+                bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.INTRODUCE_MENU_URLS);
+                newFragment.setArguments(bundle);
+                break;
+            case R.id.nav_training:
+                newFragment = new ImagePagerFragment();
+                bundle = new Bundle();
+                bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_TRAINING);
+                bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.TRAINING_MENU_NAMES);
+                bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.TRAINING_MENU_URLS);
+                newFragment.setArguments(bundle);
+                break;
+            case R.id.nav_board:
+                newFragment = new BoardPagerFragment();
+                break;
+            case R.id.nav_worship_sunday_morning:
+                newFragment = new SermonFragment();
+                bundle = new Bundle();
+                bundle.putString(Const.INTENT_KEY_TITLE, getString(R.string.worship_sunday_morning));
+                bundle.putInt(Const.INTENT_KEY_WORSHIP_TYPE, Const.WORSHIP_TYPE_SUNDAY_MORNING);
+                newFragment.setArguments(bundle);
+                break;
+            case R.id.nav_worship_sunday_afternoon:
+                newFragment = new SermonFragment();
+                bundle = new Bundle();
+                bundle.putString(Const.INTENT_KEY_TITLE, getString(R.string.worship_sunday_afternoon));
+                bundle.putInt(Const.INTENT_KEY_WORSHIP_TYPE, Const.WORSHIP_TYPE_SUNDAY_AFTERNOON);
+                newFragment.setArguments(bundle);
+                break;
+            case R.id.nav_worship_wednesday:
+                newFragment = new SermonFragment();
+                bundle = new Bundle();
+                bundle.putString(Const.INTENT_KEY_TITLE, getString(R.string.worship_wednesday));
+                bundle.putInt(Const.INTENT_KEY_WORSHIP_TYPE, Const.WORSHIP_TYPE_WEDNESDAY);
+                newFragment.setArguments(bundle);
+                break;
+            case R.id.nav_worship_friday:
+                newFragment = new SermonFragment();
+                bundle = new Bundle();
+                bundle.putString(Const.INTENT_KEY_TITLE, getString(R.string.worship_friday));
+                bundle.putInt(Const.INTENT_KEY_WORSHIP_TYPE, Const.WORSHIP_TYPE_FRIDAY);
+                newFragment.setArguments(bundle);
+                break;
         }
 
         // notify to main fragment container for replace content

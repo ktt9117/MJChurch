@@ -1,7 +1,5 @@
 package org.mukdongjeil.mjchurch.models;
 
-import com.google.gson.Gson;
-
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -18,8 +16,4 @@ public class Gallery extends RealmObject {
 
     @PrimaryKey
     public String photoUrl;
-
-    public String toString() {
-        return new Gson().toJson(this);
-    }
 }

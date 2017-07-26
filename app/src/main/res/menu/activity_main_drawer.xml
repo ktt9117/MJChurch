@@ -7,10 +7,6 @@
             android:icon="@drawable/ic_list_welcome"
             android:title="@string/menu_welcome" />
         <item
-            android:id="@+id/nav_worship"
-            android:icon="@drawable/ic_list_worship"
-            android:title="@string/menu_worship" />
-        <item
             android:id="@+id/nav_training"
             android:icon="@drawable/ic_list_training"
             android:title="@string/menu_training" />
@@ -18,21 +14,38 @@
             android:id="@+id/nav_board"
             android:icon="@drawable/ic_list_board"
             android:title="@string/menu_board" />
+
+        <!--
+        <item
+            android:id="@+id/nav_chat"
+            android:icon="@drawable/ic_list_chat"
+            android:title="@string/menu_chat" />
+        -->
     </group>
 
-    <!--
-    <item android:title="Communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
-    -->
+
+    <group android:checkableBehavior="single">
+        <item
+            android:title="@string/menu_worship">
+            <menu>
+                <item
+                    android:id="@+id/nav_worship_sunday_morning"
+                    android:icon="@drawable/ic_list_worship"
+                    android:title="@string/worship_sunday_morning" />
+                <item
+                    android:id="@+id/nav_worship_sunday_afternoon"
+                    android:icon="@drawable/ic_list_book"
+                    android:title="@string/worship_sunday_afternoon" />
+                <item
+                    android:id="@+id/nav_worship_wednesday"
+                    android:icon="@drawable/ic_list_worship"
+                    android:title="@string/worship_wednesday" />
+                <item
+                    android:id="@+id/nav_worship_friday"
+                    android:icon="@drawable/ic_list_pray"
+                    android:title="@string/worship_friday" />
+            </menu>
+        </item>
+    </group>
 
 </menu>

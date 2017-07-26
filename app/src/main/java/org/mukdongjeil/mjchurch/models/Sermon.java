@@ -1,8 +1,7 @@
 package org.mukdongjeil.mjchurch.models;
 
-import com.google.gson.Gson;
-
 import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
 import io.realm.annotations.PrimaryKey;
 
 /**
@@ -24,13 +23,15 @@ public class Sermon extends RealmObject {
     public String docUrl;
     public long downloadQueryId;
     public int downloadStatus;
+    public int downloadPercent;
+
+    @Ignore
+    public int playStatus;
 
     public Sermon() {
         downloadQueryId = -1;
-        downloadStatus = 0;
-    }
-
-    public String toString() {
-        return new Gson().toJson(this);
+        downloadPercent = -1;
+        downloadStatus = DownloadStatus.NONE.value;
+        playStatus = 0;
     }
 }

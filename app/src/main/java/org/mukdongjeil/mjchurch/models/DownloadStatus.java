@@ -5,10 +5,10 @@ package org.mukdongjeil.mjchurch.models;
  */
 
 public enum DownloadStatus {
-    DOWNLOAD_NONE(0),
-    DOWNLOAD_START(1),
-    DOWNLOAD_SUCCESS(2),
-    DOWNLOAD_FAILED(3);
+    NONE(0),
+    START(1),
+    COMPLETE(2),
+    FAILED(3);
 
     int value;
     DownloadStatus(int value) {
@@ -17,12 +17,12 @@ public enum DownloadStatus {
 
     public static DownloadStatus parse(int value) {
         switch(value) {
-            case 1: return DOWNLOAD_START;
-            case 2: return DOWNLOAD_SUCCESS;
-            case 3: return DOWNLOAD_FAILED;
+            case 1: return START;
+            case 2: return COMPLETE;
+            case 3: return FAILED;
             case 0:
             default:
-                return DOWNLOAD_NONE;
+                return NONE;
         }
     }
 }

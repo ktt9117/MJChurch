@@ -31,6 +31,8 @@ public class Const {
     public static final String INTENT_KEY_PAGE_TYPE = "pageType";
     public static final String INTENT_KEY_PAGE_TITLES = "pageTitles";
     public static final String INTENT_KEY_PAGE_URLS = "pageUrls";
+    public static final String INTENT_KEY_WORSHIP_TYPE = "worshipType";
+    public static final String INTENT_KEY_TITLE = "title";
 
     // Introduce menu names
     public static final String[] INTRODUCE_MENU_NAMES = { "교회소개", "교회연혁", "찾아오는 길", "예배시간안내", "섬김의 동역자" };

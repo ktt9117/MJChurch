@@ -18,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
@@ -30,6 +29,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.github.chrisbanes.photoview.PhotoView;
+import com.wang.avi.AVLoadingIndicatorView;
 
 import net.htmlparser.jericho.Element;
 
@@ -66,7 +66,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     private String mContentNo;
     private ExViewPager mPager;
     private CirclePageIndicator mPagerIndicator;
-    private ProgressBar mProgressBar;
+    private AVLoadingIndicatorView mProgressBar;
     private DetailPagerAdapter mAdapter;
     private Realm realm;
 
@@ -100,13 +100,15 @@ public class BoardGalleryDetailFragment extends Fragment {
         realm.close();
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         final View v = inflater.inflate(R.layout.fragment_board_gallery_detail, container, false);
         mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
         mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
-        mProgressBar = (ProgressBar) v.findViewById(R.id.detail_page_progress);
+        mProgressBar = (AVLoadingIndicatorView) v.findViewById(R.id.detail_page_progress);
         v.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -160,9 +162,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     }
 
     private void hideProgressBar() {
-        if (mProgressBar.getVisibility() == View.VISIBLE) {
-            mProgressBar.setVisibility(View.GONE);
-        }
+        mProgressBar.hide();
     }
 
     @Override
@@ -222,7 +222,7 @@ public class BoardGalleryDetailFragment extends Fragment {
 
             final ViewHolder holder = new ViewHolder(context);
 
-            holder.progress.setVisibility(View.VISIBLE);
+            holder.progress.smoothToShow();
             holder.txtView.setVisibility(View.VISIBLE);
 
             Glide.with(getActivity())
@@ -233,14 +233,14 @@ public class BoardGalleryDetailFragment extends Fragment {
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                            holder.progress.setVisibility(View.INVISIBLE);
+                            holder.progress.hide();
                             holder.txtView.setVisibility(View.INVISIBLE);
                             return false;
                         }
 
                         @Override
                         public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            holder.progress.setVisibility(View.INVISIBLE);
+                            holder.progress.hide();
                             holder.txtView.setVisibility(View.INVISIBLE);
                             return false;
                         }
@@ -358,7 +358,7 @@ public class BoardGalleryDetailFragment extends Fragment {
         RelativeLayout layout;
         PhotoView photoView;
         TextView txtView;
-        ProgressBar progress;
+        AVLoadingIndicatorView progress;
 
         public ViewHolder(Context context) {
             RelativeLayout.LayoutParams imgPhotoParams =
@@ -368,8 +368,9 @@ public class BoardGalleryDetailFragment extends Fragment {
             photoView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
             RelativeLayout.LayoutParams progressParams =
-                    new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-            progress = new ProgressBar(context, null, android.R.attr.progressBarStyleSmall);
+                    new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            progress = new AVLoadingIndicatorView(context, null, R.style.AVLoadingIndicatorView_Large);
+            progress.setIndicator("BallBeatIndicator");
             progressParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
             progress.setId(R.id.viewpager_progress);
             progress.setLayoutParams(progressParams);
