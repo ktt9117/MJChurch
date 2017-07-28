@@ -198,16 +198,9 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
             return;
         }
 
-        if (mService != null && mService.getCurrentPlayerItem() != null) {
-            if (mService.getCurrentPlayerItem().bbsNo.equals(item.bbsNo)) {
-                play(item, position);
-                return;
-            }
-        }
-
         if (DownloadUtil.isDownloadSuccessItem(getActivity(), item)) {
             //다운로드 된 아이템은 그냥 재생한다.
-            play(item, position);
+            play(item);
 
         } else {
             //다운로드 되지 않은 아이템은 네트워크에 연결되어 있는지 체크
@@ -216,13 +209,13 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
                     showNetworkNotConnectedAlert();
                     break;
                 case NetworkUtil.NETWORK_WIFI:
-                    play(item, position);
+                    play(item);
                     break;
                 default:
                     showWifiAlert(new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            play(item, position);
+                            play(item);
                         }
                     });
                     break;
@@ -380,7 +373,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
         }
     }
 
-    private void play(final Sermon item, final int position) {
+    private void play(final Sermon item) {
         ((MainActivity) getActivity()).startPermissionCheck(Manifest.permission.READ_PHONE_STATE,
                 new MainActivity.PermissionCheckResultListener() {
             @Override
@@ -389,22 +382,23 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
                 if (isGranted) {
                     try {
                         Logger.e(TAG, "[play] item.playStatus : " + item.playStatus);
-                        int tobePlayStatus;
 
-                        if (item.playStatus == MediaService.PLAY_STATUS_PLAY) {
-                            mService.stopPlayer();
-                            tobePlayStatus = MediaService.PLAY_STATUS_PAUSE;
+                        // 재생하려는 아이템이 현재 재생중인 아이템과 같은 경우
+                        if (mService != null && mService.getCurrentPlayerItem() != null) {
+                            if (mService.getCurrentPlayerItem().bbsNo.equals(item.bbsNo)) {
+                                if (item.playStatus == MediaService.PLAY_STATUS_PLAY) {
+                                    mService.pausePlayer();
+                                    return;
 
-                        } else if (item.playStatus == MediaService.PLAY_STATUS_PAUSE) {
-                            mService.resumePlayer();
-                            tobePlayStatus = MediaService.PLAY_STATUS_PLAY;
-
-                        } else {
-                            mService.startPlayer(item.bbsNo);
-                            tobePlayStatus = MediaService.PLAY_STATUS_PLAY;
+                                } else if (item.playStatus == MediaService.PLAY_STATUS_PAUSE) {
+                                    mService.resumePlayer();
+                                    return;
+                                }
+                            }
                         }
 
-                        updateItemStatus(tobePlayStatus, item);
+                        // 재생하려는 아이템이 현재 재생중인 아이템과 다른 경우
+                        mService.startPlayer(item.bbsNo);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -526,9 +520,8 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
                 DownloadManager.Query query = new DownloadManager.Query();
                 query.setFilterById(downloadQueryId);
                 Cursor cursor = downloadManager.query(query);
-                cursor.moveToFirst();
-
                 try {
+                    cursor.moveToFirst();
                     int downloadedBytes = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                     int totalBytes = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
 
@@ -538,9 +531,12 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
 
                     final int progress = (int) ((downloadedBytes * 100l) / totalBytes);
                     listener.onProgressChanged(downloadQueryId, progress);
-                    cursor.close();
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
                 }
 
                 try {

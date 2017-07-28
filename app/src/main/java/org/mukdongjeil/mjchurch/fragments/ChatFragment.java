@@ -104,7 +104,7 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated");
+        Logger.d(TAG, "onActivityCreated");
     }
 
     @Override
