@@ -11,8 +11,8 @@ android {
         applicationId "org.mukdongjeil.mjchurch"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 13
-        versionName "3.1"
+        versionCode 14
+        versionName "3.2"
         multiDexEnabled true
     }
     buildTypes {

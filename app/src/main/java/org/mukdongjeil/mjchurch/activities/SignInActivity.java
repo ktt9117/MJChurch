@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -82,6 +83,9 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
             } else {
                 Logger.e(TAG, "Login unsuccessful result status : " + result.getStatus());
             }
+        } else {
+            Toast.makeText(this, "로그인할 수 없습니다", Toast.LENGTH_SHORT).show();
+            Logger.e(TAG, "Login unsuccessful data : ");
         }
     }
 
