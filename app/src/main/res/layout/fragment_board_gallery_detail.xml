@@ -15,7 +15,7 @@
         android:paddingRight="8dp"
         android:background="#99000000" />
 
-    <org.mukdongjeil.mjchurch.common.ext_view.CirclePageIndicator
+    <org.mukdongjeil.mjchurch.ext_components.CirclePageIndicator
         android:id="@+id/pager_indicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
         android:layout_toLeftOf="@id/btn_close"
         android:background="#99000000" />
 
-    <org.mukdongjeil.mjchurch.common.ext_view.ExViewPager
+    <org.mukdongjeil.mjchurch.ext_components.ExViewPager
         android:id="@+id/gallery_detail_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

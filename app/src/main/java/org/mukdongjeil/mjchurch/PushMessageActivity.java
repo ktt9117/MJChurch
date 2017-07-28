@@ -7,7 +7,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
-import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 public class PushMessageActivity extends Activity {
     private static final String TAG = PushMessageActivity.class.getSimpleName();

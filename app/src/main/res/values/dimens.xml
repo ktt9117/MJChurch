@@ -15,4 +15,6 @@
 
     <dimen name="sermon_row_content_height">100dp</dimen>
 
+    <dimen name="text_margin">16dp</dimen>
+
 </resources>

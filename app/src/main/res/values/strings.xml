@@ -25,5 +25,22 @@
 
     <string name="application_quit_message">앱을 종료하려면 뒤로가기를 한번 더 누르세요</string>
 
+    <string name="login">로그인</string>
+    <string name="logout">로그아웃</string>
+    <string name="login_unavailable">로그인 불가</string>
+    <string name="login_required">메시지를 전송하려면 로그인 해야 합니다</string>
+
+    <string name="google_play_unavailable">구글 Play 서비스가 설치되어 있지 않거나 사용할 수 없습니다. 로그인 하려면 구글 Play 서비스를 설치하거나 활성화 해야 합니다.</string>
+    <string name="auth_failure">인증 실패</string>
+    <string name="invalid_call_activity">필수값이 누락되었습니다</string>
+
+    <string name="email_required">E-mail 필수</string>
+    <string name="password_required">패스워드 필수</string>
+    <string name="username_required">사용자 이름 필수</string>
+
+    <string name="input_your_name">채팅에 사용할 이름을 입력하세요</string>
+    <string name="not_supported_yet">아직 지원하지 않는 기능입니다</string>
+
+    <string name="my_profile">내 프로필</string>
 
 </resources>

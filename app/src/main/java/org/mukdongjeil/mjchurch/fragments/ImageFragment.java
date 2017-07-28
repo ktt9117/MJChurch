@@ -12,7 +12,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 /**
  * Created by gradler on 02/05/2017.

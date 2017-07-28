@@ -16,7 +16,7 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.models.Gallery;
 
 import java.util.List;

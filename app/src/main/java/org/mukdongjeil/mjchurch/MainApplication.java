@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.widget.Toast;
 
-import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
+import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="3dp"
+    android:id="@+id/messageRowContainerView"
+    android:layout_marginRight="20dp" >
+
+    <agency.tango.android.avatarview.views.AvatarView
+        android:id="@+id/chatAvatarView"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:av_border_color="@android:color/white"
+        app:av_border_width="4dp"
+        app:av_text_size_percentage="35" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_writer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:text="Gradler" />
+
+        <me.himanshusoni.chatmessageview.ChatMessageView
+            android:id="@+id/chatMessageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cmv_arrowGravity="start"
+            app:cmv_arrowPosition="left"
+            app:cmv_backgroundColor="#88EAEAEA"
+            app:cmv_backgroundColorPressed="#FFEAEAEA"
+            app:cmv_contentPadding="0dp"
+            app:cmv_cornerRadius="3dp"
+            app:cmv_showArrow="true">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="8dp">
+
+                <ImageView
+                    android:id="@+id/iv_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="#aaffffff"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/preacher_heejun" />
+
+                <TextView
+                    android:id="@+id/tv_message"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.Material.Body1"
+                    tools:targetApi="lollipop" />
+
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/app_name"
+                    android:textAppearance="@android:style/TextAppearance.Material.Caption"
+                    tools:targetApi="lollipop"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </me.himanshusoni.chatmessageview.ChatMessageView>
+    </LinearLayout>
+
+</LinearLayout>

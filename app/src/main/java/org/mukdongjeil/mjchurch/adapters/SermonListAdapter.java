@@ -11,10 +11,10 @@ import android.widget.TextView;
 import com.wang.avi.AVLoadingIndicatorView;
 
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.models.DownloadStatus;
 import org.mukdongjeil.mjchurch.models.Sermon;
-import org.mukdongjeil.mjchurch.service.MediaService;
+import org.mukdongjeil.mjchurch.services.MediaService;
 
 import java.util.ArrayList;
 

@@ -12,12 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.Const;
+import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.models.ImagePageUrl;
-import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
-import org.mukdongjeil.mjchurch.protocol.RequestImageURLsTask;
-import org.mukdongjeil.mjchurch.service.DataService;
+import org.mukdongjeil.mjchurch.protocols.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocols.RequestImageURLsTask;
+import org.mukdongjeil.mjchurch.services.DataService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,6 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
-/**
- * Created by Kim SungJoong on 2015-07-31.
- */
 public class ImagePagerFragment extends BaseFragment {
     private static final String TAG = ImagePagerFragment.class.getSimpleName();
 
@@ -61,7 +58,7 @@ public class ImagePagerFragment extends BaseFragment {
         final String[] pageTitles = bundle.getStringArray(Const.INTENT_KEY_PAGE_TITLES);
         final String[] pageUrls = bundle.getStringArray(Const.INTENT_KEY_PAGE_URLS);
 
-        getActivity().setTitle(pageType == Const.PAGE_TYPE_INTRODUCE ? "환영합니다" : "양육과 훈련");
+        getActivity().setTitle(pageType == Const.PAGE_TYPE_INTRODUCE ? R.string.menu_welcome : R.string.menu_training);
 
         showLoadingDialog();
 
@@ -130,11 +127,11 @@ public class ImagePagerFragment extends BaseFragment {
         realm.close();
     }
 
-    static class ImagePagerAdapter extends FragmentPagerAdapter {
+    private static class ImagePagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        public ImagePagerAdapter(FragmentManager fm) {
+        protected ImagePagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -153,7 +150,7 @@ public class ImagePagerFragment extends BaseFragment {
             return mFragmentTitleList.get(position);
         }
 
-        public void addFragment(Fragment fragment, String title) {
+        protected void addFragment(Fragment fragment, String title) {
             mFragmentList.add(fragment);
             mFragmentTitleList.add(title);
         }

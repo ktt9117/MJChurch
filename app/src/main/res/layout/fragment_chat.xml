@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chat_main_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/send_message_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
+
+        <Button android:id="@+id/btn_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="전송" />
+
+        <EditText android:id="@+id/edt_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/btn_send" />
+
+    </RelativeLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view_message"
+        android:name="org.mukdongjeil.mjchurch.chat.ChatFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/send_message_layout"
+        app:layoutManager="LinearLayoutManager"
+        tools:context="org.mukdongjeil.mjchurch.chat.ChatFragment"
+        tools:listitem="@layout/row_chat" />
+
+</RelativeLayout>

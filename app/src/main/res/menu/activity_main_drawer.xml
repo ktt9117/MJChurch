@@ -14,13 +14,11 @@
             android:id="@+id/nav_board"
             android:icon="@drawable/ic_list_board"
             android:title="@string/menu_board" />
-
-        <!--
         <item
             android:id="@+id/nav_chat"
             android:icon="@drawable/ic_list_chat"
             android:title="@string/menu_chat" />
-        -->
+
     </group>
 
 

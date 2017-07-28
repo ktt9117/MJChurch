@@ -17,7 +17,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -25,20 +24,19 @@ import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.ext_view.CycleProgressDialog;
-import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.fragments.BoardPagerFragment;
+import org.mukdongjeil.mjchurch.fragments.ChatFragment;
 import org.mukdongjeil.mjchurch.fragments.ImagePagerFragment;
 import org.mukdongjeil.mjchurch.fragments.SermonFragment;
+import org.mukdongjeil.mjchurch.services.BaseActivity;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final int REQUEST_CODE_PERMISSION_CHECK = 100;
 
     private PermissionCheckResultListener mPermissionResultListener;
-    private CycleProgressDialog mLoadingDialog;
     private DrawerLayout mDrawerLayout;
     private boolean exitCheckTwice = false;
 
@@ -50,7 +48,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         showPushMessageIfNecessary(getIntent());
 
         // start intro activity
-        startActivity(new Intent(this, IntroActivity.class));
+        if (!Const.DEBUG_MODE) {
+            startActivity(new Intent(this, IntroActivity.class));
+        }
 
         // get the firebase instance
         FirebaseAnalytics.getInstance(this);
@@ -69,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.INTRODUCE_MENU_URLS);
         fragment.setArguments(bundle);
         switchContent(fragment);
+
+        // for test
+//        startActivity(new Intent(this, ProfileMainActivity.class));
     }
 
     @Override
@@ -79,12 +82,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        releaseDialog(mLoadingDialog);
+        hideLoadingDialog();
     }
 
     @Override
     public void onBackPressed() {
-        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+        if (isLoadingDialogShowing()) {
             hideLoadingDialog();
             return;
         }
@@ -134,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Fragment newFragment;
         Bundle bundle;
 
-        int id = item.getItemId();
         switch (item.getItemId()) {
             default:
             case R.id.nav_welcome:
@@ -155,6 +157,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_board:
                 newFragment = new BoardPagerFragment();
+                break;
+            case R.id.nav_chat:
+                newFragment = new ChatFragment();
                 break;
             case R.id.nav_worship_sunday_morning:
                 newFragment = new SermonFragment();
@@ -206,16 +211,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void addContent(Fragment fragment) {
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment)
                 .addToBackStack("detail").commit();
-    }
-
-    public void showLoadingDialog() {
-        mLoadingDialog = new CycleProgressDialog(MainActivity.this);
-        mLoadingDialog.setCancelable(false);
-        mLoadingDialog.show();
-    }
-
-    public void hideLoadingDialog() {
-        releaseDialog(mLoadingDialog);
     }
 
     private void releaseDialog(Dialog dialog) {

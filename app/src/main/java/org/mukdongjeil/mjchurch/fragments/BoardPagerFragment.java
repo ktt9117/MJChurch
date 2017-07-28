@@ -11,14 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.Const;
+import org.mukdongjeil.mjchurch.Const;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Kim SungJoong on 2015-07-31.
- */
 public class BoardPagerFragment extends BaseFragment {
     private static final String TAG = BoardPagerFragment.class.getSimpleName();
 
@@ -44,7 +41,7 @@ public class BoardPagerFragment extends BaseFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        getActivity().setTitle("사진과 게시글");
+        getActivity().setTitle(R.string.menu_board);
         setupPagerAdapter();
     }
 
@@ -70,11 +67,11 @@ public class BoardPagerFragment extends BaseFragment {
         pager.setAdapter(adapter);
     }
 
-    static class BoardPagerAdapter extends FragmentPagerAdapter {
+    private static class BoardPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        public BoardPagerAdapter(FragmentManager fm) {
+        protected BoardPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -93,7 +90,7 @@ public class BoardPagerFragment extends BaseFragment {
             return mFragmentTitleList.get(position);
         }
 
-        public void addFragment(Fragment fragment, String title) {
+        protected void addFragment(Fragment fragment, String title) {
             mFragmentList.add(fragment);
             mFragmentTitleList.add(title);
         }

@@ -11,7 +11,7 @@
         app:tabGravity="fill"
         app:tabMode="scrollable" />
 
-    <org.mukdongjeil.mjchurch.common.ext_view.ExViewPager
+    <org.mukdongjeil.mjchurch.ext_components.ExViewPager
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

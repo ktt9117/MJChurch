@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="60dp"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="org.mukdongjeil.mjchurch.activities.SignInActivity"
+    android:background="@color/colorPrimaryDark" >
+
+    <TextView android:id="@+id/btn_sign_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:textSize="18dp"
+        android:text="회원가입 하기" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/btn_sign_up"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="36dp"
+            android:src="@mipmap/ic_launcher"
+            android:gravity="center" />
+
+        <org.mukdongjeil.mjchurch.ext_components.ClearableEditText
+            android:id="@+id/edt_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:drawableLeft="@drawable/ic_email"
+            android:drawablePadding="8dp"
+            android:textColor="@android:color/primary_text_dark"
+            android:textColorHint="@android:color/primary_text_dark"
+            android:inputType="textEmailAddress"
+            android:hint="E-mail" />
+
+        <EditText
+            android:id="@+id/edt_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:drawableLeft="@drawable/ic_password"
+            android:drawablePadding="8dp"
+            android:textColor="@android:color/primary_text_dark"
+            android:textColorHint="@android:color/primary_text_dark"
+            android:inputType="textPassword"
+            android:hint="Password" />
+
+        <Button android:id="@+id/btn_email_sign_in"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:drawableLeft="@drawable/ic_login"
+            android:theme="@style/ThemeOverlay.MyDarkButton"
+            android:text="e-mail 로그인" />
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/btn_google_sign_in"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>

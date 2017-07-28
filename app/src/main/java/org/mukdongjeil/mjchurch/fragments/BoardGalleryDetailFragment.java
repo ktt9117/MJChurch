@@ -34,16 +34,16 @@ import com.wang.avi.AVLoadingIndicatorView;
 import net.htmlparser.jericho.Element;
 
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.ext_view.CirclePageIndicator;
-import org.mukdongjeil.mjchurch.common.ext_view.ExViewPager;
-import org.mukdongjeil.mjchurch.common.util.ImageUtil;
-import org.mukdongjeil.mjchurch.common.util.Logger;
+import org.mukdongjeil.mjchurch.Const;
+import org.mukdongjeil.mjchurch.ext_components.CirclePageIndicator;
+import org.mukdongjeil.mjchurch.ext_components.ExViewPager;
+import org.mukdongjeil.mjchurch.utils.ImageUtil;
+import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.models.GalleryDetail;
 import org.mukdongjeil.mjchurch.models.RealmString;
-import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
-import org.mukdongjeil.mjchurch.protocol.RequestImageListTask;
-import org.mukdongjeil.mjchurch.service.DataService;
+import org.mukdongjeil.mjchurch.protocols.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocols.RequestImageListTask;
+import org.mukdongjeil.mjchurch.services.DataService;
 
 import java.io.File;
 import java.io.FileOutputStream;

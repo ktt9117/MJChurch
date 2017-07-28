@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimary">#3E88DC</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
@@ -9,6 +9,7 @@
     <color name="button_grey">#757575</color>
 
     <color name="shadow_color_45p">#8C000000</color>
+    <color name="semiTransparentWhite">#40FFFFFF</color>
 
     <integer-array name="gplus_colors">
         <item>@color/gplus_color_1</item>

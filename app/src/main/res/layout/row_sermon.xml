@@ -22,7 +22,6 @@
             android:layout_height="@dimen/sermon_row_image_height"
             android:scaleType="centerCrop" />
 
-
         <com.wang.avi.AVLoadingIndicatorView
             android:id="@+id/row_progress_bar"
             android:layout_width="wrap_content"
@@ -33,7 +32,7 @@
             android:visibility="visible"
             style="@style/AVLoadingIndicatorView.Small"
             app:indicatorName="LineScalePartyIndicator"
-            app:indicatorColor="#3F51B5"/>
+            app:indicatorColor="@color/colorPrimary"/>
 
         <TextView android:id="@+id/row_title_with_date"
             android:layout_width="match_parent"

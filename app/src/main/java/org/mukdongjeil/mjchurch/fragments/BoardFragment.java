@@ -13,14 +13,14 @@ import net.htmlparser.jericho.Element;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.adapters.BoardListAdapter;
-import org.mukdongjeil.mjchurch.common.Const;
-import org.mukdongjeil.mjchurch.common.util.Logger;
-import org.mukdongjeil.mjchurch.common.util.PreferenceUtil;
+import org.mukdongjeil.mjchurch.Const;
+import org.mukdongjeil.mjchurch.utils.Logger;
+import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 import org.mukdongjeil.mjchurch.models.Board;
-import org.mukdongjeil.mjchurch.protocol.RequestBaseTask;
-import org.mukdongjeil.mjchurch.protocol.RequestBoardContentTask;
-import org.mukdongjeil.mjchurch.protocol.RequestListTask;
-import org.mukdongjeil.mjchurch.service.DataService;
+import org.mukdongjeil.mjchurch.protocols.RequestBaseTask;
+import org.mukdongjeil.mjchurch.protocols.RequestBoardContentTask;
+import org.mukdongjeil.mjchurch.protocols.RequestListTask;
+import org.mukdongjeil.mjchurch.services.DataService;
 
 import java.util.List;
 

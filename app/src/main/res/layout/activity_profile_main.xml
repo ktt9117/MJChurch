@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="org.mukdongjeil.mjchurch.activities.ProfileMainActivity">
+
+    <RelativeLayout
+        android:id="@+id/profile_background"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="@drawable/profile_main_background" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profile_background"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="-80dp" >
+
+        <agency.tango.android.avatarview.views.AvatarView
+            android:id="@+id/profile_avatar_view"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/preacher_heejun"
+            app:av_border_color="@android:color/white"
+            app:av_text_size_percentage="50" />
+
+        <ImageView
+            android:id="@+id/profile_btn_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/profile_avatar_view"
+            android:layout_above="@+id/profile_avatar_view"
+            android:layout_marginLeft="-32dp"
+            android:layout_marginBottom="-40dp"
+            android:background="@drawable/circle_white_bg"
+            android:padding="4dp"
+            android:src="@drawable/ic_camera" />
+
+        <TextView
+            android:id="@+id/profile_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_toRightOf="@id/profile_avatar_view"
+            android:layout_alignBottom="@id/profile_avatar_view"
+            android:drawableRight="@drawable/ic_edit_row"
+            android:drawablePadding="8dp"
+            android:text="Username place"
+            android:textSize="30dp"
+            android:textColor="@android:color/primary_text_light" />
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>
