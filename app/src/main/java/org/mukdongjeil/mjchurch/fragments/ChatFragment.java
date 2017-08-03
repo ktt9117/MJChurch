@@ -2,51 +2,67 @@ package org.mukdongjeil.mjchurch.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
-import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.activities.ProfileMainActivity;
 import org.mukdongjeil.mjchurch.activities.SignInActivity;
-import org.mukdongjeil.mjchurch.adapters.ChatRecyclerAdapter;
 import org.mukdongjeil.mjchurch.models.Message;
 import org.mukdongjeil.mjchurch.models.User;
-import org.mukdongjeil.mjchurch.utils.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import agency.tango.android.avatarview.views.AvatarView;
+import agency.tango.android.avatarviewglide.GlideLoader;
+import me.himanshusoni.chatmessageview.ChatMessageView;
 
 import static android.app.Activity.RESULT_OK;
 
-public class ChatFragment extends Fragment implements View.OnClickListener, ChildEventListener, View.OnFocusChangeListener {
+public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private static final String TAG = ChatFragment.class.getSimpleName();
+    private static final String MESSAGE_CHILD = "message";
     private static final int RC_SIGN_IN = 100;
+    private static final int MY_MESSAGE = 0, OTHER_MESSAGE = 1;
 
-    private ChatRecyclerAdapter mAdapter;
     private RecyclerView mRecyclerView;
+
+    private LinearLayoutManager mLinearLayoutManager;
+    private FirebaseRecyclerAdapter<Message, MessageHolder> mFirebaseAdapter;
 
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mDatabaseReference = mFirebaseDatabase.getReference();
@@ -57,8 +73,24 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
     private EditText mMessageField;
     private Button mBtnSend;
 
-    private List<Message> mMessages;
-    private boolean mIsDialogShowing = false;
+    public static class MessageHolder extends RecyclerView.ViewHolder {
+        LinearLayout containerView;
+        AvatarView avatarView;
+        TextView tvMessage, tvTime, tvWriter;
+        ImageView ivImage;
+        ChatMessageView chatMessageView;
+
+        MessageHolder(View itemView) {
+            super(itemView);
+            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
+            avatarView = (AvatarView) itemView.findViewById(R.id.chatAvatarView);
+            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chatMessageView);
+            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
+            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
+            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
+            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
+        }
+    }
 
     public ChatFragment() {}
 
@@ -76,45 +108,36 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
 
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
         mMessageField = (EditText) view.findViewById(R.id.edt_message);
-        mMessageField.setOnFocusChangeListener(this);
+        mMessageField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.toString().trim().length() > 0) {
+                    mBtnSend.setEnabled(true);
+                } else {
+                    mBtnSend.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+
         mBtnSend = (Button) view.findViewById(R.id.btn_send);
         mBtnSend.setOnClickListener(this);
 
-//        ((MainActivity) getActivity()).showLoadingDialog();
-//        mIsDialogShowing = true;
-
+        showLoadingDialog();
         setupRecyclerView((RecyclerView) view.findViewById(R.id.recycler_view_message));
 
         return view;
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mDatabaseReference.child("message").limitToLast(20).addChildEventListener(this);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mDatabaseReference.child("message").removeEventListener(this);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Logger.d(TAG, "onActivityCreated");
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
         setUserInformation(mAuth.getCurrentUser());
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
     }
 
     @Override
@@ -173,23 +196,118 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
     private void setupRecyclerView(RecyclerView view) {
         // Set the adapter
         Context context = view.getContext();
-        mMessages = new ArrayList<>();
         mRecyclerView = view;
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
-        mAdapter = new ChatRecyclerAdapter(getActivity(), mMessages, new OnListFragmentInteractionListener() {
+        mLinearLayoutManager = new LinearLayoutManager(context);
+        mLinearLayoutManager.setStackFromEnd(true);
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Message, MessageHolder> (
+                Message.class,
+                R.layout.row_chat_other,
+                MessageHolder.class,
+                mDatabaseReference.child(MESSAGE_CHILD)) {
+
             @Override
-            public void onListFragmentInteraction(Message item) {
-                if (mMessageField == null) return;
-                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(mMessageField.getWindowToken(), 0);
+            public int getItemViewType(int position) {
+                Message item = getItem(position);
+                if (item == null) {
+                    return super.getItemViewType(position);
+                }
+
+                String email = item.writer.email;
+                if (mUserMySelf != null && !TextUtils.isEmpty(email) && email.equals(mUserMySelf.email)) {
+                    return MY_MESSAGE;
+                } else {
+                    return OTHER_MESSAGE;
+                }
+            }
+
+            @Override
+            public MessageHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                if (viewType == MY_MESSAGE) {
+                    return new MessageHolder(LayoutInflater.from(getActivity()).inflate(R.layout.row_chat_mine, parent, false));
+                } else {
+                    return new MessageHolder(LayoutInflater.from(getActivity()).inflate(R.layout.row_chat_other, parent, false));
+                }
+            }
+
+            @Override
+            protected Message parseSnapshot(DataSnapshot snapshot) {
+                Message friendlyMessage = super.parseSnapshot(snapshot);
+                if (friendlyMessage != null) {
+                    friendlyMessage.id = snapshot.getKey();
+                }
+
+                return friendlyMessage;
+            }
+
+            @Override
+            protected void populateViewHolder(final MessageHolder viewHolder, Message message, int position) {
+                closeLoadingDialog();
+                if (!TextUtils.isEmpty(message.body)) {
+                    viewHolder.tvMessage.setText(message.body);
+                    viewHolder.tvMessage.setVisibility(TextView.VISIBLE);
+                } else {
+                    viewHolder.tvMessage.setVisibility(TextView.GONE);
+                }
+
+                String date = new SimpleDateFormat("aa hh:mm", Locale.KOREA).format(new Date(message.timeStamp));
+                viewHolder.tvTime.setText(date);
+
+                if (!TextUtils.isEmpty(message.imgUrl)) {
+                    String imageUrl = message.imgUrl;
+                    if (imageUrl.startsWith("gs://")) {
+                        StorageReference storageReference = FirebaseStorage.getInstance()
+                                .getReferenceFromUrl(imageUrl);
+                        storageReference.getDownloadUrl().addOnCompleteListener(
+                                new OnCompleteListener<Uri>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Uri> task) {
+                                        if (task.isSuccessful()) {
+                                            String downloadUrl = task.getResult().toString();
+                                            Glide.with(viewHolder.ivImage.getContext())
+                                                    .load(downloadUrl)
+                                                    .into(viewHolder.ivImage);
+                                        } else {
+                                            Log.w(TAG, "Getting download url was not successful.",
+                                                    task.getException());
+                                        }
+                                    }
+                                });
+                    } else {
+                        Glide.with(viewHolder.ivImage.getContext())
+                                .load(message.imgUrl)
+                                .into(viewHolder.ivImage);
+                    }
+
+                    viewHolder.ivImage.setVisibility(ImageView.VISIBLE);
+                } else {
+                    viewHolder.ivImage.setVisibility(ImageView.GONE);
+                }
+
+                if (!isMyMessage(message)) {
+                    viewHolder.tvWriter.setText(message.writer.name);
+                    GlideLoader loader = new GlideLoader();
+                    loader.loadImage(viewHolder.avatarView, message.writer.photoUrl, message.writer.name);
+                }
+        }};
+
+        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                int friendlyMessageCount = mFirebaseAdapter.getItemCount();
+                int lastVisiblePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
+                if (lastVisiblePosition == -1 ||
+                        (positionStart >= (friendlyMessageCount - 1) && lastVisiblePosition == (positionStart - 1))) {
+                    mRecyclerView.scrollToPosition(positionStart);
+                }
             }
         });
 
-        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mRecyclerView.setAdapter(mFirebaseAdapter);
     }
 
     private void setUserInformation(FirebaseUser user) {
-        mAdapter.setUser(user);
         if (user != null) {
             mUserMySelf = new User();
             String name = user.getDisplayName();
@@ -208,9 +326,6 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
             mUserMySelf = null;
         }
 
-        if (mAdapter != null) {
-            mAdapter.notifyDataSetChanged();
-        }
         getActivity().invalidateOptionsMenu();
     }
 
@@ -255,50 +370,16 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
         setUserInformation(null);
     }
 
-    @Override
-    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-        mMessages.add(dataSnapshot.getValue(Message.class));
-        int lastPosition = mMessages.size() - 1;
-
-        if (mAdapter != null) {
-            mAdapter.notifyItemInserted(lastPosition);
-            mRecyclerView.scrollToPosition(lastPosition);
+    private boolean isMyMessage(Message message) {
+        if (mUserMySelf == null) {
+            return false;
         }
 
-        if (mIsDialogShowing == true) {
-            ((MainActivity) getActivity()).hideLoadingDialog();
-            mIsDialogShowing = false;
+        if (message == null) {
+            return false;
         }
-    }
 
-    @Override
-    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-        Logger.d(TAG, "onChildChanged > s : " + s);
-    }
-
-    @Override
-    public void onChildRemoved(DataSnapshot dataSnapshot) {
-        Logger.d(TAG, "onChildRemoved > dataSnapshot : " + dataSnapshot);
-    }
-
-    @Override
-    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-        Logger.d(TAG, "onChildMoved > s : " + s);
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-        ((MainActivity) getActivity()).hideLoadingDialog();
-    }
-
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-        Logger.d(TAG, "onFocusChange hasFocus : " + hasFocus);
-        if (hasFocus) {
-            if (mRecyclerView != null) {
-                mRecyclerView.scrollToPosition(mMessages.size() - 1);
-            }
-        }
+        return message.writer.email.equals(mUserMySelf.email);
     }
 
     public interface OnListFragmentInteractionListener {
