@@ -68,7 +68,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     private CirclePageIndicator mPagerIndicator;
     private AVLoadingIndicatorView mProgressBar;
     private DetailPagerAdapter mAdapter;
-    private Realm realm;
+    private Realm mRealm;
 
     public static BoardGalleryDetailFragment newInstance(int boardType, String contentNo) {
         BoardGalleryDetailFragment fragment = new BoardGalleryDetailFragment();
@@ -86,7 +86,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        realm = Realm.getDefaultInstance();
+        mRealm = Realm.getDefaultInstance();
         setHasOptionsMenu(true);
         if (getArguments() != null) {
             mBoardType = getArguments().getInt(ARG_BOARD_TYPE);
@@ -97,7 +97,7 @@ public class BoardGalleryDetailFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        realm.close();
+        mRealm.close();
     }
 
 
@@ -117,7 +117,7 @@ public class BoardGalleryDetailFragment extends Fragment {
         });
 
         String requestUrl = (mBoardType == BoardFragment.BOARD_TYPE_GALLERY) ? Const.getGalleryContentUrl(mContentNo) : Const.getNewPersonContentUrl(mContentNo);
-        GalleryDetail item = DataService.getGalleryDetail(realm, mContentNo);
+        GalleryDetail item = DataService.getGalleryDetail(mRealm, mContentNo);
         if (item != null && item.imageUrlList != null && item.imageUrlList.size() > 0) {
             hideProgressBar();
             mAdapter = new DetailPagerAdapter(getActivity(), item.imageUrlList);
@@ -145,7 +145,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                         GalleryDetail detail = new GalleryDetail();
                         detail.contentNo = mContentNo;
                         detail.imageUrlList = itemList;
-                        DataService.insertToRealm(realm, detail);
+                        DataService.insertToRealm(mRealm, detail);
 
                         mAdapter = new DetailPagerAdapter(getActivity(), itemList);
                         mPager.setAdapter(mAdapter);

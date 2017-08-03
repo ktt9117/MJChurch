@@ -27,26 +27,32 @@ import java.util.List;
 public class BoardGridAdapter extends BaseAdapter {
     private static final String TAG = BoardGridAdapter.class.getSimpleName();
 
-    private Context context;
-    private List<Gallery> list;
-    private int columnWidth;
-    private RequestManager requestManager;
+    private Context mContext;
+    private RequestManager mRequestManager;
+    private List<Gallery> mList;
+    private int mColumnWidth;
+
+    public static class GridViewHolder {
+        public View layout;
+        public ImageView imageView;
+        public TextView textView;
+    }
 
     public BoardGridAdapter(Context context, RequestManager requestManager, List<Gallery> list, int columnWidth) {
-        this.context = context;
-        this.requestManager = requestManager;
-        this.list = list;
-        this.columnWidth = columnWidth;
+        this.mContext = context;
+        this.mRequestManager = requestManager;
+        this.mList = list;
+        this.mColumnWidth = columnWidth;
     }
 
     @Override
     public int getCount() {
-        return (list != null) ? list.size() : 0;
+        return (mList != null) ? mList.size() : 0;
     }
 
     @Override
     public Gallery getItem(int position) {
-        return list != null ? list.get(position) : null;
+        return mList != null ? mList.get(position) : null;
     }
 
     @Override
@@ -60,7 +66,7 @@ public class BoardGridAdapter extends BaseAdapter {
         View v;
         if (convertView == null) {
             holder = new GridViewHolder();
-            v = makeGridRowView(holder, context);
+            v = makeGridRowView(holder, mContext);
         } else {
             holder = (GridViewHolder) convertView.getTag();
             v = holder.layout;
@@ -69,7 +75,7 @@ public class BoardGridAdapter extends BaseAdapter {
         final Gallery item = getItem(position);
         if (item != null) {
             if (!TextUtils.isEmpty(item.photoUrl)) {
-                requestManager.load(item.photoUrl).placeholder(Const.DEFAULT_IMG_RESOURCE)
+                mRequestManager.load(item.photoUrl).placeholder(Const.DEFAULT_IMG_RESOURCE)
                         .crossFade().diskCacheStrategy(DiskCacheStrategy.ALL).into(holder.imageView);
             }
             if (holder.textView != null) {
@@ -86,13 +92,13 @@ public class BoardGridAdapter extends BaseAdapter {
 
         ImageView imageView = new ImageView(context);
         imageView.setId(R.id.grid_img);
-        imageView.setLayoutParams(new RelativeLayout.LayoutParams(columnWidth, columnWidth));
+        imageView.setLayoutParams(new RelativeLayout.LayoutParams(mColumnWidth, mColumnWidth));
         imageView.setScaleType(ImageView.ScaleType.FIT_XY);
         layout.addView(imageView);
         holder.imageView = imageView;
 
         TextView textView = new TextView(context);
-        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(columnWidth, AbsListView.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(mColumnWidth, AbsListView.LayoutParams.WRAP_CONTENT);
         tvParams.addRule(RelativeLayout.ALIGN_BOTTOM, imageView.getId());
         textView.setLayoutParams(tvParams);
         textView.setSingleLine(true);
@@ -108,11 +114,5 @@ public class BoardGridAdapter extends BaseAdapter {
 
         layout.setTag(holder);
         return layout;
-    }
-
-    public static class GridViewHolder {
-        public View layout;
-        public ImageView imageView;
-        public TextView textView;
     }
 }

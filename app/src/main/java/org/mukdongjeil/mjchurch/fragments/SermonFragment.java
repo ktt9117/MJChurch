@@ -58,7 +58,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
     // TODO: currently not used value, but It needs later
     private int mPageNo;
     private int mSermonType;
-    private TextView listLoadingText;
+    private TextView mLoadingTextView;
 
     private ArrayList<Sermon> mItemList;
     private SermonListAdapter mAdapter;
@@ -66,7 +66,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
 
     private BroadcastReceiver mDownloadCompleteReceiver;
 
-    private final RealmChangeListener onRealmChangedListener = new RealmChangeListener<Realm>() {
+    private final RealmChangeListener mOnRealmChangedListener = new RealmChangeListener<Realm>() {
         @Override
         public void onChange(Realm element) {
             Logger.e(TAG, "RealmChangeListener > onChange called");
@@ -74,7 +74,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
         }
     };
 
-    private OnProgressChangeListener onProgressChangeListener = new OnProgressChangeListener() {
+    private OnProgressChangeListener mOnProgressChangeListener = new OnProgressChangeListener() {
         @Override
         public void onProgressChanged(long downloadQueryId, int value) {
             Logger.e(TAG, "onProgressChanged value : " + value);
@@ -135,7 +135,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
         mPageNo = 1;
 
         View v = inflater.inflate(R.layout.fragment_sermon, container, false);
-        listLoadingText = (TextView) v.findViewById(R.id.list_loading_text);
+        mLoadingTextView = (TextView) v.findViewById(R.id.list_loading_text);
         mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
         return v;
     }
@@ -170,7 +170,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mRealm.removeChangeListener(onRealmChangedListener);
+        mRealm.removeChangeListener(mOnRealmChangedListener);
         mRealm.close();
     }
 
@@ -269,12 +269,12 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
 
                         mItemList.add(item);
                         mAdapter.notifyDataSetChanged();
-                        listLoadingText.setVisibility(View.GONE);
+                        mLoadingTextView.setVisibility(View.GONE);
 
                     } else {
-                        listLoadingText.setVisibility(View.VISIBLE);
-                        listLoadingText.setText(R.string.sermon_empty_message);
-                        listLoadingText.bringToFront();
+                        mLoadingTextView.setVisibility(View.VISIBLE);
+                        mLoadingTextView.setText(R.string.sermon_empty_message);
+                        mLoadingTextView.bringToFront();
                     }
                 }
             });
@@ -309,19 +309,19 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
             mAdapter.notifyDataSetChanged();
 
             if (downloadQueryId > -1) {
-                new DownloadThread(downloadManager, downloadQueryId, onProgressChangeListener).start();
+                new DownloadThread(downloadManager, downloadQueryId, mOnProgressChangeListener).start();
             }
 
             if (mAdapter.getItemCount() > 0) {
-                listLoadingText.setVisibility(View.GONE);
+                mLoadingTextView.setVisibility(View.GONE);
             } else {
-                listLoadingText.setVisibility(View.VISIBLE);
-                listLoadingText.setText(R.string.sermon_empty_message);
-                listLoadingText.bringToFront();
+                mLoadingTextView.setVisibility(View.VISIBLE);
+                mLoadingTextView.setText(R.string.sermon_empty_message);
+                mLoadingTextView.bringToFront();
             }
         }
 
-        mRealm.addChangeListener(onRealmChangedListener);
+        mRealm.addChangeListener(mOnRealmChangedListener);
     }
 
     private HashSet<Long> getDownloadingOrPendingItemSet(DownloadManager downloadManager) {
@@ -424,7 +424,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
                     mRealm.commitTransaction();
                     Logger.e(TAG, "call notifyItemChanged position : " + position);
 
-                    new DownloadThread(downloadManager, item.downloadQueryId, onProgressChangeListener).start();
+                    new DownloadThread(downloadManager, item.downloadQueryId, mOnProgressChangeListener).start();
 
                 } else {
                     Toast.makeText(getActivity(), "\"쓰기\" 권한이 없으면 다운로드를 진행할 수 없습니다.", Toast.LENGTH_LONG).show();

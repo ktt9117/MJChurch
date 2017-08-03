@@ -111,13 +111,6 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
 
             mUsernameField.setText(TextUtils.isEmpty(name) ? email : name);
         }
-        // for test
-        else {
-            GlideLoader loader = new GlideLoader();
-            loader.loadImage(mAvatarView, "", "김성중");
-            mUsernameField.setText("김성중");
-        }
-
     }
 
     private void changeProfile(FirebaseUser user, final String displayName, Uri photoUri) {

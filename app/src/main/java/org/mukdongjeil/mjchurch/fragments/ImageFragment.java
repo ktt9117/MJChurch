@@ -20,7 +20,7 @@ import org.mukdongjeil.mjchurch.utils.Logger;
 
 public class ImageFragment extends Fragment {
 
-    private String imgUrl;
+    private String mUrl;
 
     public ImageFragment() {
         // Required empty public constructor
@@ -28,7 +28,7 @@ public class ImageFragment extends Fragment {
 
     public void setImgUrl(String imgUrl) {
         Logger.e("ImageUrlFragment", "setImgUrl : " + imgUrl);
-        this.imgUrl = imgUrl;
+        this.mUrl = imgUrl;
     }
 
     @Nullable
@@ -36,7 +36,7 @@ public class ImageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_image_url, container, false);
         PhotoView photoView = (PhotoView) v.findViewById(R.id.photoView);
-        Glide.with(this).load(imgUrl).crossFade().diskCacheStrategy(DiskCacheStrategy.ALL).into(photoView);
+        Glide.with(this).load(mUrl).crossFade().diskCacheStrategy(DiskCacheStrategy.ALL).into(photoView);
         return v;
     }
 }

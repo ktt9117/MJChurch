@@ -28,10 +28,10 @@ import io.realm.RealmResults;
 public class ImagePagerFragment extends BaseFragment {
     private static final String TAG = ImagePagerFragment.class.getSimpleName();
 
-    private ViewPager pager;
-    private TabLayout tabs;
+    private ViewPager mPager;
+    private TabLayout mTabs;
 
-    private Realm realm;
+    private Realm mRealm;
 
     public ImagePagerFragment() {
         // Required empty public constructor
@@ -40,8 +40,8 @@ public class ImagePagerFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_pager, container, false);
-        pager = (ViewPager) v.findViewById(R.id.viewpager);
-        tabs = (TabLayout) v.findViewById(R.id.tabs);
+        mPager = (ViewPager) v.findViewById(R.id.viewpager);
+        mTabs = (TabLayout) v.findViewById(R.id.tabs);
         return v;
     }
 
@@ -63,7 +63,7 @@ public class ImagePagerFragment extends BaseFragment {
         showLoadingDialog();
 
         // 하루 한 번만 새로 요청하기 위함
-        RealmResults<ImagePageUrl> localPageUrls = DataService.getImagePageUrls(realm, pageType);
+        RealmResults<ImagePageUrl> localPageUrls = DataService.getImagePageUrls(mRealm, pageType);
         Logger.e(TAG, "localPageUrls.size() : " + localPageUrls.size());
 
         if (localPageUrls.size() != 0) {
@@ -78,8 +78,8 @@ public class ImagePagerFragment extends BaseFragment {
                 cnt++;
             }
 
-            tabs.setupWithViewPager(pager);
-            pager.setAdapter(adapter);
+            mTabs.setupWithViewPager(mPager);
+            mPager.setAdapter(adapter);
 
         } else {
 
@@ -100,11 +100,11 @@ public class ImagePagerFragment extends BaseFragment {
                             adapter.addFragment(fragment, pageTitles[i]);
 
                             final ImagePageUrl url = new ImagePageUrl(pageType, pageTitles[i], imgUrl);
-                            DataService.insertToRealm(realm, url);
+                            DataService.insertToRealm(mRealm, url);
                         }
 
-                        tabs.setupWithViewPager(pager);
-                        pager.setAdapter(adapter);
+                        mTabs.setupWithViewPager(mPager);
+                        mPager.setAdapter(adapter);
 
                     } else {
                         Logger.d(TAG, "cannot get imgUrlLists");
@@ -118,13 +118,13 @@ public class ImagePagerFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        realm = Realm.getDefaultInstance();
+        mRealm = Realm.getDefaultInstance();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        realm.close();
+        mRealm.close();
     }
 
     private static class ImagePagerAdapter extends FragmentPagerAdapter {

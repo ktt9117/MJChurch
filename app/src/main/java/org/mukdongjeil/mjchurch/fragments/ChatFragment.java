@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,9 +32,9 @@ import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.activities.ProfileMainActivity;
 import org.mukdongjeil.mjchurch.activities.SignInActivity;
 import org.mukdongjeil.mjchurch.adapters.ChatRecyclerAdapter;
-import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.models.Message;
 import org.mukdongjeil.mjchurch.models.User;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,17 +48,17 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
     private ChatRecyclerAdapter mAdapter;
     private RecyclerView mRecyclerView;
 
-    private FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-    private DatabaseReference databaseReference = firebaseDatabase.getReference();
+    private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+    private DatabaseReference mDatabaseReference = mFirebaseDatabase.getReference();
 
     private FirebaseAuth mAuth;
-    private User me;
+    private User mUserMySelf;
 
-    private EditText edtMessage;
-    private Button btnSend;
+    private EditText mMessageField;
+    private Button mBtnSend;
 
     private List<Message> mMessages;
-    private boolean isDialogShowing = false;
+    private boolean mIsDialogShowing = false;
 
     public ChatFragment() {}
 
@@ -76,13 +75,13 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
         getActivity().setTitle(R.string.menu_chat);
 
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
-        edtMessage = (EditText) view.findViewById(R.id.edt_message);
-        edtMessage.setOnFocusChangeListener(this);
-        btnSend = (Button) view.findViewById(R.id.btn_send);
-        btnSend.setOnClickListener(this);
+        mMessageField = (EditText) view.findViewById(R.id.edt_message);
+        mMessageField.setOnFocusChangeListener(this);
+        mBtnSend = (Button) view.findViewById(R.id.btn_send);
+        mBtnSend.setOnClickListener(this);
 
-        ((MainActivity) getActivity()).showLoadingDialog();
-        isDialogShowing = true;
+//        ((MainActivity) getActivity()).showLoadingDialog();
+//        mIsDialogShowing = true;
 
         setupRecyclerView((RecyclerView) view.findViewById(R.id.recycler_view_message));
 
@@ -92,13 +91,13 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        databaseReference.child("message").limitToLast(20).addChildEventListener(this);
+        mDatabaseReference.child("message").limitToLast(20).addChildEventListener(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        databaseReference.child("message").removeEventListener(this);
+        mDatabaseReference.child("message").removeEventListener(this);
     }
 
     @Override
@@ -180,9 +179,9 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
         mAdapter = new ChatRecyclerAdapter(getActivity(), mMessages, new OnListFragmentInteractionListener() {
             @Override
             public void onListFragmentInteraction(Message item) {
-                if (edtMessage == null) return;
+                if (mMessageField == null) return;
                 InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(edtMessage.getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(mMessageField.getWindowToken(), 0);
             }
         });
 
@@ -192,21 +191,21 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
     private void setUserInformation(FirebaseUser user) {
         mAdapter.setUser(user);
         if (user != null) {
-            me = new User();
+            mUserMySelf = new User();
             String name = user.getDisplayName();
             String email = user.getEmail();
             if (TextUtils.isEmpty(name)) {
-                me.name = email;
+                mUserMySelf.name = email;
             } else {
-                me.name = name;
+                mUserMySelf.name = name;
             }
 
-            me.email = email;
+            mUserMySelf.email = email;
             if (user.getPhotoUrl() != null) {
-                me.photoUrl = user.getPhotoUrl().toString();
+                mUserMySelf.photoUrl = user.getPhotoUrl().toString();
             }
         } else {
-            me = null;
+            mUserMySelf = null;
         }
 
         if (mAdapter != null) {
@@ -223,25 +222,25 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
             return;
         }
 
-        String text = edtMessage.getText().toString().trim();
+        String text = mMessageField.getText().toString().trim();
         if (TextUtils.isEmpty(text)) {
             return;
         }
 
 
-        btnSend.setEnabled(false);
+        mBtnSend.setEnabled(false);
 
-        final Message message = new Message(me, text);
-        databaseReference.child("message").push().setValue(message, new DatabaseReference.CompletionListener() {
+        final Message message = new Message(mUserMySelf, text);
+        mDatabaseReference.child("message").push().setValue(message, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                btnSend.setEnabled(true);
+                mBtnSend.setEnabled(true);
                 if (databaseError != null) {
                     Toast.makeText(getActivity(), databaseError.getDetails(), Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                edtMessage.setText("");
+                mMessageField.setText("");
             }
         });
     }
@@ -266,9 +265,9 @@ public class ChatFragment extends Fragment implements View.OnClickListener, Chil
             mRecyclerView.scrollToPosition(lastPosition);
         }
 
-        if (isDialogShowing == true) {
+        if (mIsDialogShowing == true) {
             ((MainActivity) getActivity()).hideLoadingDialog();
-            isDialogShowing = false;
+            mIsDialogShowing = false;
         }
     }
 

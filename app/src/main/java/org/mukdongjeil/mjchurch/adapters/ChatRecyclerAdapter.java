@@ -31,8 +31,27 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<ChatRecyclerAdapte
 
     private List<Message> mMessages;
     private Context mContext;
-    private FirebaseUser me;
+    private FirebaseUser mMyself;
     private ChatFragment.OnListFragmentInteractionListener mListener;
+
+    public static class MessageHolder extends RecyclerView.ViewHolder {
+        LinearLayout containerView;
+        AvatarView avatarView;
+        TextView tvMessage, tvTime, tvWriter;
+        ImageView ivImage;
+        ChatMessageView chatMessageView;
+
+        MessageHolder(View itemView) {
+            super(itemView);
+            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
+            avatarView = (AvatarView) itemView.findViewById(R.id.chatAvatarView);
+            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chatMessageView);
+            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
+            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
+            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
+            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
+        }
+    }
 
     public ChatRecyclerAdapter(Context context, List<Message> data, ChatFragment.OnListFragmentInteractionListener listener) {
         mContext = context;
@@ -52,7 +71,7 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<ChatRecyclerAdapte
         Message item = mMessages.get(position);
         String email = item.writer.email;
 
-        if (item != null && me != null && !TextUtils.isEmpty(email) && email.equals(me.getEmail())) {
+        if (item != null && mMyself != null && !TextUtils.isEmpty(email) && email.equals(mMyself.getEmail())) {
             return MY_MESSAGE;
         } else {
             return OTHER_MESSAGE;
@@ -109,25 +128,6 @@ public class ChatRecyclerAdapter extends RecyclerView.Adapter<ChatRecyclerAdapte
     }
 
     public void setUser(FirebaseUser user) {
-        this.me = user;
-    }
-
-    class MessageHolder extends RecyclerView.ViewHolder {
-        LinearLayout containerView;
-        AvatarView avatarView;
-        TextView tvMessage, tvTime, tvWriter;
-        ImageView ivImage;
-        ChatMessageView chatMessageView;
-
-        MessageHolder(View itemView) {
-            super(itemView);
-            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
-            avatarView = (AvatarView) itemView.findViewById(R.id.chatAvatarView);
-            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chatMessageView);
-            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
-            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
-            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
-            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
-        }
+        this.mMyself = user;
     }
 }

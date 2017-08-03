@@ -9,13 +9,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-
-import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.Const;
+import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.ext_components.ClearableEditText;
-import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.services.BaseActivity;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 /**
  * Created by gradler on 27/07/2017.
@@ -24,7 +22,6 @@ import org.mukdongjeil.mjchurch.services.BaseActivity;
 public class ProfileNameActivity extends BaseActivity implements View.OnClickListener {
     private static final String TAG = ProfileNameActivity.class.getSimpleName();
 
-    private FirebaseAuth mAuth;
     private String mOriginUsername;
     private ClearableEditText mUsernameField;
 
@@ -42,7 +39,6 @@ public class ProfileNameActivity extends BaseActivity implements View.OnClickLis
         setTitle("사용자 이름 변경");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mAuth = FirebaseAuth.getInstance();
         mUsernameField = (ClearableEditText) findViewById(R.id.profile_edt_username);
         mUsernameField.setText(mOriginUsername);
     }
