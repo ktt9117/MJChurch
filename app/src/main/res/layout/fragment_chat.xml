@@ -34,6 +34,6 @@
         android:layout_above="@id/send_message_layout"
         app:layoutManager="LinearLayoutManager"
         tools:context="org.mukdongjeil.mjchurch.chat.ChatFragment"
-        tools:listitem="@layout/row_chat" />
+        tools:listitem="@layout/row_chat_other" />
 
 </RelativeLayout>
