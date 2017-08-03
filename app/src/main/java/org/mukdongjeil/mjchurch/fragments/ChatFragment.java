@@ -36,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.activities.ProfileMainActivity;
@@ -56,7 +57,11 @@ import static android.app.Activity.RESULT_OK;
 public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private static final String TAG = ChatFragment.class.getSimpleName();
     private static final String MESSAGE_CHILD = "message";
+    private static final String LOADING_IMAGE_URL = "https://www.google.com/images/spin-32.gif";
+
     private static final int RC_SIGN_IN = 100;
+    private static final int RC_IMAGE_PICK = 200;
+
     private static final int MY_MESSAGE = 0, OTHER_MESSAGE = 1;
 
     private RecyclerView mRecyclerView;
@@ -72,6 +77,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
     private EditText mMessageField;
     private Button mBtnSend;
+    private ImageView mBtnAddImage;
 
     public static class MessageHolder extends RecyclerView.ViewHolder {
         LinearLayout containerView;
@@ -126,7 +132,9 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         });
 
         mBtnSend = (Button) view.findViewById(R.id.btn_send);
+        mBtnAddImage = (ImageView) view.findViewById(R.id.btn_add_image);
         mBtnSend.setOnClickListener(this);
+        mBtnAddImage.setOnClickListener(this);
 
         showLoadingDialog();
         setupRecyclerView((RecyclerView) view.findViewById(R.id.recycler_view_message));
@@ -177,10 +185,62 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
-            Toast.makeText(getActivity(), "로그인 완료\n메시지를 전송할 수 있습니다.", Toast.LENGTH_LONG).show();
-            setUserInformation(mAuth.getCurrentUser());
+
+        if (resultCode == RESULT_OK) {
+            if (requestCode == RC_SIGN_IN) {
+                Toast.makeText(getActivity(), "로그인 완료\n메시지를 전송할 수 있습니다.", Toast.LENGTH_LONG).show();
+                setUserInformation(mAuth.getCurrentUser());
+
+            } else if (requestCode == RC_IMAGE_PICK) {
+                if (data != null) {
+                    final Uri uri = data.getData();
+                    Log.d(TAG, "Uri: " + uri.toString());
+
+                    final Message tempMessage = new Message();
+                    tempMessage.writer = mUserMySelf;
+                    tempMessage.imgUrl = LOADING_IMAGE_URL;
+                    mDatabaseReference.child(MESSAGE_CHILD).push()
+                            .setValue(tempMessage, new DatabaseReference.CompletionListener() {
+                                @Override
+                                public void onComplete(DatabaseError databaseError,
+                                                       DatabaseReference databaseReference) {
+                                    if (databaseError == null) {
+                                        String key = databaseReference.getKey();
+                                        StorageReference storageReference =
+                                                FirebaseStorage.getInstance()
+                                                        .getReference(mAuth.getCurrentUser().getUid())
+                                                        .child(key)
+                                                        .child(uri.getLastPathSegment());
+
+                                        putImageInStorage(storageReference, uri, key);
+                                    } else {
+                                        Log.w(TAG, "Unable to write message to database.",
+                                                databaseError.toException());
+                                    }
+                                }
+                            });
+                }
+
+            }
         }
+    }
+
+    private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
+        storageReference.putFile(uri).addOnCompleteListener(getActivity(), new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                if (task.isSuccessful()) {
+                    Message message = new Message();
+                    message.writer = mUserMySelf;
+                    message.imgUrl = task.getResult().getDownloadUrl().toString();
+                    mDatabaseReference.child(MESSAGE_CHILD).child(key)
+                            .setValue(message);
+                } else {
+                    Log.w(TAG, "Image upload task was not successful.",
+                            task.getException());
+                }
+            }
+        });
     }
 
     @Override
@@ -188,6 +248,13 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         switch(v.getId()) {
             case R.id.btn_send: {
                 sendMessage();
+                break;
+            }
+            case R.id.btn_add_image: {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("image/*");
+                startActivityForResult(intent, RC_IMAGE_PICK);
                 break;
             }
         }
@@ -346,7 +413,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         mBtnSend.setEnabled(false);
 
         final Message message = new Message(mUserMySelf, text);
-        mDatabaseReference.child("message").push().setValue(message, new DatabaseReference.CompletionListener() {
+        mDatabaseReference.child(MESSAGE_CHILD).push().setValue(message, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 mBtnSend.setEnabled(true);
