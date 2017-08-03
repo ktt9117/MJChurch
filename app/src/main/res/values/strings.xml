@@ -43,4 +43,8 @@
 
     <string name="my_profile">내 프로필</string>
 
+    <string name="require_permission">권한이 필요합니다</string>
+    <string name="rationale_read_phone_state">오디오 재생을 위해서는 \"통화 상태 조회\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.</string>
+    <string name="rationale_write_external_storage">설교 다운로드를 위해서는 \"쓰기\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.</string>
+
 </resources>
