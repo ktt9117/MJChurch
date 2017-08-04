@@ -44,7 +44,7 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_main);
-        setTitle("프로필 변경");
+        setTitle(R.string.config_profile);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mAuth = FirebaseAuth.getInstance();
@@ -130,9 +130,9 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     AlertDialog dialog = new AlertDialog.Builder(ProfileMainActivity.this)
-                            .setTitle("알림")
-                            .setMessage("변경된 프로필을 적용하려면 다시 로그인 해야 합니다. 지금 로그아웃 하시겠습니까?\n(프로필 변경을 계속 진행하려면 취소를 눌러주세요")
-                            .setPositiveButton("로그아웃하기", new DialogInterface.OnClickListener() {
+                            .setTitle(R.string.notification)
+                            .setMessage(R.string.alert_message_profile_change)
+                            .setPositiveButton(R.string.do_logout, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     mAuth.signOut();
