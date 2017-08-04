@@ -31,6 +31,10 @@
     <string name="login_unavailable">로그인 불가</string>
     <string name="login_required">메시지를 전송하려면 로그인 해야 합니다</string>
     <string name="notification">알림</string>
+    <string name="notification_on">알림받기</string>
+    <string name="notification_off">알림끄기</string>
+    <string name="message_notification_on">채팅 알림을 받습니다</string>
+    <string name="message_notification_off">채팅 알림을 받지 않습니다</string>
 
     <string name="google_play_unavailable">구글 Play 서비스가 설치되어 있지 않거나 사용할 수 없습니다. 로그인 하려면 구글 Play 서비스를 설치하거나 활성화 해야 합니다.</string>
     <string name="auth_failure">인증 실패</string>

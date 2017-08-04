@@ -9,7 +9,7 @@ import java.io.File;
  */
 public class Const {
 
-    public static final boolean DEBUG_MODE = false;
+    public static final boolean DEBUG_MODE = true;
 
     public static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     public static final File DIR_PUB_DOWNLOAD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);

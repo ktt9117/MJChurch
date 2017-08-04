@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -19,10 +21,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
-import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.utils.Logger;
+import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.services.BaseActivity;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 import agency.tango.android.avatarview.views.AvatarView;
 import agency.tango.android.avatarviewglide.GlideLoader;
@@ -58,9 +60,18 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        new MenuInflater(this).inflate(R.menu.menu_logout, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
+            return true;
+        } else if (item.getItemId() == R.id.action_btn_logout) {
+            doLogout();
             return true;
         }
 
@@ -135,8 +146,7 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
                             .setPositiveButton(R.string.do_logout, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    mAuth.signOut();
-                                    finish();
+                                    doLogout();
                                 }
                             })
                             .setNegativeButton(android.R.string.cancel, null)
@@ -150,5 +160,10 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
                 hideLoadingDialog();
             }
         });
+    }
+
+    private void doLogout() {
+        mAuth.signOut();
+        finish();
     }
 }

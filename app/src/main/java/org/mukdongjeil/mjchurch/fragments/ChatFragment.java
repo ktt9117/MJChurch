@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -49,6 +50,7 @@ import org.mukdongjeil.mjchurch.activities.SignInActivity;
 import org.mukdongjeil.mjchurch.models.Message;
 import org.mukdongjeil.mjchurch.models.User;
 import org.mukdongjeil.mjchurch.utils.Logger;
+import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -116,7 +118,12 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         mAuth = FirebaseAuth.getInstance();
         mNotiManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
         mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        FirebaseMessaging.getInstance().subscribeToTopic(Const.CHATROOM_TOPIC);
+
+        if (PreferenceUtil.allowChatNotification()) {
+            FirebaseMessaging.getInstance().subscribeToTopic(Const.CHATROOM_TOPIC);
+        } else {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(Const.CHATROOM_TOPIC);
+        }
     }
 
     @Override
@@ -173,14 +180,21 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Logger.i(TAG, "onCreateOptionsMenu");
         if (mAuth != null && mAuth.getCurrentUser() != null) {
             inflater.inflate(R.menu.menu_chat, menu);
+            for (int i = 0 ; i < menu.size(); i++) {
+                if (menu.getItem(i).getItemId() == R.id.action_checkbox_notify) {
+                    Logger.i(TAG, "this menu item is notify checkbox");
+                    MenuItem menuItem = menu.getItem(i);
+                    boolean allowNotify = PreferenceUtil.allowChatNotification();
+                    menuItem.setChecked(allowNotify);
+                    menuItem.setTitle(allowNotify ? R.string.notification_on : R.string.notification_off);
+                    menuItem.setIcon(allowNotify ? R.drawable.ic_notify_on : R.drawable.ic_notify_off);
+                    break;
+                }
+            }
         } else {
             inflater.inflate(R.menu.menu_login, menu);
         }
@@ -191,8 +205,8 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_btn_logout:
-                logout();
+            case R.id.action_checkbox_notify:
+                changeNotificationOption();
                 return true;
             case R.id.action_btn_profile:
                 showProfileActivity();
@@ -469,11 +483,6 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         startActivity(profileIntent);
     }
 
-    private void logout() {
-        mAuth.signOut();
-        setUserInformation(null);
-    }
-
     private boolean isMyMessage(Message message) {
         if (mUserMySelf == null) {
             return false;
@@ -485,4 +494,23 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
         return message.writer.email.equals(mUserMySelf.email);
     }
+
+    private void changeNotificationOption() {
+        boolean currentNotificationOption = PreferenceUtil.allowChatNotification();
+        boolean tobeOption = !currentNotificationOption;
+        PreferenceUtil.setNotificationOption(tobeOption);
+        getActivity().invalidateOptionsMenu();
+
+        Toast.makeText(getActivity(),
+                tobeOption ? R.string.message_notification_on : R.string.message_notification_off,
+                Toast.LENGTH_SHORT)
+                .show();
+
+        if (tobeOption) {
+            FirebaseMessaging.getInstance().subscribeToTopic(Const.CHATROOM_TOPIC);
+        } else {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(Const.CHATROOM_TOPIC);
+        }
+    }
+
 }
