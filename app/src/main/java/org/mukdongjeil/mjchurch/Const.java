@@ -15,6 +15,10 @@ public class Const {
     public static final File DIR_PUB_DOWNLOAD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     public static final int DEFAULT_IMG_RESOURCE = R.drawable.ic_progressring;
 
+    public static final String CHATROOM_TOPIC = "chat_room_topic";
+    public static final String INTENT_ACTION_OPEN_CHAT = "open_chat";
+    public static final int NOTIFICATION_ID_CHAT = 9999;
+
     public static final int THANKS_SHARE_LIST_COUNT_PER_PAGE = 20;
     public static final int GALLERY_LIST_COUNT_PER_PAGE = 9;
 
@@ -31,7 +35,7 @@ public class Const {
     public static final String INTENT_KEY_PAGE_URLS = "pageUrls";
     public static final String INTENT_KEY_WORSHIP_TYPE = "worshipType";
     public static final String INTENT_KEY_TITLE = "title";
-
+    public static final String INTENT_KEY_MESSAGE = "message";
     public static final String INTENT_KEY_USERNAME = "username";
 
     // Introduce menu names

@@ -1,5 +1,7 @@
 package org.mukdongjeil.mjchurch.fragments;
 
+import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -17,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -34,15 +37,18 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.activities.ProfileMainActivity;
 import org.mukdongjeil.mjchurch.activities.SignInActivity;
 import org.mukdongjeil.mjchurch.models.Message;
 import org.mukdongjeil.mjchurch.models.User;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -52,8 +58,6 @@ import agency.tango.android.avatarview.views.AvatarView;
 import agency.tango.android.avatarviewglide.GlideLoader;
 import me.himanshusoni.chatmessageview.ChatMessageView;
 
-import static android.app.Activity.RESULT_OK;
-
 public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private static final String TAG = ChatFragment.class.getSimpleName();
     private static final String MESSAGE_CHILD = "message";
@@ -61,6 +65,8 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
     private static final int RC_SIGN_IN = 100;
     private static final int RC_IMAGE_PICK = 200;
+
+    public static boolean IS_CHATROOM_FOREGROUND = false;
 
     private static final int MY_MESSAGE = 0, OTHER_MESSAGE = 1;
 
@@ -78,6 +84,9 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private EditText mMessageField;
     private Button mBtnSend;
     private ImageView mBtnAddImage;
+
+    private NotificationManager mNotiManager;
+    private InputMethodManager mInputMethodManager;
 
     public static class MessageHolder extends RecyclerView.ViewHolder {
         LinearLayout containerView;
@@ -105,6 +114,9 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         mAuth = FirebaseAuth.getInstance();
+        mNotiManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+        mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        FirebaseMessaging.getInstance().subscribeToTopic(Const.CHATROOM_TOPIC);
     }
 
     @Override
@@ -149,6 +161,18 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        IS_CHATROOM_FOREGROUND = true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        IS_CHATROOM_FOREGROUND = false;
+    }
+
+    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
     }
@@ -186,7 +210,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
             if (requestCode == RC_SIGN_IN) {
                 Toast.makeText(getActivity(), "로그인 완료\n메시지를 전송할 수 있습니다.", Toast.LENGTH_LONG).show();
                 setUserInformation(mAuth.getCurrentUser());
@@ -298,6 +322,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
             @Override
             protected Message parseSnapshot(DataSnapshot snapshot) {
+                Logger.i(TAG, "parseSnapshot");
                 Message friendlyMessage = super.parseSnapshot(snapshot);
                 if (friendlyMessage != null) {
                     friendlyMessage.id = snapshot.getKey();
@@ -308,7 +333,18 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
             @Override
             protected void populateViewHolder(final MessageHolder viewHolder, Message message, int position) {
+                Logger.i(TAG, "populateViewHolder");
                 closeLoadingDialog();
+                mNotiManager.cancel(Const.NOTIFICATION_ID_CHAT);
+
+                viewHolder.containerView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (mMessageField == null) return;
+                        mInputMethodManager.hideSoftInputFromWindow(mMessageField.getWindowToken(), 0);
+                    }
+                });
+
                 if (!TextUtils.isEmpty(message.body)) {
                     viewHolder.tvMessage.setText(message.body);
                     viewHolder.tvMessage.setVisibility(TextView.VISIBLE);
@@ -360,6 +396,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
+                Logger.i(TAG, "onItemRangeInserted");
                 super.onItemRangeInserted(positionStart, itemCount);
                 int friendlyMessageCount = mFirebaseAdapter.getItemCount();
                 int lastVisiblePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
@@ -447,9 +484,5 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         }
 
         return message.writer.email.equals(mUserMySelf.email);
-    }
-
-    public interface OnListFragmentInteractionListener {
-        void onListFragmentInteraction(Message item);
     }
 }

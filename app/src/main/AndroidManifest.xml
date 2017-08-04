@@ -21,9 +21,11 @@
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="open_chat" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -55,14 +57,17 @@
         </receiver>
 
         <!-- [START FCM] -->
-        <service android:name=".services.MyFirebaseMessagingService">
+        <service
+            android:name=".services.MyFirebaseMessagingService"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <service
-            android:name=".services.MyFirebaseInstanceIDService">
+            android:name=".services.MyFirebaseInstanceIDService"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
