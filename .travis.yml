@@ -1,25 +1,36 @@
- # 언어(플랫폼)를 고른다.
 language: android
-
-# Avoid this error : ./gradlew: Permission denied > The command "./gradlew build connectedCheck" exited with 126.
-before_install:
-  - chmod +x gradlew
+jdk: oraclejdk8
 
 android:
   components:
-      # SDK Tools 중에 무얼 빌드할지 선택가능하다
       - tools
-      # build tools 를 선택가능하다. 여기선 디폴트 19.1.0 으로 설정,
-      # 여러개 설정하려면 두개설정하면된다.
       - build-tools-25.0.3
-      # android api버전을 선택가능하다. 이또한 여러개 가능
-      - android-25
-      - android-15
-      # 추가 컴포넌트 설정
-      -  extra-google-google_play_services
-      # emulater로 테스트도 가능
-      -  sys-img-armeabi-v7a-android-25
-      -  sys-img-x86-android-25
-jdk: # 아래와 같이 java version / jdk 종류도 선택가능
-  - oraclejdk8
+      - platform-tools
+      - tools
+
+# Avoid this error : ./gradlew: Permission denied > The command "./gradlew build connectedCheck" exited with 126.
+before_install:
+  - export EMULATOR="system-images;android-${API};${TAG};${ABI}" # Used to install/create emulator
+  - chmod +x gradlew
+
+install:
+  - sdkmanager --list || true
+  - echo yes | sdkmanager "tools"
+  - echo yes | sdkmanager "platforms;android-25" # Latest platform required by SDK tools
+  - echo yes | sdkmanager "platforms;android-${API}" # Android platform required by emulator
+  - echo yes | sdkmanager "extras;android;m2repository"
+  - echo yes | sdkmanager "extras;google;m2repository"
+  - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
+  - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2"
+  - echo yes | sdkmanager "$EMULATOR" # Install emulator system image
+  - echo no | avdmanager create avd -n acib -k "$EMULATOR" -f --abi "$ABI" --tag "$TAG"
+  - emulator -avd acib -engine classic -no-window -camera-back none -camera-front none -verbose -qemu -m 512 &
+  # Start adbd, wait for device connected and show android serial
+  - adb wait-for-device get-serialno
+  # Show version and download Gradle Wrapper if it's not already cached
+  - cd ${TRAVIS_BUILD_DIR}/${DIR} && ./gradlew --version
+  # Clean project and download missing dependencies and components
+  - cd ${TRAVIS_BUILD_DIR}/${DIR} && ./gradlew clean build
+  # Check components status
+  - sdkmanager --list || true
 
