@@ -15,8 +15,8 @@ android:
     - extra-android-m2repository
 
 install:
-    - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
+    - travis wait echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
     - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2"
 
 script:
- - travis wait ./gradlew clean build
+ - ./gradlew clean build
