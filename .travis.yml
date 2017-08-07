@@ -1,48 +1,21 @@
-language: android
-jdk:
-  - oraclejdk8
-sudo: required
+language: android 
+jdk: oraclejdk8  
 
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
-      - oracle-java8-set-default
+before_install: 
+  - chmod +x gradlew  
+android: 
+  components: 
+    - tools 
+    - platform-tools 
+    - tools 
+    - build-tools-25.0.2 
+    - android-25 
+    - extra-google-google_play_services 
+    - extra-android-m2repository  
 
-env:
-  global:
-    - ADB_INSTALL_TIMEOUT=20
-    - ANDROID_API_LEVEL=21
-    - ANDROID_ABI=google_apis/armeabi-v7a
+install: 
+    - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2" 
+    - echo yes | sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2"  
 
-android:
-  components:
-    - platform-tools
-    - tools
-    - build-tools-25.0.2
-    - android-$ANDROID_API_LEVEL
-    - android-15
-    - extra-google-google_play_services
-    - extra-google-m2repository
-    - extra-android-support
-    - extra-android-m2repository
-    - sys-img-armeabi-v7a-addon-google-apis-google-$ANDROID_API_LEVEL
-
-  licenses:
-     - 'android-sdk-license-.+'
-
-before_install:
-  - chmod +x gradlew
-  - android list targets
-  - echo no | android create avd --force -n test -t android-$ANDROID_API_LEVEL --abi $ANDROID_ABI
-  - emulator -avd test -no-skin -no-audio -no-window &
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
-
-before_script:
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
-
-script:
-  - ./gradlew assemble -Dorg.gradle.java.home=/usr/lib/jvm/java-8-oracle
-
+script: 
+  - ./gradlew clean build
