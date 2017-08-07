@@ -1,5 +1,10 @@
  # 언어(플랫폼)를 고른다.
 language: android
+
+# Avoid this error : ./gradlew: Permission denied > The command "./gradlew build connectedCheck" exited with 126.
+before_install:
+  - chmod +x gradlew
+
 android:
   components:
       # SDK Tools 중에 무얼 빌드할지 선택가능하다
@@ -17,3 +22,4 @@ android:
       -  sys-img-x86-android-25
 jdk: # 아래와 같이 java version / jdk 종류도 선택가능
   - oraclejdk8
+
