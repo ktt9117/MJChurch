@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -89,25 +88,6 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
     private NotificationManager mNotiManager;
     private InputMethodManager mInputMethodManager;
-
-    public static class MessageHolder extends RecyclerView.ViewHolder {
-        LinearLayout containerView;
-        AvatarView avatarView;
-        TextView tvMessage, tvTime, tvWriter;
-        ImageView ivImage;
-        ChatMessageView chatMessageView;
-
-        MessageHolder(View itemView) {
-            super(itemView);
-            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
-            avatarView = (AvatarView) itemView.findViewById(R.id.chatAvatarView);
-            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chatMessageView);
-            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
-            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
-            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
-            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
-        }
-    }
 
     public ChatFragment() {}
 
@@ -298,7 +278,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         }
     }
 
-    private void setupRecyclerView(RecyclerView view) {
+    private void setupRecyclerView(final RecyclerView view) {
         // Set the adapter
         Context context = view.getContext();
         mRecyclerView = view;
@@ -350,61 +330,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                 Logger.i(TAG, "populateViewHolder");
                 closeLoadingDialog();
                 mNotiManager.cancel(Const.NOTIFICATION_ID_CHAT);
-
-                viewHolder.containerView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (mMessageField == null) return;
-                        mInputMethodManager.hideSoftInputFromWindow(mMessageField.getWindowToken(), 0);
-                    }
-                });
-
-                if (!TextUtils.isEmpty(message.body)) {
-                    viewHolder.tvMessage.setText(message.body);
-                    viewHolder.tvMessage.setVisibility(TextView.VISIBLE);
-                } else {
-                    viewHolder.tvMessage.setVisibility(TextView.GONE);
-                }
-
-                String date = new SimpleDateFormat("aa hh:mm", Locale.KOREA).format(new Date(message.timeStamp));
-                viewHolder.tvTime.setText(date);
-
-                if (!TextUtils.isEmpty(message.imgUrl)) {
-                    String imageUrl = message.imgUrl;
-                    if (imageUrl.startsWith("gs://")) {
-                        StorageReference storageReference = FirebaseStorage.getInstance()
-                                .getReferenceFromUrl(imageUrl);
-                        storageReference.getDownloadUrl().addOnCompleteListener(
-                                new OnCompleteListener<Uri>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Uri> task) {
-                                        if (task.isSuccessful()) {
-                                            String downloadUrl = task.getResult().toString();
-                                            Glide.with(viewHolder.ivImage.getContext())
-                                                    .load(downloadUrl)
-                                                    .into(viewHolder.ivImage);
-                                        } else {
-                                            Log.w(TAG, "Getting download url was not successful.",
-                                                    task.getException());
-                                        }
-                                    }
-                                });
-                    } else {
-                        Glide.with(viewHolder.ivImage.getContext())
-                                .load(message.imgUrl)
-                                .into(viewHolder.ivImage);
-                    }
-
-                    viewHolder.ivImage.setVisibility(ImageView.VISIBLE);
-                } else {
-                    viewHolder.ivImage.setVisibility(ImageView.GONE);
-                }
-
-                if (!isMyMessage(message)) {
-                    viewHolder.tvWriter.setText(message.writer.name);
-                    GlideLoader loader = new GlideLoader();
-                    loader.loadImage(viewHolder.avatarView, message.writer.photoUrl, message.writer.name);
-                }
+                viewHolder.bind(message);
         }};
 
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -513,4 +439,79 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         }
     }
 
+    private class MessageHolder extends RecyclerView.ViewHolder {
+        LinearLayout containerView;
+        AvatarView avatarView;
+        TextView tvMessage, tvTime, tvWriter;
+        ImageView ivImage;
+        ChatMessageView chatMessageView;
+
+        MessageHolder(View itemView) {
+            super(itemView);
+            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
+            avatarView = (AvatarView) itemView.findViewById(R.id.chatAvatarView);
+            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chatMessageView);
+            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
+            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
+            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
+            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
+        }
+
+        public void bind(Message message) {
+            containerView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mMessageField == null) return;
+                    mInputMethodManager.hideSoftInputFromWindow(mMessageField.getWindowToken(), 0);
+                }
+            });
+
+            if (!TextUtils.isEmpty(message.body)) {
+                tvMessage.setText(message.body);
+                tvMessage.setVisibility(TextView.VISIBLE);
+            } else {
+                tvMessage.setVisibility(TextView.GONE);
+            }
+
+            String date = new SimpleDateFormat("aa hh:mm", Locale.KOREA).format(new Date(message.timeStamp));
+            tvTime.setText(date);
+
+            if (!TextUtils.isEmpty(message.imgUrl)) {
+                String imageUrl = message.imgUrl;
+                if (imageUrl.startsWith("gs://")) {
+                    StorageReference storageReference = FirebaseStorage.getInstance()
+                            .getReferenceFromUrl(imageUrl);
+                    storageReference.getDownloadUrl().addOnCompleteListener(
+                            new OnCompleteListener<Uri>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Uri> task) {
+                                    if (task.isSuccessful()) {
+                                        String downloadUrl = task.getResult().toString();
+                                        Glide.with(ivImage.getContext())
+                                                .load(downloadUrl)
+                                                .into(ivImage);
+                                    } else {
+                                        Log.w(TAG, "Getting download url was not successful.",
+                                                task.getException());
+                                    }
+                                }
+                            });
+                } else {
+                    Glide.with(ivImage.getContext())
+                            .load(message.imgUrl)
+                            .into(ivImage);
+                }
+
+                ivImage.setVisibility(ImageView.VISIBLE);
+            } else {
+                ivImage.setVisibility(ImageView.GONE);
+            }
+
+            if (!isMyMessage(message)) {
+                tvWriter.setText(message.writer.name);
+                GlideLoader loader = new GlideLoader();
+                loader.loadImage(avatarView, message.writer.photoUrl, message.writer.name);
+            }
+        }
+    }
 }
