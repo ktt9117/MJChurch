@@ -27,8 +27,14 @@
 
     <string name="login">로그인</string>
     <string name="logout">로그아웃</string>
+    <string name="do_logout">로그아웃하기</string>
     <string name="login_unavailable">로그인 불가</string>
     <string name="login_required">메시지를 전송하려면 로그인 해야 합니다</string>
+    <string name="notification">알림</string>
+    <string name="notification_on">알림받기</string>
+    <string name="notification_off">알림끄기</string>
+    <string name="message_notification_on">채팅 알림을 받습니다</string>
+    <string name="message_notification_off">채팅 알림을 받지 않습니다</string>
 
     <string name="google_play_unavailable">구글 Play 서비스가 설치되어 있지 않거나 사용할 수 없습니다. 로그인 하려면 구글 Play 서비스를 설치하거나 활성화 해야 합니다.</string>
     <string name="auth_failure">인증 실패</string>
@@ -42,5 +48,11 @@
     <string name="not_supported_yet">아직 지원하지 않는 기능입니다</string>
 
     <string name="my_profile">내 프로필</string>
+    <string name="config_profile">프로필 설정</string>
+    <string name="alert_message_profile_change">변경된 프로필을 적용하려면 다시 로그인 해야 합니다. 지금 로그아웃 하시겠습니까?\n(프로필 변경을 계속 진행하려면 취소를 눌러주세요</string>
+
+    <string name="require_permission">권한이 필요합니다</string>
+    <string name="rationale_read_phone_state">오디오 재생을 위해서는 \"통화 상태 조회\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.</string>
+    <string name="rationale_write_external_storage">설교 다운로드를 위해서는 \"쓰기\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.</string>
 
 </resources>

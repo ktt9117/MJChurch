@@ -7,13 +7,8 @@ import android.content.SharedPreferences.Editor;
 import org.mukdongjeil.mjchurch.Const;
 
 public class PreferenceUtil {
-	
-	private static final String TAG = PreferenceUtil.class.getSimpleName();
 
 	private static final String PREF_NAME = "save_instance_pref"; // Preference Name
-
-	private static final String INTRODUCE_LAST_SELECTED_MENU_INDEX = "introduceLastSelectedMenuIndex";
-	private static final String WORSHIP_LAST_SELECTED_MENU_INDEX = "worshipLastSelectedMenuIndex";
 
 	private static final String SUNDAY_MORNING_WORSHIP_CHECK_DATE = "sundayMorningWorshipCheckDate";
 	private static final String SUNDAY_AFTERNOON_WORSHIP_CHECK_DATE = "sundayAfternoonWorshipCheckDate";
@@ -22,9 +17,8 @@ public class PreferenceUtil {
 	private static final String BOARD_CHECK_DATE = "boardListCheckDate";
 	private static final String GALLERY_CHECK_DATE = "galleryListCheckDate";
 	private static final String GALLERY_NEW_PERSON_CHECK_DATE = "galleryNewPersonListCheckDate";
-
-	private static final String MY_NAME = "myName";
 	private static final String SAVED_EMAIL = "savedEmail";
+	private static final String CHAT_NOTIFICATION_OPTION = "chatNotificationOption";
 
 	private static SharedPreferences mPreference = null;
 
@@ -64,14 +58,6 @@ public class PreferenceUtil {
 	}
 
 	// ---------------------- Setter -------------------------- //
-	public static void setIntroduceLastSelectedMenuIndex(int index) {
-		setPreferenceValue(INTRODUCE_LAST_SELECTED_MENU_INDEX, index);
-	}
-
-	public static void setWorshipLastSelectedMenuIndex(int index) {
-		setPreferenceValue(WORSHIP_LAST_SELECTED_MENU_INDEX, index);
-	}
-
 	public static void setWorshipListCheckTimeInMillis(int worshipType, long currentTimeInMillis) {
 		if (worshipType == Const.WORSHIP_TYPE_SUNDAY_MORNING) {
 			setPreferenceValue(SUNDAY_MORNING_WORSHIP_CHECK_DATE, currentTimeInMillis);
@@ -94,23 +80,15 @@ public class PreferenceUtil {
 		setPreferenceValue(GALLERY_NEW_PERSON_CHECK_DATE, currentTimeInMillis);
 	}
 
-	public static void setMyName(String name) {
-		setPreferenceValue(MY_NAME, name);
-	}
-
 	public static void setEmail(String email) {
 		setPreferenceValue(SAVED_EMAIL, email);
 	}
 
+	public static void setNotificationOption(boolean isOn) {
+		setPreferenceValue(CHAT_NOTIFICATION_OPTION, isOn);
+	}
+
 	// ---------------------- Getter -------------------------- //
-
-	public static int getIntroduceLastSelectedMenuIndex() {
-		return mPreference.getInt(INTRODUCE_LAST_SELECTED_MENU_INDEX, 0);
-	}
-
-	public static int getWorshipLastSelectedMenuIndex() {
-		return mPreference.getInt(WORSHIP_LAST_SELECTED_MENU_INDEX, 0);
-	}
 
 	public static long getWorshipListCheckTimeInMillis(int worshipType) {
 		if (worshipType == Const.WORSHIP_TYPE_SUNDAY_MORNING) {
@@ -134,12 +112,11 @@ public class PreferenceUtil {
 		return mPreference.getLong(BOARD_CHECK_DATE, 0);
 	}
 
-	public static String getMyName() {
-		return mPreference.getString(MY_NAME, null);
-	}
-
 	public static String getSavedEmail() {
 		return mPreference.getString(SAVED_EMAIL, null);
 	}
 
+	public static boolean allowChatNotification() {
+		return mPreference.getBoolean(CHAT_NOTIFICATION_OPTION, true);
+	}
 }

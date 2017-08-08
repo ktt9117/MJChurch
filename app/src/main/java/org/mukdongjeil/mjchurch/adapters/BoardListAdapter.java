@@ -16,7 +16,7 @@ import io.realm.RealmResults;
  * Created by gradler on 2016. 9. 29..
  */
 public class BoardListAdapter extends RecyclerView.Adapter<BoardListAdapter.ViewHolder> implements RealmChangeListener {
-    private RealmResults<Board> itemList;
+    private RealmResults<Board> mList;
 
     @Override
     public void onChange(Object element) {
@@ -38,8 +38,8 @@ public class BoardListAdapter extends RecyclerView.Adapter<BoardListAdapter.View
     }
 
     public BoardListAdapter(RealmResults<Board> objects) {
-        itemList = objects;
-        itemList.addChangeListener(this);
+        mList = objects;
+        mList.addChangeListener(this);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class BoardListAdapter extends RecyclerView.Adapter<BoardListAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Board item = itemList.get(position);
+        Board item = mList.get(position);
         holder.title.setText(item.title);
         holder.writer.setText(item.writer);
         holder.date.setText(item.date);
@@ -59,6 +59,6 @@ public class BoardListAdapter extends RecyclerView.Adapter<BoardListAdapter.View
 
     @Override
     public int getItemCount() {
-        return (itemList != null) ? itemList.size() : 0;
+        return (mList != null) ? mList.size() : 0;
     }
 }

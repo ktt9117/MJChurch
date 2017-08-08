@@ -38,7 +38,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private PermissionCheckResultListener mPermissionResultListener;
     private DrawerLayout mDrawerLayout;
-    private boolean exitCheckTwice = false;
+    private boolean mIsReallyExit = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,16 +62,22 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         initializeSlidingMenu();
 
         // set the start fragment
-        Fragment fragment = new ImagePagerFragment();
-        Bundle bundle = new Bundle();
-        bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_INTRODUCE);
-        bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.INTRODUCE_MENU_NAMES);
-        bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.INTRODUCE_MENU_URLS);
-        fragment.setArguments(bundle);
-        switchContent(fragment);
+        String action = getIntent().getAction();
+        Logger.e(TAG, "intent action : " + action);
 
-        // for test
-//        startActivity(new Intent(this, ProfileMainActivity.class));
+        if (!TextUtils.isEmpty(action) && action.equals(Const.INTENT_ACTION_OPEN_CHAT)) {
+            Fragment fragment = new ChatFragment();
+            switchContent(fragment);
+
+        } else {
+            Fragment fragment = new ImagePagerFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt(Const.INTENT_KEY_PAGE_TYPE, Const.PAGE_TYPE_INTRODUCE);
+            bundle.putStringArray(Const.INTENT_KEY_PAGE_TITLES, Const.INTRODUCE_MENU_NAMES);
+            bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.INTRODUCE_MENU_URLS);
+            fragment.setArguments(bundle);
+            switchContent(fragment);
+        }
     }
 
     @Override
@@ -94,21 +100,23 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
+
         } else {
             if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                 getSupportFragmentManager().popBackStack();
                 return;
             }
 
-            if (exitCheckTwice) {
+            if (mIsReallyExit) {
                 super.onBackPressed();
+
             } else {
-                exitCheckTwice = true;
+                mIsReallyExit = true;
                 Toast.makeText(getApplicationContext(), R.string.application_quit_message, Toast.LENGTH_LONG).show();
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        exitCheckTwice = false;
+                        mIsReallyExit = false;
                     }
                 }, 2000);
             }
@@ -228,7 +236,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             return;
         }
 
-        final String message = bundle.getString("message");
+        final String message = bundle.getString(Const.INTENT_KEY_MESSAGE);
         if (!TextUtils.isEmpty(message)) {
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -236,7 +244,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     if (!isFinishing()) {
                         Intent intent = new Intent(MainActivity.this, PushMessageActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.putExtra("message", message);
+                        intent.putExtra(Const.INTENT_KEY_MESSAGE, message);
                         startActivity(intent);
                     } else {
                         Logger.i(TAG, "isFinishing() : " + isFinishing());
@@ -294,10 +302,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 String rationale;
                 if (checkPermission.equals(Manifest.permission.READ_PHONE_STATE)) {
-                    rationale = "오디오 재생을 위해서는 \"통화 상태 조회\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.";
+                    rationale = getString(R.string.rationale_read_phone_state);
 
                 } else if (checkPermission.equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    rationale = "설교 다운로드를 위해서는 \"쓰기\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.";
+                    rationale = getString(R.string.rationale_write_external_storage);
 
                 } else {
                     Logger.e(TAG, "cannot check permission caused by checkPermission parameter is not valid");
@@ -305,7 +313,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     return;
                 }
 
-                ab.setTitle("권한이 필요합니다.");
+                ab.setTitle(R.string.require_permission);
                 ab.setMessage(rationale);
                 ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
@@ -321,6 +329,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             }
         } else {
             listener.onResult(true);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent == null) {
+            return;
+        }
+
+        String action = intent.getAction();
+        Logger.i(TAG, "onNewIntent - intent action : " + action);
+
+        if (action.equals(Const.INTENT_ACTION_OPEN_CHAT)) {
+            switchContent(new ChatFragment());
         }
     }
 }

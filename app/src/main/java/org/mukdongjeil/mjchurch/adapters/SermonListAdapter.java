@@ -24,6 +24,9 @@ import java.util.ArrayList;
 public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.ViewHolder> {
     private static final String TAG = SermonListAdapter.class.getSimpleName();
 
+    private ArrayList<Sermon> mList;
+    private OnRowButtonClickListener mOnRowButtonClickListener;
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgPreacher;
         TextView titleWithDate;
@@ -50,34 +53,25 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
         void onDownloadClicked(Sermon item, int position);
     }
 
-    public int downloadPercent = -1;
-
-    private ArrayList<Sermon> itemList;
-    private OnRowButtonClickListener onRowButtonClickListener;
-
     public SermonListAdapter(ArrayList<Sermon> items, OnRowButtonClickListener listener) {
-        this.itemList = items;
-        this.onRowButtonClickListener = listener;
+        this.mList = items;
+        this.mOnRowButtonClickListener = listener;
     }
 
     @Override
     public int getItemCount() {
-        return (itemList != null) ? itemList.size() : 0;
+        return (mList != null) ? mList.size() : 0;
     }
 
     @Override
     public SermonListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // create a new view
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_sermon, parent, false);
-        // set the view's size, margins, paddings and layout parameters
         return new ViewHolder((ViewGroup) v);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
-        final Sermon item = itemList.get(position);
+        final Sermon item = mList.get(position);
         final int index = position;
         holder.item = item;
         holder.titleWithDate.setText(item.titleWithDate);
@@ -123,8 +117,8 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
             @Override
             public void onClick(View view) {
                 Logger.e(TAG, "btnPlay clicked");
-                if (onRowButtonClickListener != null) {
-                    onRowButtonClickListener.onPlayClicked(item, index);
+                if (mOnRowButtonClickListener != null) {
+                    mOnRowButtonClickListener.onPlayClicked(item, index);
                 }
             }
         });
@@ -133,8 +127,8 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
             @Override
             public void onClick(View view) {
                 Logger.e(TAG, "btnDownload clicked");
-                if (onRowButtonClickListener != null) {
-                    onRowButtonClickListener.onDownloadClicked(item, index);
+                if (mOnRowButtonClickListener != null) {
+                    mOnRowButtonClickListener.onDownloadClicked(item, index);
                 }
             }
         });

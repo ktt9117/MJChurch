@@ -44,16 +44,16 @@ public class BoardGalleryFragment extends Fragment {
     private BoardGridAdapter mAdapter;
     private int mPageNo;
     private List<Gallery> mItemList;
-    private boolean hasMorePage;
-    private boolean isDetached = false;
+    private boolean mHasMorePage;
+    private boolean mIsDetached = false;
     private int mColumnWidth;
 
-    private Realm realm;
+    private Realm mRealm;
 
     final private ExHandler<BoardGalleryFragment> mHandler = new ExHandler<BoardGalleryFragment>(this) {
         @Override
         protected void handleMessage(BoardGalleryFragment reference, Message msg) {
-            if (isDetached) return;
+            if (mIsDetached) return;
 
             mPageNo++;
             new RequestListTask(mBoardType, mPageNo, new RequestBaseTask.OnResultListener() {
@@ -65,7 +65,7 @@ public class BoardGalleryFragment extends Fragment {
                         PreferenceUtil.setGalleryNewPersonListTimeInMillis(System.currentTimeMillis());
                     }
 
-                    if (isDetached) return;
+                    if (mIsDetached) return;
 
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) getActivity()).hideLoadingDialog();
@@ -74,22 +74,22 @@ public class BoardGalleryFragment extends Fragment {
                     if (obj != null && obj instanceof List) {
                         final List<Gallery> list = (List<Gallery>) obj;
                         for (Gallery gallery : list) {
-                            Gallery localExistsGallery = DataService.getGallery(realm, gallery.photoUrl);
+                            Gallery localExistsGallery = DataService.getGallery(mRealm, gallery.photoUrl);
                             if (localExistsGallery == null) {
-                                DataService.insertToRealm(realm, gallery);
+                                DataService.insertToRealm(mRealm, gallery);
                             }
                         }
 
                         mItemList.addAll(list);
                         mAdapter.notifyDataSetChanged();
                         if (list.size() < Const.GALLERY_LIST_COUNT_PER_PAGE) {
-                            hasMorePage = false;
+                            mHasMorePage = false;
                         }
                     } else {
-                        hasMorePage = false;
+                        mHasMorePage = false;
                     }
 
-                    if (hasMorePage) {
+                    if (mHasMorePage) {
                         mHandler.sendEmptyMessage(HANDLE_WHAT_GET_CONTENTS);
                     }
                 }
@@ -104,13 +104,13 @@ public class BoardGalleryFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        realm = Realm.getDefaultInstance();
+        mRealm = Realm.getDefaultInstance();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        realm.close();
+        mRealm.close();
     }
 
     @Override
@@ -129,7 +129,7 @@ public class BoardGalleryFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mPageNo = 0;
-        hasMorePage = true;
+        mHasMorePage = true;
 
         mBoardType = (getArguments() != null) ?
                 getArguments().getInt(Const.INTENT_KEY_SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
@@ -154,7 +154,7 @@ public class BoardGalleryFragment extends Fragment {
     }
 
     private void loadList() {
-        RealmResults<Gallery> results = DataService.getGalleryList(realm, mBoardType);
+        RealmResults<Gallery> results = DataService.getGalleryList(mRealm, mBoardType);
         if (results.size() > 0) {
             mItemList.addAll(results);
 
@@ -169,15 +169,15 @@ public class BoardGalleryFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        isDetached = false;
+        mIsDetached = false;
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mHandler.removeMessages(HANDLE_WHAT_GET_CONTENTS);
-        isDetached = true;
-        hasMorePage = false;
+        mIsDetached = true;
+        mHasMorePage = false;
     }
 
     final private AdapterView.OnItemClickListener mOnGridItemClickListener = new AdapterView.OnItemClickListener() {

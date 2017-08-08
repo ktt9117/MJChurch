@@ -38,7 +38,7 @@ public class BoardFragment extends Fragment {
     public static final int BOARD_TYPE_NEW_PERSON = 19;
 
     private int mPageNo;
-    private Realm realm;
+    private Realm mRealm;
     private RealmResults<Board> mLocalItemList;
 
     public BoardFragment() {
@@ -48,13 +48,13 @@ public class BoardFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        realm = Realm.getDefaultInstance();
+        mRealm = Realm.getDefaultInstance();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        realm.close();
+        mRealm.close();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class BoardFragment extends Fragment {
         Logger.i(TAG, "onCreateView");
         View v = inflater.inflate(R.layout.layout_recyclerview, container, false);
 
-        mLocalItemList = DataService.getBoardList(realm);
+        mLocalItemList = DataService.getBoardList(mRealm);
         Logger.e(TAG, "mLocalItemList count : " + mLocalItemList.size());
 
         RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
@@ -108,7 +108,7 @@ public class BoardFragment extends Fragment {
                         Element link = linkList.get(i);
                         String href = link.getAttributeValue("href");
                         // compare between local database and server item list.
-                        Board localItem = DataService.getBoard(realm, href);
+                        Board localItem = DataService.getBoard(mRealm, href);
                         if (localItem != null) {
                             Logger.e(TAG, "the item is already inside local DB");
                         } else {
@@ -116,7 +116,7 @@ public class BoardFragment extends Fragment {
                                 @Override
                                 public void onResult(Object obj, int position) {
                                     if (obj != null && obj instanceof Board) {
-                                        DataService.insertToRealm(realm, (Board) obj);
+                                        DataService.insertToRealm(mRealm, (Board) obj);
                                     }
                                 }
                             });

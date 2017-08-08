@@ -2,12 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_btn_logout"
+    <item android:id="@+id/action_checkbox_notify"
         app:showAsAction="ifRoom"
-        android:title="@string/logout" />
+        android:checkable="true"
+        android:checked="true"
+        android:title="@string/notification_on"
+        android:icon="@drawable/ic_notify_on" />
 
     <item android:id="@+id/action_btn_profile"
         app:showAsAction="ifRoom"
-        android:title="@string/my_profile" />
+        android:title="@string/my_profile"
+        android:icon="@drawable/ic_edit_profile" />
 
 </menu>

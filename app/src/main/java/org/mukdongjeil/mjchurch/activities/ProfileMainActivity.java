@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -19,10 +21,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
-import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.utils.Logger;
+import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.services.BaseActivity;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 import agency.tango.android.avatarview.views.AvatarView;
 import agency.tango.android.avatarviewglide.GlideLoader;
@@ -44,7 +46,7 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_main);
-        setTitle("프로필 변경");
+        setTitle(R.string.config_profile);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mAuth = FirebaseAuth.getInstance();
@@ -58,9 +60,18 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        new MenuInflater(this).inflate(R.menu.menu_logout, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
+            return true;
+        } else if (item.getItemId() == R.id.action_btn_logout) {
+            doLogout();
             return true;
         }
 
@@ -111,13 +122,6 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
 
             mUsernameField.setText(TextUtils.isEmpty(name) ? email : name);
         }
-        // for test
-        else {
-            GlideLoader loader = new GlideLoader();
-            loader.loadImage(mAvatarView, "", "김성중");
-            mUsernameField.setText("김성중");
-        }
-
     }
 
     private void changeProfile(FirebaseUser user, final String displayName, Uri photoUri) {
@@ -137,13 +141,12 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     AlertDialog dialog = new AlertDialog.Builder(ProfileMainActivity.this)
-                            .setTitle("알림")
-                            .setMessage("변경된 프로필을 적용하려면 다시 로그인 해야 합니다. 지금 로그아웃 하시겠습니까?\n(프로필 변경을 계속 진행하려면 취소를 눌러주세요")
-                            .setPositiveButton("로그아웃하기", new DialogInterface.OnClickListener() {
+                            .setTitle(R.string.notification)
+                            .setMessage(R.string.alert_message_profile_change)
+                            .setPositiveButton(R.string.do_logout, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    mAuth.signOut();
-                                    finish();
+                                    doLogout();
                                 }
                             })
                             .setNegativeButton(android.R.string.cancel, null)
@@ -157,5 +160,10 @@ public class ProfileMainActivity extends BaseActivity implements View.OnClickLis
                 hideLoadingDialog();
             }
         });
+    }
+
+    private void doLogout() {
+        mAuth.signOut();
+        finish();
     }
 }

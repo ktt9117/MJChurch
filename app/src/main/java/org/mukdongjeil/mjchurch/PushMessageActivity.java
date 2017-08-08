@@ -18,7 +18,7 @@ public class PushMessageActivity extends Activity {
         setContentView(R.layout.activity_push_message);
 
         Intent intent = getIntent();
-        String message = intent.getStringExtra("message");
+        String message = intent.getStringExtra(Const.INTENT_KEY_MESSAGE);
         if (TextUtils.isEmpty(message)) {
             finish();
         }

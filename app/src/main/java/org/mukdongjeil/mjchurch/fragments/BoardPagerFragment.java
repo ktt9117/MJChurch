@@ -19,8 +19,8 @@ import java.util.List;
 public class BoardPagerFragment extends BaseFragment {
     private static final String TAG = BoardPagerFragment.class.getSimpleName();
 
-    private ViewPager pager;
-    private TabLayout tabs;
+    private ViewPager mPager;
+    private TabLayout mTabs;
 
     // Board menu names
     private static final String[] BOARD_TAP_NAMES = {"감사 나눔", "교회앨범", "새신자앨범"};
@@ -32,9 +32,9 @@ public class BoardPagerFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_pager, container, false);
-        pager = (ViewPager) v.findViewById(R.id.viewpager);
-        tabs = (TabLayout) v.findViewById(R.id.tabs);
-        tabs.setTabMode(TabLayout.MODE_FIXED);
+        mPager = (ViewPager) v.findViewById(R.id.viewpager);
+        mTabs = (TabLayout) v.findViewById(R.id.tabs);
+        mTabs.setTabMode(TabLayout.MODE_FIXED);
         return v;
     }
 
@@ -63,8 +63,8 @@ public class BoardPagerFragment extends BaseFragment {
         newPeopleFragment.setArguments(newPeopleArgs);
         adapter.addFragment(newPeopleFragment, BOARD_TAP_NAMES[2]);
 
-        tabs.setupWithViewPager(pager);
-        pager.setAdapter(adapter);
+        mTabs.setupWithViewPager(mPager);
+        mPager.setAdapter(adapter);
     }
 
     private static class BoardPagerAdapter extends FragmentPagerAdapter {
