@@ -11,8 +11,8 @@ android {
         applicationId "org.mukdongjeil.mjchurch"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 18
-        versionName "3.2"
+        versionCode 19
+        versionName "3.3"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
