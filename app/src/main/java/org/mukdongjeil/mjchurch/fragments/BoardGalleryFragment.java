@@ -34,7 +34,7 @@ import io.realm.RealmResults;
 /**
  * Created by Kim SungJoong on 2015-08-31.
  */
-public class BoardGalleryFragment extends Fragment {
+public class BoardGalleryFragment extends LoadingMenuBaseFragment {
     private static final String TAG = BoardGalleryFragment.class.getSimpleName();
 
     private static final int HANDLE_WHAT_GET_CONTENTS = 100;
@@ -55,6 +55,7 @@ public class BoardGalleryFragment extends Fragment {
         protected void handleMessage(BoardGalleryFragment reference, Message msg) {
             if (mIsDetached) return;
 
+            showActionBarProgress();
             mPageNo++;
             new RequestListTask(mBoardType, mPageNo, new RequestBaseTask.OnResultListener() {
                 @Override
@@ -92,6 +93,8 @@ public class BoardGalleryFragment extends Fragment {
                     if (mHasMorePage) {
                         mHandler.sendEmptyMessage(HANDLE_WHAT_GET_CONTENTS);
                     }
+
+                    hideActionBarProgressDelayed(2000);
                 }
             });
         }

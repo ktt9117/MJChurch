@@ -12,7 +12,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
@@ -24,19 +23,20 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.adapters.SermonListAdapter;
-import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.utils.DownloadUtil;
-import org.mukdongjeil.mjchurch.utils.Logger;
-import org.mukdongjeil.mjchurch.utils.NetworkUtil;
-import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 import org.mukdongjeil.mjchurch.models.DownloadStatus;
 import org.mukdongjeil.mjchurch.models.Sermon;
 import org.mukdongjeil.mjchurch.protocols.RequestSermonListTask;
 import org.mukdongjeil.mjchurch.services.DataService;
 import org.mukdongjeil.mjchurch.services.MediaService;
+import org.mukdongjeil.mjchurch.utils.DownloadUtil;
+import org.mukdongjeil.mjchurch.utils.ExHandler;
+import org.mukdongjeil.mjchurch.utils.Logger;
+import org.mukdongjeil.mjchurch.utils.NetworkUtil;
+import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,7 +49,7 @@ import io.realm.RealmResults;
  * Created by Kim SungJoong on 2015-07-31.
  */
 
-public class SermonFragment extends BaseFragment implements SermonListAdapter.OnRowButtonClickListener {
+public class SermonFragment extends LoadingMenuBaseFragment implements SermonListAdapter.OnRowButtonClickListener {
     private static final String TAG = SermonFragment.class.getSimpleName();
 
     public static final String INTENT_ACTION_DOWNLOAD_COMPLETED = "intent_action_download_completed";
@@ -82,6 +82,23 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
             msg.arg1 = value;
             msg.obj = downloadQueryId;
             mHandler.sendMessage(msg);
+        }
+    };
+
+    private static final int MSG_WHAT_DOWNLOAD_PROGRESS_UPDATE = 100;
+    private ExHandler<SermonFragment> mHandler = new ExHandler<SermonFragment>(this) {
+        @Override
+        protected void handleMessage(SermonFragment reference, Message msg) {
+            if (msg.what == MSG_WHAT_DOWNLOAD_PROGRESS_UPDATE) {
+                if (reference.mRealm != null && !reference.mRealm.isClosed()) {
+                    Sermon item = DataService.getSermonByDownloadQueryId(reference.mRealm, (Long) msg.obj);
+                    if (item != null) {
+                        reference.mRealm.beginTransaction();
+                        item.downloadPercent = msg.arg1;
+                        reference.mRealm.commitTransaction();
+                    }
+                }
+            }
         }
     };
 
@@ -178,7 +195,6 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
     public void onResume() {
         super.onResume();
         registerBroadcastReceiver();
-
         if (mService != null && mService.isPlaying() && mService.getCurrentPlayerItem() != null) {
             updateItemStatus(MediaService.PLAY_STATUS_PLAY, mService.getCurrentPlayerItem());
         }
@@ -255,6 +271,8 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
     }
 
     private void loadSermonList() {
+        showActionBarProgress();
+
         RealmResults<Sermon> localSermonList = DataService.getSermonList(mRealm, mSermonType);
         Logger.e(TAG, "localPageUrls.size() : " + localSermonList.size());
 
@@ -270,11 +288,13 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
                         mItemList.add(item);
                         mAdapter.notifyDataSetChanged();
                         mLoadingTextView.setVisibility(View.GONE);
+                        hideActionBarProgressDelayed(1500);
 
                     } else {
                         mLoadingTextView.setVisibility(View.VISIBLE);
                         mLoadingTextView.setText(R.string.sermon_empty_message);
                         mLoadingTextView.bringToFront();
+                        hideActionBarProgress();
                     }
                 }
             });
@@ -307,6 +327,7 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
 
             mRealm.commitTransaction();
             mAdapter.notifyDataSetChanged();
+            hideActionBarProgress();
 
             if (downloadQueryId > -1) {
                 new DownloadThread(downloadManager, downloadQueryId, mOnProgressChangeListener).start();
@@ -432,22 +453,6 @@ public class SermonFragment extends BaseFragment implements SermonListAdapter.On
             }
         });
     }
-
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-//            Realm realm = Realm.getDefaultInstance();
-            Sermon item = DataService.getSermonByDownloadQueryId(mRealm, (Long) msg.obj);
-            if (item != null) {
-                mRealm.beginTransaction();
-                item.downloadPercent = msg.arg1;
-                mRealm.commitTransaction();
-            }
-
-//            realm.close();
-        }
-    };
 
     private void showNetworkNotConnectedAlert() {
         Toast.makeText(getActivity(),

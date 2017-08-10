@@ -2,7 +2,6 @@ package org.mukdongjeil.mjchurch.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,16 +10,16 @@ import android.view.ViewGroup;
 
 import net.htmlparser.jericho.Element;
 
+import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.adapters.BoardListAdapter;
-import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.utils.Logger;
-import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 import org.mukdongjeil.mjchurch.models.Board;
 import org.mukdongjeil.mjchurch.protocols.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocols.RequestBoardContentTask;
 import org.mukdongjeil.mjchurch.protocols.RequestListTask;
 import org.mukdongjeil.mjchurch.services.DataService;
+import org.mukdongjeil.mjchurch.utils.Logger;
+import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 
 import java.util.List;
 
@@ -30,7 +29,7 @@ import io.realm.RealmResults;
 /**
  * Created by Kim SungJoong on 2015-08-25.
  */
-public class BoardFragment extends Fragment {
+public class BoardFragment extends LoadingMenuBaseFragment {
     private static final String TAG = BoardFragment.class.getSimpleName();
 
     public static final int BOARD_TYPE_THANKS_SHARING = 17;
@@ -98,6 +97,8 @@ public class BoardFragment extends Fragment {
             return;
         }
 
+        showActionBarProgress();
+
         new RequestListTask(BOARD_TYPE_THANKS_SHARING, mPageNo, new RequestBaseTask.OnResultListener() {
             @Override
             public void onResult(Object obj, int position) {
@@ -111,6 +112,7 @@ public class BoardFragment extends Fragment {
                         Board localItem = DataService.getBoard(mRealm, href);
                         if (localItem != null) {
                             Logger.e(TAG, "the item is already inside local DB");
+
                         } else {
                             new RequestBoardContentTask(i, href, new RequestBaseTask.OnResultListener() {
                                 @Override
@@ -118,11 +120,15 @@ public class BoardFragment extends Fragment {
                                     if (obj != null && obj instanceof Board) {
                                         DataService.insertToRealm(mRealm, (Board) obj);
                                     }
+                                    hideActionBarProgressDelayed(1500);
+
                                 }
                             });
                         }
                     }
                 }
+
+                hideActionBarProgressDelayed(1500);
             }
         });
     }
