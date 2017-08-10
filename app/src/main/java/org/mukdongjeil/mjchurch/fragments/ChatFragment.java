@@ -6,10 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -29,6 +29,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -38,6 +40,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -47,8 +50,10 @@ import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.activities.ProfileMainActivity;
 import org.mukdongjeil.mjchurch.activities.SignInActivity;
-import org.mukdongjeil.mjchurch.models.Message;
+import org.mukdongjeil.mjchurch.models.ChatMessage;
 import org.mukdongjeil.mjchurch.models.User;
+import org.mukdongjeil.mjchurch.services.FirebaseDataHelper;
+import org.mukdongjeil.mjchurch.utils.ExHandler;
 import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 
@@ -56,13 +61,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import agency.tango.android.avatarview.views.AvatarView;
-import agency.tango.android.avatarviewglide.GlideLoader;
+import de.hdodenhof.circleimageview.CircleImageView;
 import me.himanshusoni.chatmessageview.ChatMessageView;
 
 public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private static final String TAG = ChatFragment.class.getSimpleName();
-    private static final String MESSAGE_CHILD = "message";
     private static final String LOADING_IMAGE_URL = "https://www.google.com/images/spin-32.gif";
 
     private static final int RC_SIGN_IN = 100;
@@ -75,11 +78,9 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private RecyclerView mRecyclerView;
 
     private LinearLayoutManager mLinearLayoutManager;
-    private FirebaseRecyclerAdapter<Message, MessageHolder> mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<ChatMessage, MessageHolder> mFirebaseAdapter;
 
-    private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-    private DatabaseReference mDatabaseReference = mFirebaseDatabase.getReference();
-
+    private DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().getRoot();
     private FirebaseAuth mAuth;
     private User mUserMySelf;
 
@@ -89,25 +90,22 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
     private NotificationManager mNotiManager;
     private InputMethodManager mInputMethodManager;
+    private RequestManager mGlide;
 
-    public static class MessageHolder extends RecyclerView.ViewHolder {
-        LinearLayout containerView;
-        AvatarView avatarView;
-        TextView tvMessage, tvTime, tvWriter;
-        ImageView ivImage;
-        ChatMessageView chatMessageView;
-
-        MessageHolder(View itemView) {
-            super(itemView);
-            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
-            avatarView = (AvatarView) itemView.findViewById(R.id.chatAvatarView);
-            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chatMessageView);
-            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
-            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
-            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
-            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
+    private static final int MSG_WHAT_LOGOUT = 100;
+    private ExHandler<ChatFragment> mHandler = new ExHandler<ChatFragment>(this) {
+        @Override
+        protected void handleMessage(ChatFragment reference, android.os.Message msg) {
+            Logger.i(TAG, "msg.what : " + msg.what);
+            if (msg.what == MSG_WHAT_LOGOUT) {
+                if (reference != null && reference.isLoadingDialogShowing()) {
+                    Toast.makeText(reference.getActivity(), R.string.auth_problem_occured, Toast.LENGTH_LONG).show();
+                    reference.closeLoadingDialog();
+                    reference.doLogout();
+                }
+            }
         }
-    }
+    };
 
     public ChatFragment() {}
 
@@ -118,6 +116,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         mAuth = FirebaseAuth.getInstance();
         mNotiManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
         mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        mGlide = Glide.with(this);
 
         if (PreferenceUtil.allowChatNotification()) {
             FirebaseMessaging.getInstance().subscribeToTopic(Const.CHATROOM_TOPIC);
@@ -156,6 +155,9 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         mBtnAddImage.setOnClickListener(this);
 
         showLoadingDialog();
+        mHandler.sendEmptyMessageDelayed(MSG_WHAT_LOGOUT, 7000);
+        Logger.i(TAG, "send handler message MSG_WHAT_LOGOUT. It will called after 7000");
+
         setupRecyclerView((RecyclerView) view.findViewById(R.id.recycler_view_message));
 
         return view;
@@ -171,12 +173,15 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
         IS_CHATROOM_FOREGROUND = true;
+        mNotiManager.cancelAll();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         IS_CHATROOM_FOREGROUND = false;
+        mHandler.removeMessages(MSG_WHAT_LOGOUT);
+        Logger.i(TAG, "remove message MSG_WHAT_LOGOUT on onPause");
     }
 
     @Override
@@ -226,59 +231,43 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == RC_SIGN_IN) {
-                Toast.makeText(getActivity(), "로그인 완료\n메시지를 전송할 수 있습니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), R.string.login_success, Toast.LENGTH_LONG).show();
                 setUserInformation(mAuth.getCurrentUser());
+                FirebaseDataHelper.createOrUpdateUser(mRef, mUserMySelf);
 
             } else if (requestCode == RC_IMAGE_PICK) {
                 if (data != null) {
                     final Uri uri = data.getData();
-                    Log.d(TAG, "Uri: " + uri.toString());
+                    Logger.d(TAG, "Uri: " + uri.toString());
 
-                    final Message tempMessage = new Message();
-                    tempMessage.writer = mUserMySelf;
-                    tempMessage.imgUrl = LOADING_IMAGE_URL;
-                    mDatabaseReference.child(MESSAGE_CHILD).push()
-                            .setValue(tempMessage, new DatabaseReference.CompletionListener() {
-                                @Override
-                                public void onComplete(DatabaseError databaseError,
-                                                       DatabaseReference databaseReference) {
-                                    if (databaseError == null) {
-                                        String key = databaseReference.getKey();
-                                        StorageReference storageReference =
-                                                FirebaseStorage.getInstance()
-                                                        .getReference(mAuth.getCurrentUser().getUid())
-                                                        .child(key)
-                                                        .child(uri.getLastPathSegment());
+                    final ChatMessage tempChatMessage = new ChatMessage();
+                    tempChatMessage.email = mUserMySelf.email;
+                    tempChatMessage.imgUrl = LOADING_IMAGE_URL;
 
-                                        putImageInStorage(storageReference, uri, key);
-                                    } else {
-                                        Log.w(TAG, "Unable to write message to database.",
-                                                databaseError.toException());
-                                    }
+                    mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).push()
+                        .setValue(tempChatMessage, new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError,
+                                                   DatabaseReference databaseReference) {
+                                if (databaseError == null) {
+                                    String key = databaseReference.getKey();
+                                    StorageReference storageReference =
+                                            FirebaseStorage.getInstance()
+                                                    .getReference(mAuth.getCurrentUser().getUid())
+                                                    .child(key)
+                                                    .child(uri.getLastPathSegment());
+
+                                    putImageInStorage(storageReference, uri, key);
+                                } else {
+                                    Log.w(TAG, "Unable to write message to database.",
+                                            databaseError.toException());
                                 }
-                            });
+                            }
+                        });
                 }
 
             }
         }
-    }
-
-    private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
-        storageReference.putFile(uri).addOnCompleteListener(getActivity(), new OnCompleteListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if (task.isSuccessful()) {
-                    Message message = new Message();
-                    message.writer = mUserMySelf;
-                    message.imgUrl = task.getResult().getDownloadUrl().toString();
-                    mDatabaseReference.child(MESSAGE_CHILD).child(key)
-                            .setValue(message);
-                } else {
-                    Log.w(TAG, "Image upload task was not successful.",
-                            task.getException());
-                }
-            }
-        });
     }
 
     @Override
@@ -291,33 +280,38 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
             case R.id.btn_add_image: {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("image/*");
+                intent.setType(Const.MIME_TYPE_IMAGES);
                 startActivityForResult(intent, RC_IMAGE_PICK);
                 break;
             }
         }
     }
 
-    private void setupRecyclerView(RecyclerView view) {
+    private void setupRecyclerView(final RecyclerView view) {
         // Set the adapter
         Context context = view.getContext();
         mRecyclerView = view;
         mLinearLayoutManager = new LinearLayoutManager(context);
         mLinearLayoutManager.setStackFromEnd(true);
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<Message, MessageHolder> (
-                Message.class,
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<ChatMessage, MessageHolder> (
+                ChatMessage.class,
                 R.layout.row_chat_other,
                 MessageHolder.class,
-                mDatabaseReference.child(MESSAGE_CHILD)) {
+                mRef.child(Const.FIRE_DATA_MESSAGE_CHILD)) {
+
+            @Override
+            public long getItemId(int position) {
+                return super.getItemId(position);
+            }
 
             @Override
             public int getItemViewType(int position) {
-                Message item = getItem(position);
+                ChatMessage item = getItem(position);
                 if (item == null) {
                     return super.getItemViewType(position);
                 }
 
-                String email = item.writer.email;
+                String email = item.email;
                 if (mUserMySelf != null && !TextUtils.isEmpty(email) && email.equals(mUserMySelf.email)) {
                     return MY_MESSAGE;
                 } else {
@@ -335,22 +329,22 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
             }
 
             @Override
-            protected Message parseSnapshot(DataSnapshot snapshot) {
+            protected ChatMessage parseSnapshot(DataSnapshot snapshot) {
                 Logger.i(TAG, "parseSnapshot");
-                Message friendlyMessage = super.parseSnapshot(snapshot);
-                if (friendlyMessage != null) {
-                    friendlyMessage.id = snapshot.getKey();
+                ChatMessage friendlyChatMessage = super.parseSnapshot(snapshot);
+                if (friendlyChatMessage != null) {
+                    friendlyChatMessage.id = snapshot.getKey();
                 }
 
-                return friendlyMessage;
+                return friendlyChatMessage;
             }
 
             @Override
-            protected void populateViewHolder(final MessageHolder viewHolder, Message message, int position) {
+            protected void populateViewHolder(final MessageHolder viewHolder, final ChatMessage chatMessage, int position) {
                 Logger.i(TAG, "populateViewHolder");
                 closeLoadingDialog();
-                mNotiManager.cancel(Const.NOTIFICATION_ID_CHAT);
-
+                mHandler.removeMessages(MSG_WHAT_LOGOUT);
+                Logger.i(TAG, "remove message MSG_WHAT_LOGOUT on populateViewHolder");
                 viewHolder.containerView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -359,18 +353,18 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                     }
                 });
 
-                if (!TextUtils.isEmpty(message.body)) {
-                    viewHolder.tvMessage.setText(message.body);
+                if (!TextUtils.isEmpty(chatMessage.body)) {
+                    viewHolder.tvMessage.setText(chatMessage.body);
                     viewHolder.tvMessage.setVisibility(TextView.VISIBLE);
                 } else {
                     viewHolder.tvMessage.setVisibility(TextView.GONE);
                 }
 
-                String date = new SimpleDateFormat("aa hh:mm", Locale.KOREA).format(new Date(message.timeStamp));
+                String date = new SimpleDateFormat("aa hh:mm", Locale.KOREA).format(new Date(chatMessage.timeStamp));
                 viewHolder.tvTime.setText(date);
 
-                if (!TextUtils.isEmpty(message.imgUrl)) {
-                    String imageUrl = message.imgUrl;
+                if (!TextUtils.isEmpty(chatMessage.imgUrl)) {
+                    String imageUrl = chatMessage.imgUrl;
                     if (imageUrl.startsWith("gs://")) {
                         StorageReference storageReference = FirebaseStorage.getInstance()
                                 .getReferenceFromUrl(imageUrl);
@@ -382,6 +376,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                                             String downloadUrl = task.getResult().toString();
                                             Glide.with(viewHolder.ivImage.getContext())
                                                     .load(downloadUrl)
+                                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                                                     .into(viewHolder.ivImage);
                                         } else {
                                             Log.w(TAG, "Getting download url was not successful.",
@@ -391,21 +386,41 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                                 });
                     } else {
                         Glide.with(viewHolder.ivImage.getContext())
-                                .load(message.imgUrl)
+                                .load(chatMessage.imgUrl)
+                                .error(R.drawable.ic_account_circle_black_36dp)
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
                                 .into(viewHolder.ivImage);
                     }
 
                     viewHolder.ivImage.setVisibility(ImageView.VISIBLE);
+
                 } else {
                     viewHolder.ivImage.setVisibility(ImageView.GONE);
                 }
 
-                if (!isMyMessage(message)) {
-                    viewHolder.tvWriter.setText(message.writer.name);
-                    GlideLoader loader = new GlideLoader();
-                    loader.loadImage(viewHolder.avatarView, message.writer.photoUrl, message.writer.name);
+                if (!isMyMessage(chatMessage)) {
+                    FirebaseDataHelper.getUserByEmail(mRef, chatMessage.email,
+                            new FirebaseDataHelper.OnUserQueryListener() {
+                                @Override
+                                public void onResult(User user) {
+                                    if (user != null) {
+                                        viewHolder.tvWriter.setText(user.name);
+                                        mGlide.load(user.photoUrl)
+                                                .placeholder(R.drawable.ic_account_circle_black_36dp)
+                                                .error(R.drawable.ic_account_circle_black_36dp)
+                                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                                .into(viewHolder.avatarView);
+
+                                    } else {
+                                        viewHolder.tvWriter.setText(chatMessage.email);
+                                        mGlide.load(R.drawable.ic_account_circle_black_36dp).into(viewHolder.avatarView);
+                                    }
+                                }
+                            });
                 }
         }};
+
+        mFirebaseAdapter.setHasStableIds(true);
 
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -421,8 +436,75 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
             }
         });
 
+        if (mRecyclerView.getItemAnimator() instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
+        }
+
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setAdapter(mFirebaseAdapter);
+
+        mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot == null) {
+                    Logger.e(TAG, "dataSnapshot is null");
+                    return;
+                }
+
+                if (dataSnapshot.exists() == false || dataSnapshot.getChildrenCount() < 1) {
+                    closeLoadingDialog();
+                    mHandler.removeMessages(MSG_WHAT_LOGOUT);
+                    Logger.i(TAG, "remove message MSG_WHAT_LOGOUT on onDataChange");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+
+        // The user has been authenticated but the user has not yet been created.
+        if (mAuth.getCurrentUser() != null) {
+            FirebaseDataHelper.getUserByEmail(mRef, mAuth.getCurrentUser().getEmail(),
+                    new FirebaseDataHelper.OnUserQueryListener() {
+                @Override
+                public void onResult(User user) {
+                    if (user == null) {
+                        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                        User me = new User();
+                        me.email = firebaseUser.getEmail();
+                        me.name = firebaseUser.getDisplayName();
+                        if (TextUtils.isEmpty(me.name)) {
+                            me.name = firebaseUser.getEmail();
+                        }
+
+                        if (firebaseUser.getPhotoUrl() != null) {
+                            me.photoUrl = firebaseUser.getPhotoUrl().toString();
+                        }
+
+                        FirebaseDataHelper.createOrUpdateUser(mRef, me);
+                    }
+                }
+            });
+        }
+    }
+
+    private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
+        storageReference.putFile(uri).addOnCompleteListener(getActivity(), new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                if (task.isSuccessful()) {
+                    ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.email = mUserMySelf.email;
+                    //noinspection VisibleForTests
+                    chatMessage.imgUrl = task.getResult().getDownloadUrl().toString();
+                    mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).child(key)
+                            .setValue(chatMessage);
+                } else {
+                    Log.w(TAG, "Image upload task was not successful.",
+                            task.getException());
+                }
+            }
+        });
     }
 
     private void setUserInformation(FirebaseUser user) {
@@ -463,8 +545,9 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
         mBtnSend.setEnabled(false);
 
-        final Message message = new Message(mUserMySelf, text);
-        mDatabaseReference.child(MESSAGE_CHILD).push().setValue(message, new DatabaseReference.CompletionListener() {
+        final ChatMessage chatMessage = new ChatMessage(mUserMySelf.email, text);
+        mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).push().setValue(chatMessage,
+                new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 mBtnSend.setEnabled(true);
@@ -483,16 +566,16 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         startActivity(profileIntent);
     }
 
-    private boolean isMyMessage(Message message) {
+    private boolean isMyMessage(ChatMessage chatMessage) {
         if (mUserMySelf == null) {
             return false;
         }
 
-        if (message == null) {
+        if (chatMessage == null) {
             return false;
         }
 
-        return message.writer.email.equals(mUserMySelf.email);
+        return chatMessage.email.equals(mUserMySelf.email);
     }
 
     private void changeNotificationOption() {
@@ -511,6 +594,30 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         } else {
             FirebaseMessaging.getInstance().unsubscribeFromTopic(Const.CHATROOM_TOPIC);
         }
+    }
+
+    public static class MessageHolder extends RecyclerView.ViewHolder {
+        LinearLayout containerView;
+        CircleImageView avatarView;
+        TextView tvMessage, tvTime, tvWriter;
+        ImageView ivImage;
+        ChatMessageView chatMessageView;
+
+        MessageHolder(View itemView) {
+            super(itemView);
+            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
+            avatarView = (CircleImageView) itemView.findViewById(R.id.chat_avatar_view);
+            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chat_message_view);
+            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
+            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
+            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
+            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
+        }
+    }
+
+    private void doLogout() {
+        mAuth.signOut();
+        getActivity().invalidateOptionsMenu();
     }
 
 }

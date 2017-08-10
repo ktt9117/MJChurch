@@ -4,20 +4,20 @@ package org.mukdongjeil.mjchurch.models;
  * Created by gradler on 26/07/2017.
  */
 
-public class Message {
+public class ChatMessage {
 
     public String id;
-    public User writer;
     public String body;
     public String imgUrl;
+    public String email;
     public long timeStamp;
 
-    public Message() {
+    public ChatMessage() {
         timeStamp = System.currentTimeMillis();
     }
 
-    public Message(User writer, String body) {
-        this.writer = writer;
+    public ChatMessage(String email, String body) {
+        this.email = email;
         this.body = body;
         timeStamp = System.currentTimeMillis();
     }

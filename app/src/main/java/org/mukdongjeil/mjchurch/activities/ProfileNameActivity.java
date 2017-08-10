@@ -6,20 +6,18 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.ext_components.ClearableEditText;
 import org.mukdongjeil.mjchurch.services.BaseActivity;
-import org.mukdongjeil.mjchurch.utils.Logger;
 
 /**
  * Created by gradler on 27/07/2017.
  */
 
-public class ProfileNameActivity extends BaseActivity implements View.OnClickListener {
+public class ProfileNameActivity extends BaseActivity {
     private static final String TAG = ProfileNameActivity.class.getSimpleName();
 
     private String mOriginUsername;
@@ -36,7 +34,7 @@ public class ProfileNameActivity extends BaseActivity implements View.OnClickLis
             finish();
         }
 
-        setTitle("사용자 이름 변경");
+        setTitle(R.string.change_username);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mUsernameField = (ClearableEditText) findViewById(R.id.profile_edt_username);
@@ -55,6 +53,7 @@ public class ProfileNameActivity extends BaseActivity implements View.OnClickLis
         if (menuItemId == android.R.id.home) {
             finish();
             return true;
+
         } else if (menuItemId == R.id.action_btn_ok) {
             if (TextUtils.isEmpty(mOriginUsername)) {
                 return super.onOptionsItemSelected(item);
@@ -79,19 +78,5 @@ public class ProfileNameActivity extends BaseActivity implements View.OnClickLis
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onClick(View view) {
-        switch(view.getId()) {
-            case R.id.profile_username:
-                Logger.e(TAG, "profile_username clicked");
-
-                break;
-            case R.id.profile_avatar_view:
-            case R.id.profile_btn_camera:
-                Logger.e(TAG, "profile_btn_camera or profile_avatar_view clicked");
-                break;
-        }
     }
 }

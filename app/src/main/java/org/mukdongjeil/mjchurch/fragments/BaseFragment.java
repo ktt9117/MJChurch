@@ -22,4 +22,12 @@ public class BaseFragment extends Fragment {
         }
     }
 
+    protected boolean isLoadingDialogShowing() {
+        if (getActivity() instanceof MainActivity) {
+            return ((MainActivity) getActivity()).isLoadingDialogShowing();
+        }
+
+        return false;
+    }
+
 }
