@@ -11,7 +11,7 @@
     android:layout_marginLeft="20dp" >
 
     <me.himanshusoni.chatmessageview.ChatMessageView
-        android:id="@+id/chatMessageView"
+        android:id="@+id/chat_message_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:cmv_arrowGravity="start"

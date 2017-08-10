@@ -57,8 +57,6 @@ import io.realm.RealmList;
 public class BoardGalleryDetailFragment extends Fragment {
     private static final String TAG = BoardGalleryDetailFragment.class.getSimpleName();
 
-    private static final String LOADING_PHOTO_MESSAGE = "사진을 불러오는 중입니다";
-
     private static final String ARG_BOARD_TYPE = "boardType";
     private static final String ARG_CONTENT_NO = "contentNo";
 
@@ -99,8 +97,6 @@ public class BoardGalleryDetailFragment extends Fragment {
         super.onDestroy();
         mRealm.close();
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -151,7 +147,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                         mPager.setAdapter(mAdapter);
                         mPagerIndicator.setViewPager(mPager);
                     } else {
-                        Toast.makeText(getActivity(), "사진을 불러올 수 없습니다.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), R.string.cannot_load_image, Toast.LENGTH_LONG).show();
                         getActivity().onBackPressed();
                     }
                 }
@@ -225,7 +221,7 @@ public class BoardGalleryDetailFragment extends Fragment {
             holder.progress.smoothToShow();
             holder.txtView.setVisibility(View.VISIBLE);
 
-            Glide.with(getActivity())
+            Glide.with(BoardGalleryDetailFragment.this)
                     .load(itemList.get(position).getValue())
                     .placeholder(Const.DEFAULT_IMG_RESOURCE)
                     .crossFade()
@@ -286,12 +282,12 @@ public class BoardGalleryDetailFragment extends Fragment {
             Bitmap bitmap = ImageUtil.convertDrawableToBitmap(photoView.getDrawable());
             if (bitmap == null) {
                 Logger.e(TAG, "Warning! bitmap is null");
-                Toast.makeText(getActivity(), "이미지를 찾을 수 없습니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), R.string.image_not_found, Toast.LENGTH_LONG).show();
                 return;
             }
 
 
-            File cacheFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/tmp_share_image.jpg");
+            File cacheFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + Const.TEMP_FILE_NAME);
             boolean isFileSaved;
             try {
                 cacheFile.createNewFile();
@@ -306,9 +302,9 @@ public class BoardGalleryDetailFragment extends Fragment {
 
             if (isFileSaved) {
                 Intent share = new Intent(Intent.ACTION_SEND);
-                share.setType("image/*");
+                share.setType(Const.MIME_TYPE_IMAGES);
                 share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(cacheFile));
-                startActivity(Intent.createChooser(share, "사진 공유"));
+                startActivity(Intent.createChooser(share, getString(R.string.share_image)));
             }
         }
 
@@ -317,18 +313,18 @@ public class BoardGalleryDetailFragment extends Fragment {
             Bitmap bitmap = ImageUtil.convertDrawableToBitmap(photoView.getDrawable());
             if (bitmap == null) {
                 Logger.e(TAG, "Warning! bitmap is null");
-                Toast.makeText(getActivity(), "이미지를 찾을 수 없습니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), R.string.image_not_found, Toast.LENGTH_LONG).show();
                 return;
             }
-            File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "/묵동제일앨범");
+            File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), Const.ALBUM_NAME);
 
             if (!path.exists()) {
                 path.mkdir();
             }
 
-            String fileName = "/img_" + new SimpleDateFormat("yyyyMMdd-hhmmss").format(new Date());
+            String fileName = Const.SAVE_IMAGE_PREFIX + new SimpleDateFormat(Const.SIMPLE_DATETIME_FORMAT).format(new Date());
             Logger.i(TAG, "fileSave name : " + fileName);
-            File cacheFile = new File(path.toString() + fileName + ".jpg");
+            File cacheFile = new File(path.toString() + fileName + Const.FILE_EXT_JPG);
             boolean isFileSaved;
             try {
                 cacheFile.createNewFile();
@@ -349,7 +345,7 @@ public class BoardGalleryDetailFragment extends Fragment {
                         Logger.i(TAG, "onScanCompleted s : " + s + ", uri : " + uri.toString());
                     }
                 });
-                Toast.makeText(getContext(), "사진 저장됨", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.saved_image, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -380,7 +376,7 @@ public class BoardGalleryDetailFragment extends Fragment {
             txtView = new TextView(context, null, android.R.attr.textAppearanceMedium);
             txtViewParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
             txtViewParams.addRule(RelativeLayout.BELOW, progress.getId());
-            txtView.setText(LOADING_PHOTO_MESSAGE);
+            txtView.setText(R.string.loading_image);
             txtView.setTextColor(Color.WHITE);
             txtView.setLayoutParams(txtViewParams);
 

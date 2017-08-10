@@ -18,6 +18,8 @@
 const functions = require('firebase-functions');
 // Import and initialize the Firebase Admin SDK
 const admin = require('firebase-admin');
+// Import hashcode library
+const Hashcode = require('hashcode');
 admin.initializeApp(functions.config().firebase);
 
 // Write the addWelcomeMessages Function here.
@@ -32,7 +34,7 @@ exports.addWelcomeMessages = functions.auth.user().onCreate(event => {
 
     // Saves the new welcome message into the database
     // Which then displays it in the FriendlyChat clients.
-    return admin.database().ref('message').push({
+    return admin.database().ref('messages').push({
         body: `${fullName}님이 가입하셨습니다! 환영합니다!`,
         timeStamp: Date.now(),
         writer: writer
@@ -40,7 +42,7 @@ exports.addWelcomeMessages = functions.auth.user().onCreate(event => {
 });
 
 // Write the sendNotifications Function here.
-exports.sendNotifications = functions.database.ref('/message/{body}').onWrite(event => {    
+exports.sendNotifications = functions.database.ref('/messages/{messageId}').onCreate(event => {    
     const snapshot = event.data;
     console.log('a new message wrote in databases : ', snapshot.val());
     // Only send a notification when a message has been created.
@@ -53,14 +55,16 @@ exports.sendNotifications = functions.database.ref('/message/{body}').onWrite(ev
     const text = snapshot.val().body;
     const payload = {
         notification: {
-            title: `${snapshot.val().writer.name}`,
+            collapse_key: 'chat',
+            title: '묵동제일교회 - 새 메세지',
             body: text ? (text.length <= 100 ? text : text.substring(0, 97) + '...') : '',
-            click_action: `open_chat`
+            click_action: `open_chat`            
         }
     };
 
     const options = {
         priority: "high",
+        collapseKey: "chat",
         timeToLive: 60*60*2
     };
 

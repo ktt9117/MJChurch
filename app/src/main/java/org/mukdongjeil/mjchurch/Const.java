@@ -15,6 +15,16 @@ public class Const {
     public static final File DIR_PUB_DOWNLOAD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     public static final int DEFAULT_IMG_RESOURCE = R.drawable.ic_progressring;
 
+    public static final String FIRE_DATA_MESSAGE_CHILD = "messages";
+    public static final String FIRE_DATA_USER_CHILD = "users";
+
+    public static final String MIME_TYPE_IMAGES = "image/*";
+    public static final String FILE_EXT_JPG = ".jpg";
+    public static final String SAVE_IMAGE_PREFIX = "/img_";
+    public static final String SIMPLE_DATETIME_FORMAT = "yyyyMMdd-hhmmss";
+    public static final String ALBUM_NAME = "/묵동제일앨범";
+    public static final String TEMP_FILE_NAME = "/tmp_share_image.jpg";
+
     public static final String CHATROOM_TOPIC = "chat_room_topic";
     public static final String INTENT_ACTION_OPEN_CHAT = "open_chat";
     public static final int NOTIFICATION_ID_CHAT = 9999;

@@ -49,25 +49,29 @@ public class StringUtils {
 	public static String removeDuplicationSentence(String original) {
 		Logger.e("removeDuplicationSentence", "original : " + original);
 		if (TextUtils.isEmpty(original)) {
-			Logger.e("removeDuplicationSentence", "original text is empty. just return original");
 			return original;
 		}
 
 		if (original.length() < 10) {
-			Logger.e("removeDuplicationSentence", "original length under 10 just return original");
 			return original;
 		}
 
 		String sentencePrefix = original.substring(0, 10);
-		Logger.e("removeDuplicationSentence", "sentencePrefix : " + sentencePrefix);
 		int duplicationIndex = original.indexOf(sentencePrefix, 1);
-		Logger.e("removeDuplicationSentence", "duplicationIndex : " + duplicationIndex);
 		if (duplicationIndex > 0) {
 			String result = original.substring(0, duplicationIndex - 1);
-			Logger.e("removeDuplicationSentence", "result : " + result);
 			return result;
 		}
+
 		Logger.e("removeDuplicationSentence", "There is no duplication sentence. just return original");
 		return original;
+	}
+
+	public static boolean isNotEmpty(CharSequence str) {
+		return !TextUtils.isEmpty(str);
+	}
+
+	public static String convertHashCode(CharSequence str) throws NullPointerException {
+		return Integer.toString(str.hashCode());
 	}
 }
