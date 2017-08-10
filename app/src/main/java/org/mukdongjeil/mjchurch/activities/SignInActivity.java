@@ -28,7 +28,6 @@ import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.ext_components.ClearableEditText;
 import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
-import org.mukdongjeil.mjchurch.services.BaseActivity;
 
 public class SignInActivity extends BaseActivity implements View.OnClickListener {
     private static final String TAG = SignInActivity.class.getSimpleName();

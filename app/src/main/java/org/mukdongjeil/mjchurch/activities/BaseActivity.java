@@ -1,4 +1,4 @@
-package org.mukdongjeil.mjchurch.services;
+package org.mukdongjeil.mjchurch.activities;
 
 import android.app.Dialog;
 import android.support.v7.app.AppCompatActivity;

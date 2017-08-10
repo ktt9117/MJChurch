@@ -31,7 +31,6 @@ import com.google.firebase.storage.UploadTask;
 import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.models.User;
-import org.mukdongjeil.mjchurch.services.BaseActivity;
 import org.mukdongjeil.mjchurch.services.FirebaseDataHelper;
 import org.mukdongjeil.mjchurch.utils.ExHandler;
 import org.mukdongjeil.mjchurch.utils.Logger;
