@@ -11,7 +11,6 @@ import android.widget.Toast;
 import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.ext_components.ClearableEditText;
-import org.mukdongjeil.mjchurch.services.BaseActivity;
 
 /**
  * Created by gradler on 27/07/2017.

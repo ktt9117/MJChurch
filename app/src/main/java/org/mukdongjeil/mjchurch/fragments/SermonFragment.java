@@ -219,6 +219,20 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
             play(item);
 
         } else {
+            //현재 재생중인 아이템이 사용자가 선택한 항목과 같은 경우
+            if (mService != null && mService.getCurrentPlayerItem() != null) {
+                if (mService.getCurrentPlayerItem().bbsNo.equals(item.bbsNo)) {
+                    if (item.playStatus == MediaService.PLAY_STATUS_PLAY) {
+                        mService.pausePlayer();
+                        return;
+
+                    } else if (item.playStatus == MediaService.PLAY_STATUS_PAUSE) {
+                        mService.resumePlayer();
+                        return;
+                    }
+                }
+            }
+
             //다운로드 되지 않은 아이템은 네트워크에 연결되어 있는지 체크
             switch (NetworkUtil.getNetwork(getActivity())) {
                 case NetworkUtil.NETWORK_NONE:
@@ -402,25 +416,7 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
                 Logger.i(TAG, "onResult isGranted : " + isGranted);
                 if (isGranted) {
                     try {
-                        Logger.e(TAG, "[play] item.playStatus : " + item.playStatus);
-
-                        // 재생하려는 아이템이 현재 재생중인 아이템과 같은 경우
-                        if (mService != null && mService.getCurrentPlayerItem() != null) {
-                            if (mService.getCurrentPlayerItem().bbsNo.equals(item.bbsNo)) {
-                                if (item.playStatus == MediaService.PLAY_STATUS_PLAY) {
-                                    mService.pausePlayer();
-                                    return;
-
-                                } else if (item.playStatus == MediaService.PLAY_STATUS_PAUSE) {
-                                    mService.resumePlayer();
-                                    return;
-                                }
-                            }
-                        }
-
-                        // 재생하려는 아이템이 현재 재생중인 아이템과 다른 경우
                         mService.startPlayer(item.bbsNo);
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

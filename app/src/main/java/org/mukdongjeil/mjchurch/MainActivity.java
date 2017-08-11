@@ -29,7 +29,7 @@ import org.mukdongjeil.mjchurch.fragments.BoardPagerFragment;
 import org.mukdongjeil.mjchurch.fragments.ChatFragment;
 import org.mukdongjeil.mjchurch.fragments.ImagePagerFragment;
 import org.mukdongjeil.mjchurch.fragments.SermonFragment;
-import org.mukdongjeil.mjchurch.services.BaseActivity;
+import org.mukdongjeil.mjchurch.activities.BaseActivity;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = MainActivity.class.getSimpleName();

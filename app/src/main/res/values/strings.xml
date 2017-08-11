@@ -25,6 +25,10 @@
 
     <string name="application_quit_message">앱을 종료하려면 뒤로가기를 한번 더 누르세요</string>
 
+    <string name="sign_up">회원가입 하기</string>
+    <string name="email">E-mail</string>
+    <string name="password">Password</string>
+    <string name="login_with_email">E-mail 로그인</string>
     <string name="login">로그인</string>
     <string name="logout">로그아웃</string>
     <string name="do_logout">로그아웃하기</string>

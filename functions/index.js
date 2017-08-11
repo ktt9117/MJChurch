@@ -56,6 +56,7 @@ exports.sendNotifications = functions.database.ref('/messages/{messageId}').onCr
     const payload = {
         notification: {
             collapse_key: 'chat',
+            tag: 'chat',
             title: '묵동제일교회 - 새 메세지',
             body: text ? (text.length <= 100 ? text : text.substring(0, 97) + '...') : '',
             click_action: `open_chat`            
