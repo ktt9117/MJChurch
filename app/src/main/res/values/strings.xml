@@ -64,11 +64,18 @@
     <string name="require_permission">권한이 필요합니다</string>
     <string name="rationale_read_phone_state">오디오 재생을 위해서는 \"통화 상태 조회\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.</string>
     <string name="rationale_write_external_storage">설교 다운로드를 위해서는 \"쓰기\" 권한이 필요합니다. 계속 진행하려면 다음 화면에서 허용을 눌러주세요.</string>
+    <string name="read_phone_state_permission_required">\"통화 상태 조회\" 권한이 없으면 재생할 수 없습니다</string>
+    <string name="write_external_strage_permission_required">\"쓰기\" 권한이 없으면 다운로드를 진행할 수 없습니다</string>
+    <string name="already_downloaded_or_downloading">다운로드 중이거나 이미 다운로드 완료된 파일입니다</string>
 
     <string name="share_image">사진 공유</string>
     <string name="saved_image">사진 저장됨</string>
     <string name="image_not_found">이미지를 찾을 수 없습니다</string>
     <string name="cannot_load_image">사진을 불러올 수 없습니다</string>
     <string name="loading_image">사진을 불러오는 중입니다</string>
+
+    <string name="warning">경고</string>
+    <string name="network_is_not_connected">네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요</string>
+    <string name="network_is_not_wifi">와이파이에 연결되어 있지 않아 가입한 요금제에 따라 추가 요금이 부과될 수도 있습니다.\n(와이파이 환경에서 이용을 권장합니다)\n계속 진행 하시겠습니까?</string>
 
 </resources>

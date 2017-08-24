@@ -112,7 +112,8 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
         public void onServiceConnected(ComponentName name, IBinder service) {
             Logger.d(TAG, "[MediaService] onServiceConnected");
             mService = ((MediaService.LocalBinder)service).getService();
-            ((MediaService.LocalBinder)service).setMediaStatusChangedListener(new MediaService.MediaStatusChangedListener() {
+            ((MediaService.LocalBinder)service).setMediaStatusChangedListener(
+                    new MediaService.MediaStatusChangedListener() {
                 @Override
                 public void onStatusChanged(int status, Sermon item) {
                     Logger.i(TAG, "[onStatusChanged] status : " + status + ", item : " + item);
@@ -280,7 +281,8 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
             }
 
         } else {
-            Toast.makeText(getActivity(), "다운로드 중이거나 이미 다운로드 완료된 파일입니다.", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), R.string.already_downloaded_or_downloading,
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -398,7 +400,8 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
             };
         }
 
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mDownloadCompleteReceiver, new IntentFilter(INTENT_ACTION_DOWNLOAD_COMPLETED));
+        LocalBroadcastManager.getInstance(getActivity())
+                .registerReceiver(mDownloadCompleteReceiver, new IntentFilter(INTENT_ACTION_DOWNLOAD_COMPLETED));
     }
 
     private void unregisterBroadcastReceiver() {
@@ -421,7 +424,8 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
                         e.printStackTrace();
                     }
                 } else {
-                    Toast.makeText(getActivity(), "\"통화 상태 조회\" 권한이 없으면 재생할 수 없습니다.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), R.string.read_phone_state_permission_required,
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -435,34 +439,32 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
                 if (isGranted) {
                     final DownloadManager downloadManager =
                             (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
-                    final long downloadQueryId = DownloadUtil.requestDownload(getActivity(), downloadManager, item);
+                    DownloadUtil.requestDownload(getActivity(), downloadManager, item);
                     mRealm.beginTransaction();
                     item.downloadPercent = 0;
                     mRealm.commitTransaction();
                     Logger.e(TAG, "call notifyItemChanged position : " + position);
 
-                    new DownloadThread(downloadManager, item.downloadQueryId, mOnProgressChangeListener).start();
+                    new DownloadThread(downloadManager,
+                            item.downloadQueryId, mOnProgressChangeListener).start();
 
                 } else {
-                    Toast.makeText(getActivity(), "\"쓰기\" 권한이 없으면 다운로드를 진행할 수 없습니다.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), R.string.write_external_strage_permission_required,
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
     private void showNetworkNotConnectedAlert() {
-        Toast.makeText(getActivity(),
-                "네트워크에 연결되어 있지 않습니다. 와이파이 또는 데이터 네트워크 연결 후 다시 시도해주세요",
-                Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), R.string.network_is_not_connected, Toast.LENGTH_LONG).show();
     }
 
     private void showWifiAlert(DialogInterface.OnClickListener onClickListener) {
         AlertDialog.Builder ab = new AlertDialog.Builder(getActivity());
         ab.setTitle("경고");
         ab.setCancelable(false);
-        ab.setMessage("와이파이에 연결되어 있지 않습니다. 이대로 진행할 경우 가입하신 요금제에 따라 추가 " +
-                "요금이 부과될 수도 있습니다.\n(와이파이 환경에서 이용하시길 권장합니다.)\n " +
-                "계속 진행 하시겠습니까?");
+        ab.setMessage(R.string.network_is_not_wifi);
 
         ab.setPositiveButton(android.R.string.ok, onClickListener);
         ab.setNegativeButton(android.R.string.cancel, null);
