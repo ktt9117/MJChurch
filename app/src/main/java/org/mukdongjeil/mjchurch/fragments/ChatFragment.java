@@ -567,7 +567,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     }
 
     private boolean isMyMessage(ChatMessage chatMessage) {
-        if (mUserMySelf == null) {
+        if (mUserMySelf == null || TextUtils.isEmpty(mUserMySelf.email)) {
             return false;
         }
 
