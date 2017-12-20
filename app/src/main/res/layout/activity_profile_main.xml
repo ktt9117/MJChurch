@@ -25,7 +25,7 @@
             android:id="@+id/profile_avatar_view"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:onClick="@{activity.onAvatarViewClicked}"
+            android:onClick="@{activity::onAvatarViewClicked}"
             app:civ_border_color="@android:color/white"
             app:civ_border_width="2dp" />
 
@@ -40,7 +40,7 @@
                 android:background="@drawable/circle_white_bg"
                 android:padding="4dp"
                 android:src="@drawable/ic_camera"
-                android:onClick="@{activity.onAvatarViewClicked}" />
+                android:onClick="@{activity::onAvatarViewClicked}" />
 
             <TextView
                 android:id="@+id/profile_username"
@@ -53,7 +53,7 @@
                 android:drawablePadding="8dp"
                 android:textSize="20dp"
                 android:textColor="@android:color/primary_text_light"
-                android:onClick="@{activity.onUsernameClicked}" />
+                android:onClick="@{activity::onUsernameClicked}" />
 
         </RelativeLayout>
     </RelativeLayout>

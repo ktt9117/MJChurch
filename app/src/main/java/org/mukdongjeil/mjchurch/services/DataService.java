@@ -11,6 +11,7 @@ import org.mukdongjeil.mjchurch.models.Sermon;
 import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.RealmResults;
+import io.realm.Sort;
 
 /**
  * Created by gradler on 22/05/2017.
@@ -45,10 +46,10 @@ public class DataService {
     }
 
     public static RealmResults<Sermon> getSermonList(Realm realm, int sermonType) {
-        return realm.where(Sermon.class).equalTo("sermonType", sermonType).findAll();
+        return realm.where(Sermon.class).equalTo("sermonType", sermonType).findAllSorted("bbsNo", Sort.DESCENDING);
     }
 
-    public static Sermon getSermon(Realm realm, String bbsNo) {
+    public static Sermon getSermon(Realm realm, int bbsNo) {
         return realm.where(Sermon.class).equalTo("bbsNo", bbsNo).findFirst();
     }
 

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -22,6 +23,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.MainActivity;
@@ -179,7 +182,7 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
         mRecyclerView.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new SermonListAdapter(mItemList, this);
+        mAdapter = new SermonListAdapter(mItemList, this, Glide.with(this));
         mRecyclerView.setAdapter(mAdapter);
         loadSermonList();
     }
@@ -221,7 +224,7 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
         } else {
             //현재 재생중인 아이템이 사용자가 선택한 항목과 같은 경우
             if (mService != null && mService.getCurrentPlayerItem() != null) {
-                if (mService.getCurrentPlayerItem().bbsNo.equals(item.bbsNo)) {
+                if (mService.getCurrentPlayerItem().bbsNo == item.bbsNo) {
                     if (item.playStatus == MediaService.PLAY_STATUS_PLAY) {
                         mService.pausePlayer();
                         return;
@@ -299,7 +302,16 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
                         PreferenceUtil.setWorshipListCheckTimeInMillis(mSermonType, System.currentTimeMillis());
                         DataService.insertToRealm(mRealm, item);
 
-                        mItemList.add(item);
+                        if (mItemList != null && mItemList.size() > 0) {
+                            if (mItemList.get(0).bbsNo < item.bbsNo) {
+                                mItemList.add(0, item);
+                            } else {
+                                mItemList.add(item);
+                            }
+                        } else {
+                            mItemList.add(item);
+                        }
+
                         mAdapter.notifyDataSetChanged();
                         mLoadingTextView.setVisibility(View.GONE);
                         hideActionBarProgressDelayed(1500);
@@ -317,7 +329,7 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
 
             DownloadManager downloadManager = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
             HashSet<Long> downloadingItemSet = getDownloadingOrPendingItemSet(downloadManager);
-            Logger.e(TAG, "downloadingOrPendingItemSet size : " + downloadingItemSet.size());
+            //Logger.e(TAG, "downloadingOrPendingItemSet size : " + downloadingItemSet.size());
 
             long downloadQueryId = -1;
 
@@ -409,6 +421,12 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
     }
 
     private void play(final Sermon item) {
+        if (item.mediaType == Const.MEDIA_TYPE_VIDEO) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(item.videoUrl));
+            startActivity(intent);
+            return;
+        }
+
         ((MainActivity) getActivity()).startPermissionCheck(Manifest.permission.READ_PHONE_STATE,
                 new MainActivity.PermissionCheckResultListener() {
             @Override
@@ -476,7 +494,7 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
             if (item != null) {
                 for (int i = 0; i < mItemList.size(); i++) {
                     Sermon sermon = mItemList.get(i);
-                    if (sermon.bbsNo.equals(item.bbsNo)) {
+                    if (sermon.bbsNo == item.bbsNo) {
                         mRealm.beginTransaction();
                         sermon.playStatus = status;
                         mRealm.commitTransaction();

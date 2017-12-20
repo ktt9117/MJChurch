@@ -41,7 +41,7 @@ public abstract class RequestBaseTask extends AsyncTask<String, Void, Source> {
     @Override
     protected void onPostExecute(Source segments) {
         super.onPostExecute(segments);
-        Logger.d(TAG, "onPostExecute : " + segments);
+        //Logger.d(TAG, "onPostExecute : " + segments);
         onResult(segments);
         if (segments == null) {
             MainApplication.REQUEST_FAIL_COUNT++;
