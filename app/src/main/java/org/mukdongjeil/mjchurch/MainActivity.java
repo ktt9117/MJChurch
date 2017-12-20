@@ -24,12 +24,12 @@ import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
-import org.mukdongjeil.mjchurch.utils.Logger;
+import org.mukdongjeil.mjchurch.activities.BaseActivity;
 import org.mukdongjeil.mjchurch.fragments.BoardPagerFragment;
 import org.mukdongjeil.mjchurch.fragments.ChatFragment;
 import org.mukdongjeil.mjchurch.fragments.ImagePagerFragment;
 import org.mukdongjeil.mjchurch.fragments.SermonFragment;
-import org.mukdongjeil.mjchurch.activities.BaseActivity;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -48,12 +48,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         showPushMessageIfNecessary(getIntent());
 
         // start intro activity
-        if (!Const.DEBUG_MODE) {
+        if (Const.DEBUG_MODE == false) {
             startActivity(new Intent(this, IntroActivity.class));
+            // get the firebase instance
+            FirebaseAnalytics.getInstance(this);
         }
-
-        // get the firebase instance
-        FirebaseAnalytics.getInstance(this);
 
         // set the content view
         setContentView(R.layout.activity_main);
