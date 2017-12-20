@@ -5,14 +5,14 @@ android {
     signingConfigs {
     }
     compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         applicationId "org.mukdongjeil.mjchurch"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 19
-        versionName "3.3"
+        versionCode 20
+        versionName "3.4"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -32,7 +32,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/jericho-html-3.3.jar')
     compile files('libs/gson-2.3.1.jar')
-    compile files('libs/android-async-http-1.4.8.jar')
 
     /* for UI/UX */
     compile 'com.github.orangegangsters:swipy:1.2.0@aar'
@@ -47,19 +46,19 @@ dependencies {
     compile 'com.github.chrisbanes:PhotoView:2.0.0'
     compile 'me.himanshusoni.chatmessageview:chat-message-view:1.0.7'
     compile 'de.hdodenhof:circleimageview:2.1.0'
-    compile 'com.firebaseui:firebase-ui-database:1.1.1'
 
     /* for Firebase */
-    compile 'com.google.firebase:firebase-messaging:10.0.1'
-    compile 'com.google.firebase:firebase-core:10.0.1'
-    compile 'com.google.firebase:firebase-auth:10.0.1'
-    compile 'com.google.firebase:firebase-database:10.0.1'
-    compile 'com.google.firebase:firebase-storage:10.0.1'
-    compile 'com.google.firebase:firebase-crash:10.0.1'
-    compile 'com.google.android.gms:play-services-auth:10.0.1'
+    compile 'com.google.android.gms:play-services-auth:11.4.2'
+    compile 'com.google.firebase:firebase-messaging:11.4.2'
+    compile 'com.google.firebase:firebase-core:11.4.2'
+    compile 'com.google.firebase:firebase-auth:11.4.2'
+    compile 'com.google.firebase:firebase-database:11.4.2'
+    compile 'com.google.firebase:firebase-storage:11.4.2'
+    compile 'com.google.firebase:firebase-crash:11.4.2'
 
     /* for Utilities */
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.loopj.android:android-async-http:1.4.9'
 
     /* for Test dependencies */
     androidTestCompile 'com.android.support.test:runner:0.5'

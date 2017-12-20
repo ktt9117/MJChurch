@@ -1,8 +1,10 @@
 package org.mukdongjeil.mjchurch.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,23 +26,31 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.Query;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -49,7 +59,7 @@ import com.google.firebase.storage.UploadTask;
 import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.activities.ProfileMainActivity;
-import org.mukdongjeil.mjchurch.activities.SignInActivity;
+import org.mukdongjeil.mjchurch.adapters.ChatAdapter;
 import org.mukdongjeil.mjchurch.models.ChatMessage;
 import org.mukdongjeil.mjchurch.models.User;
 import org.mukdongjeil.mjchurch.services.FirebaseDataHelper;
@@ -57,12 +67,7 @@ import org.mukdongjeil.mjchurch.utils.ExHandler;
 import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-import de.hdodenhof.circleimageview.CircleImageView;
-import me.himanshusoni.chatmessageview.ChatMessageView;
+import java.util.ArrayList;
 
 public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private static final String TAG = ChatFragment.class.getSimpleName();
@@ -73,15 +78,15 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
     public static boolean IS_CHATROOM_FOREGROUND = false;
 
-    private static final int MY_MESSAGE = 0, OTHER_MESSAGE = 1;
-
     private RecyclerView mRecyclerView;
 
     private LinearLayoutManager mLinearLayoutManager;
-    private FirebaseRecyclerAdapter<ChatMessage, MessageHolder> mFirebaseAdapter;
+    private ChatAdapter mChatAdapter;
+    private ArrayList<ChatMessage> mMessageList;
 
     private DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().getRoot();
     private FirebaseAuth mAuth;
+    private GoogleApiClient mGoogleApiClient;
     private User mUserMySelf;
 
     private EditText mMessageField;
@@ -91,6 +96,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private NotificationManager mNotiManager;
     private InputMethodManager mInputMethodManager;
     private RequestManager mGlide;
+    private boolean isFirstItemAdded = false;
 
     private static final int MSG_WHAT_LOGOUT = 100;
     private ExHandler<ChatFragment> mHandler = new ExHandler<ChatFragment>(this) {
@@ -113,6 +119,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        initializeGoogleSignIn();
         mAuth = FirebaseAuth.getInstance();
         mNotiManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
         mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -159,6 +166,7 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         Logger.i(TAG, "send handler message MSG_WHAT_LOGOUT. It will called after 7000");
 
         setupRecyclerView((RecyclerView) view.findViewById(R.id.recycler_view_message));
+        loadMessages();
 
         return view;
     }
@@ -216,9 +224,9 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
             case R.id.action_btn_profile:
                 showProfileActivity();
                 return true;
-            case R.id.action_btn_login:
-                Intent signInIntent = new Intent(getActivity(), SignInActivity.class);
-                startActivityForResult(signInIntent, RC_SIGN_IN);
+            case R.id.google_sign_in:
+                Logger.e(TAG, "Trying to Google sign in");
+                signInWithGoogle();
                 return true;
         }
 
@@ -228,23 +236,34 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()) {
+                GoogleSignInAccount account = result.getSignInAccount();
+                firebaseAuthWithGoogle(account);
+
+            } else {
+                Logger.e(TAG, "Login unsuccessful result status : " + result.getStatus());
+                Toast.makeText(getContext(), R.string.login_failed, Toast.LENGTH_LONG);
+            }
+
+            return;
+        }
 
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == RC_SIGN_IN) {
-                Toast.makeText(getActivity(), R.string.login_success, Toast.LENGTH_LONG).show();
-                setUserInformation(mAuth.getCurrentUser());
-                FirebaseDataHelper.createOrUpdateUser(mRef, mUserMySelf);
-
-            } else if (requestCode == RC_IMAGE_PICK) {
+            if (requestCode == RC_IMAGE_PICK) {
                 if (data != null) {
                     final Uri uri = data.getData();
                     Logger.d(TAG, "Uri: " + uri.toString());
 
+                    final FirebaseUser user = mAuth.getCurrentUser();
                     final ChatMessage tempChatMessage = new ChatMessage();
-                    tempChatMessage.email = mUserMySelf.email;
+                    tempChatMessage.name = user.getDisplayName();
+                    tempChatMessage.email = user.getEmail();
                     tempChatMessage.imgUrl = LOADING_IMAGE_URL;
+                    tempChatMessage.avatarUrl = user.getPhotoUrl().toString();
 
-                    mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).push()
+                    mRef.child(Const.getMessageDatabaseUri()).push()
                         .setValue(tempChatMessage, new DatabaseReference.CompletionListener() {
                             @Override
                             public void onComplete(DatabaseError databaseError,
@@ -265,7 +284,6 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                             }
                         });
                 }
-
             }
         }
     }
@@ -287,205 +305,50 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         }
     }
 
+    private void initializeGoogleSignIn() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(getContext()).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
+    }
+
     private void setupRecyclerView(final RecyclerView view) {
         // Set the adapter
         Context context = view.getContext();
         mRecyclerView = view;
         mLinearLayoutManager = new LinearLayoutManager(context);
         mLinearLayoutManager.setStackFromEnd(true);
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<ChatMessage, MessageHolder> (
-                ChatMessage.class,
-                R.layout.row_chat_other,
-                MessageHolder.class,
-                mRef.child(Const.FIRE_DATA_MESSAGE_CHILD)) {
 
-            @Override
-            public long getItemId(int position) {
-                return super.getItemId(position);
-            }
-
-            @Override
-            public int getItemViewType(int position) {
-                ChatMessage item = getItem(position);
-                if (item == null) {
-                    return super.getItemViewType(position);
-                }
-
-                String email = item.email;
-                if (mUserMySelf != null && !TextUtils.isEmpty(email) && email.equals(mUserMySelf.email)) {
-                    return MY_MESSAGE;
-                } else {
-                    return OTHER_MESSAGE;
-                }
-            }
-
-            @Override
-            public MessageHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                if (viewType == MY_MESSAGE) {
-                    return new MessageHolder(LayoutInflater.from(getActivity()).inflate(R.layout.row_chat_mine, parent, false));
-                } else {
-                    return new MessageHolder(LayoutInflater.from(getActivity()).inflate(R.layout.row_chat_other, parent, false));
-                }
-            }
-
-            @Override
-            protected ChatMessage parseSnapshot(DataSnapshot snapshot) {
-                Logger.i(TAG, "parseSnapshot");
-                ChatMessage friendlyChatMessage = super.parseSnapshot(snapshot);
-                if (friendlyChatMessage != null) {
-                    friendlyChatMessage.id = snapshot.getKey();
-                }
-
-                return friendlyChatMessage;
-            }
-
-            @Override
-            protected void populateViewHolder(final MessageHolder viewHolder, final ChatMessage chatMessage, int position) {
-                Logger.i(TAG, "populateViewHolder");
-                closeLoadingDialog();
-                mHandler.removeMessages(MSG_WHAT_LOGOUT);
-                Logger.i(TAG, "remove message MSG_WHAT_LOGOUT on populateViewHolder");
-                viewHolder.containerView.setOnClickListener(new View.OnClickListener() {
+        mMessageList = new ArrayList<>();
+        mChatAdapter = new ChatAdapter(getActivity(), mMessageList, mGlide,
+                mUserMySelf != null ? mUserMySelf.email : null,
+                new ChatAdapter.OnRowItemClickedListener() {
                     @Override
-                    public void onClick(View view) {
+                    public void onRowItemClicked(View view) {
                         if (mMessageField == null) return;
                         mInputMethodManager.hideSoftInputFromWindow(mMessageField.getWindowToken(), 0);
                     }
-                });
-
-                if (!TextUtils.isEmpty(chatMessage.body)) {
-                    viewHolder.tvMessage.setText(chatMessage.body);
-                    viewHolder.tvMessage.setVisibility(TextView.VISIBLE);
-                } else {
-                    viewHolder.tvMessage.setVisibility(TextView.GONE);
                 }
+        );
 
-                String date = new SimpleDateFormat("aa hh:mm", Locale.KOREA).format(new Date(chatMessage.timeStamp));
-                viewHolder.tvTime.setText(date);
-
-                if (!TextUtils.isEmpty(chatMessage.imgUrl)) {
-                    String imageUrl = chatMessage.imgUrl;
-                    if (imageUrl.startsWith("gs://")) {
-                        StorageReference storageReference = FirebaseStorage.getInstance()
-                                .getReferenceFromUrl(imageUrl);
-                        storageReference.getDownloadUrl().addOnCompleteListener(
-                                new OnCompleteListener<Uri>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Uri> task) {
-                                        if (task.isSuccessful()) {
-                                            String downloadUrl = task.getResult().toString();
-                                            Glide.with(viewHolder.ivImage.getContext())
-                                                    .load(downloadUrl)
-                                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                                    .into(viewHolder.ivImage);
-                                        } else {
-                                            Log.w(TAG, "Getting download url was not successful.",
-                                                    task.getException());
-                                        }
-                                    }
-                                });
-                    } else {
-                        Glide.with(viewHolder.ivImage.getContext())
-                                .load(chatMessage.imgUrl)
-                                .error(R.drawable.ic_account_circle_black_36dp)
-                                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                .into(viewHolder.ivImage);
-                    }
-
-                    viewHolder.ivImage.setVisibility(ImageView.VISIBLE);
-
-                } else {
-                    viewHolder.ivImage.setVisibility(ImageView.GONE);
-                }
-
-                if (!isMyMessage(chatMessage)) {
-                    FirebaseDataHelper.getUserByEmail(mRef, chatMessage.email,
-                            new FirebaseDataHelper.OnUserQueryListener() {
-                                @Override
-                                public void onResult(User user) {
-                                    if (user != null) {
-                                        viewHolder.tvWriter.setText(user.name);
-                                        mGlide.load(user.photoUrl)
-                                                .placeholder(R.drawable.ic_account_circle_black_36dp)
-                                                .error(R.drawable.ic_account_circle_black_36dp)
-                                                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                                .into(viewHolder.avatarView);
-
-                                    } else {
-                                        viewHolder.tvWriter.setText(chatMessage.email);
-                                        mGlide.load(R.drawable.ic_account_circle_black_36dp).into(viewHolder.avatarView);
-                                    }
-                                }
-                            });
-                }
-        }};
-
-        mFirebaseAdapter.setHasStableIds(true);
-
-        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+        mChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 Logger.i(TAG, "onItemRangeInserted");
                 super.onItemRangeInserted(positionStart, itemCount);
-                int friendlyMessageCount = mFirebaseAdapter.getItemCount();
+                int messageCount = mChatAdapter.getItemCount();
                 int lastVisiblePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
                 if (lastVisiblePosition == -1 ||
-                        (positionStart >= (friendlyMessageCount - 1) && lastVisiblePosition == (positionStart - 1))) {
+                        (positionStart >= (messageCount - 1) && lastVisiblePosition == (positionStart - 1))) {
                     mRecyclerView.scrollToPosition(positionStart);
                 }
             }
         });
 
-        if (mRecyclerView.getItemAnimator() instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
-        }
-
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mRecyclerView.setAdapter(mFirebaseAdapter);
-
-        mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot == null) {
-                    Logger.e(TAG, "dataSnapshot is null");
-                    return;
-                }
-
-                if (dataSnapshot.exists() == false || dataSnapshot.getChildrenCount() < 1) {
-                    closeLoadingDialog();
-                    mHandler.removeMessages(MSG_WHAT_LOGOUT);
-                    Logger.i(TAG, "remove message MSG_WHAT_LOGOUT on onDataChange");
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
-
-        // The user has been authenticated but the user has not yet been created.
-        if (mAuth.getCurrentUser() != null) {
-            FirebaseDataHelper.getUserByEmail(mRef, mAuth.getCurrentUser().getEmail(),
-                    new FirebaseDataHelper.OnUserQueryListener() {
-                @Override
-                public void onResult(User user) {
-                    if (user == null) {
-                        FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                        User me = new User();
-                        me.email = firebaseUser.getEmail();
-                        me.name = firebaseUser.getDisplayName();
-                        if (TextUtils.isEmpty(me.name)) {
-                            me.name = firebaseUser.getEmail();
-                        }
-
-                        if (firebaseUser.getPhotoUrl() != null) {
-                            me.photoUrl = firebaseUser.getPhotoUrl().toString();
-                        }
-
-                        FirebaseDataHelper.createOrUpdateUser(mRef, me);
-                    }
-                }
-            });
-        }
+        mRecyclerView.setAdapter(mChatAdapter);
     }
 
     private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
@@ -493,11 +356,13 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
             @Override
             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                 if (task.isSuccessful()) {
-                    ChatMessage chatMessage = new ChatMessage();
-                    chatMessage.email = mUserMySelf.email;
-                    //noinspection VisibleForTests
+                    final FirebaseUser user = mAuth.getCurrentUser();
+                    final ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.name = user.getDisplayName();
+                    chatMessage.email = user.getEmail();
                     chatMessage.imgUrl = task.getResult().getDownloadUrl().toString();
-                    mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).child(key)
+                    chatMessage.avatarUrl = user.getPhotoUrl().toString();
+                    mRef.child(Const.getMessageDatabaseUri()).child(key)
                             .setValue(chatMessage);
                 } else {
                     Log.w(TAG, "Image upload task was not successful.",
@@ -522,8 +387,15 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
             if (user.getPhotoUrl() != null) {
                 mUserMySelf.photoUrl = user.getPhotoUrl().toString();
             }
+
+            if (mChatAdapter != null) {
+                mChatAdapter.setMyEmailAddress(mAuth.getCurrentUser().getEmail());
+            }
         } else {
             mUserMySelf = null;
+            if (mChatAdapter != null) {
+                mChatAdapter.setMyEmailAddress(null);
+            }
         }
 
         getActivity().invalidateOptionsMenu();
@@ -531,8 +403,6 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
 
     private void sendMessage() {
         if (mAuth.getCurrentUser() == null) {
-            Intent signInIntent = new Intent(getActivity(), SignInActivity.class);
-            startActivityForResult(signInIntent, RC_SIGN_IN);
             Toast.makeText(getActivity(), R.string.login_required, Toast.LENGTH_LONG).show();
             return;
         }
@@ -542,11 +412,11 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
             return;
         }
 
-
         mBtnSend.setEnabled(false);
-
-        final ChatMessage chatMessage = new ChatMessage(mUserMySelf.email, text);
-        mRef.child(Const.FIRE_DATA_MESSAGE_CHILD).push().setValue(chatMessage,
+        final FirebaseUser user = mAuth.getCurrentUser();
+        final ChatMessage chatMessage = new ChatMessage(user.getDisplayName(), user.getEmail(),
+                text, user.getPhotoUrl().toString());
+        mRef.child(Const.getMessageDatabaseUri()).push().setValue(chatMessage,
                 new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
@@ -564,18 +434,6 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private void showProfileActivity() {
         Intent profileIntent = new Intent(getActivity(), ProfileMainActivity.class);
         startActivity(profileIntent);
-    }
-
-    private boolean isMyMessage(ChatMessage chatMessage) {
-        if (mUserMySelf == null || TextUtils.isEmpty(mUserMySelf.email)) {
-            return false;
-        }
-
-        if (chatMessage == null) {
-            return false;
-        }
-
-        return chatMessage.email.equals(mUserMySelf.email);
     }
 
     private void changeNotificationOption() {
@@ -596,28 +454,109 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         }
     }
 
-    public static class MessageHolder extends RecyclerView.ViewHolder {
-        LinearLayout containerView;
-        CircleImageView avatarView;
-        TextView tvMessage, tvTime, tvWriter;
-        ImageView ivImage;
-        ChatMessageView chatMessageView;
-
-        MessageHolder(View itemView) {
-            super(itemView);
-            containerView = (LinearLayout) itemView.findViewById(R.id.messageRowContainerView);
-            avatarView = (CircleImageView) itemView.findViewById(R.id.chat_avatar_view);
-            chatMessageView = (ChatMessageView) itemView.findViewById(R.id.chat_message_view);
-            tvMessage = (TextView) itemView.findViewById(R.id.tv_message);
-            tvTime = (TextView) itemView.findViewById(R.id.tv_time);
-            tvWriter = (TextView) itemView.findViewById(R.id.tv_writer);
-            ivImage = (ImageView) itemView.findViewById(R.id.iv_image);
-        }
-    }
-
     private void doLogout() {
         mAuth.signOut();
         getActivity().invalidateOptionsMenu();
     }
 
+    private void signInWithGoogle() {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity()) != ConnectionResult.SUCCESS) {
+            showAlert(R.string.login_unavailable, R.string.google_play_unavailable);
+            return;
+        }
+
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        Logger.e(TAG, "firebaseAuthWithGoogle:" + acct.getId());
+        showLoadingDialog();
+
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        closeLoadingDialog();
+
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Logger.e(TAG, "signInWithCredential:success");
+                            Toast.makeText(getContext(), R.string.login_success, Toast.LENGTH_SHORT).show();
+                            setUserInformation(mAuth.getCurrentUser());
+
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Logger.e(TAG, "signInWithCredential:failure", task.getException());
+                            showAlert(R.string.auth_failure, "인증 실패 : " + task.getException().getLocalizedMessage());
+                        }
+
+                    }
+                });
+    }
+
+    private void showAlert(int title, int message) {
+        showAlert(getString(title), getString(message));
+    }
+
+    private void showAlert(int title, String message) {
+        showAlert(getString(title), message);
+    }
+
+    private void showAlert(String title, String message) {
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setTitle(title)
+                .setMessage(message)
+                .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .create();
+        dialog.show();
+    }
+
+    private void loadMessages() {
+        Query query = mRef.child(Const.getMessageDatabaseUri()).limitToLast(100);
+        query.addChildEventListener(mChildEventListener);
+    }
+
+    private ChildEventListener mChildEventListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Logger.e(TAG, "onChildAdded : " + dataSnapshot.getValue() + ", " + s);
+            if (isFirstItemAdded == false) {
+                closeLoadingDialog();
+                mHandler.removeMessages(MSG_WHAT_LOGOUT);
+                isFirstItemAdded = true;
+            }
+
+            mMessageList.add(dataSnapshot.getValue(ChatMessage.class));
+            int index = mMessageList.size() - 1;
+            if (index < 0) index = 0;
+            mChatAdapter.notifyItemRangeInserted(index, 1);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            Logger.e(TAG, "onChildChanged : " + dataSnapshot.getValue() + ", " + s);
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+            Logger.e(TAG, "onChildRemoved : " + dataSnapshot.getValue());
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            Logger.e(TAG, "onChildMoved : " + dataSnapshot.getValue() + ", " + s);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Logger.e(TAG, "onCancelled : " + databaseError.getDetails());
+        }
+    };
 }
