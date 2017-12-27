@@ -22,17 +22,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.databinding.ActivityProfileMainBinding;
 import org.mukdongjeil.mjchurch.R;
-import org.mukdongjeil.mjchurch.models.User;
-import org.mukdongjeil.mjchurch.services.FirebaseDataHelper;
+import org.mukdongjeil.mjchurch.databinding.ActivityProfileMainBinding;
 import org.mukdongjeil.mjchurch.utils.ExHandler;
 import org.mukdongjeil.mjchurch.utils.Logger;
 
@@ -45,7 +41,6 @@ public class ProfileMainActivity extends BaseActivity {
     private static final int RC_CHANGE_NAME = 1000;
     private static final int RC_CHANGE_PHOTO = 1001;
 
-    private DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().getRoot();
     private FirebaseAuth mAuth;
     private ActivityProfileMainBinding mBinding;
 
@@ -69,11 +64,12 @@ public class ProfileMainActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_profile_main);
+        mBinding.setActivity(this);
         setTitle(R.string.config_profile);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mAuth = FirebaseAuth.getInstance();
-        updateProfileUI(mAuth.getCurrentUser().getEmail());
+        updateProfileUI(mAuth.getCurrentUser());
     }
 
     @Override
@@ -116,25 +112,10 @@ public class ProfileMainActivity extends BaseActivity {
                         return;
                     }
 
-                    showLoadingDialog();
-                    FirebaseDataHelper.getUserByEmail(mRef, mAuth.getCurrentUser().getEmail(),
-                            new FirebaseDataHelper.OnUserQueryListener() {
-                                @Override
-                                public void onResult(User user) {
-                                    if (user != null) {
-                                        StorageReference storageReference =
-                                                FirebaseStorage.getInstance()
-                                                        .getReference(mAuth.getCurrentUser().getUid())
-                                                        .child(uri.getLastPathSegment());
-                                        putImageInStorage(storageReference, uri, user);
-
-                                    } else {
-                                        hideLoadingDialog();
-                                        Logger.e(TAG, "There is no user for updating profile image");
-                                    }
-                                }
-                            }
-                    );
+                    StorageReference storageReference = FirebaseStorage.getInstance()
+                            .getReference(mAuth.getCurrentUser().getUid())
+                            .child(uri.getLastPathSegment());
+                    putImageIntoStorage(storageReference, uri);
                 }
             }
         }
@@ -150,40 +131,28 @@ public class ProfileMainActivity extends BaseActivity {
 
     public void onAvatarViewClicked(View view) {
         Logger.e(TAG, "profile_btn_camera or profile_avatar_view clicked");
-        Toast.makeText(this, R.string.not_supported_yet, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(Const.MIME_TYPE_IMAGES);
+        startActivityForResult(intent, RC_CHANGE_PHOTO);
     }
 
-    private void updateProfileUI(String email) {
-        if (email == null) {
+    private void updateProfileUI(FirebaseUser user) {
+        if (user == null) {
+            Toast.makeText(getApplicationContext(), R.string.profile_inquire_failed, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        FirebaseDataHelper.getUserByEmail(mRef, email, new FirebaseDataHelper.OnUserQueryListener() {
-            @Override
-            public void onResult(User user) {
-                if (user != null) {
-                    String name = user.name;
-                    String email = user.email;
-                    if (TextUtils.isEmpty(user.photoUrl)) {
-                        Glide.with(ProfileMainActivity.this)
-                                .load(R.drawable.ic_account_circle_black_36dp)
-                                .into(mBinding.profileAvatarView);
-                    } else {
-                        Glide.with(ProfileMainActivity.this)
-                                .load(user.photoUrl)
-                                .placeholder(R.drawable.ic_account_circle_black_36dp)
-                                .error(R.drawable.ic_account_circle_black_36dp)
-                                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                .into(mBinding.profileAvatarView);
-                    }
+        String name = user.getDisplayName();
+        String email = user.getEmail();
+        Glide.with(ProfileMainActivity.this)
+                .load(user.getPhotoUrl().getPath())
+                .placeholder(R.drawable.ic_account_circle_black_36dp)
+                .error(R.drawable.ic_account_circle_black_36dp)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(mBinding.profileAvatarView);
 
-                    mBinding.profileUsername.setText(TextUtils.isEmpty(name) ? email : name);
-
-                } else {
-                    Toast.makeText(getApplicationContext(), R.string.profile_inquire_failed, Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        mBinding.profileUsername.setText(TextUtils.isEmpty(name) ? email : name);
     }
 
     private void changeProfile(FirebaseUser user, final String displayName) {
@@ -196,67 +165,78 @@ public class ProfileMainActivity extends BaseActivity {
             return;
         }
 
-        showLoadingDialog();
-
         UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
                 .setDisplayName(displayName)
                 .build();
 
-        final String targetEmail = user.getEmail();
-
+        showLoadingDialog();
         user.updateProfile(request).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
+                hideLoadingDialog();
+
                 if (task.isSuccessful()) {
-                    FirebaseDataHelper.getUserByEmail(mRef, targetEmail,
-                            new FirebaseDataHelper.OnUserQueryListener() {
-                        @Override
-                        public void onResult(User user) {
-                            if (user != null) {
-                                user.name = displayName;
-                                mBinding.profileUsername.setText(displayName);
-                                FirebaseDataHelper.createOrUpdateUser(mRef, user);
-                                Toast.makeText(ProfileMainActivity.this, R.string.username_updated,
-                                        Toast.LENGTH_SHORT).show();
-
-                            } else {
-                                Toast.makeText(ProfileMainActivity.this, R.string.update_username_failed,
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
-
+                    mBinding.profileUsername.setText(displayName);
+                    Toast.makeText(ProfileMainActivity.this, R.string.username_updated,
+                            Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(ProfileMainActivity.this, "대화명 변경 실패 : " + task.getException(), Toast.LENGTH_SHORT).show();
                 }
-
-                hideLoadingDialog();
             }
         });
     }
 
-    private void putImageInStorage(StorageReference storageReference, Uri uri, final User user) {
+    private void changeProfileImage(FirebaseUser user, final Uri photoUri) {
+        if (user == null) {
+            return;
+        }
+
+        if (photoUri == null || TextUtils.isEmpty(photoUri.toString())) {
+            Logger.e(TAG, "cannot change profile caused by parameters are not valid");
+            return;
+        }
+
+        UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
+                .setPhotoUri(photoUri)
+                .build();
+
+        showLoadingDialog();
+        user.updateProfile(request).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                hideLoadingDialog();
+
+                if (task.isSuccessful()) {
+                    Message message = mHandler.obtainMessage();
+                    message.obj = photoUri.toString();
+                    message.what = 0;
+                    mHandler.sendMessage(message);
+
+                    Toast.makeText(ProfileMainActivity.this, R.string.profile_image_updated,
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ProfileMainActivity.this, "프로필 사진 변경 실패 : " + task.getException(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void putImageIntoStorage(StorageReference storageReference, Uri uri) {
+        showLoadingDialog();
         storageReference.putFile(uri).addOnCompleteListener(this,
                 new OnCompleteListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                hideLoadingDialog();
                 if (task.isSuccessful()) {
-                    @SuppressWarnings("VisibleForTests")
-                    String uploadedUrl = task.getResult().getDownloadUrl().toString();
-                    user.photoUrl = uploadedUrl;
-                    FirebaseDataHelper.createOrUpdateUser(mRef, user);
-
-                    Message message = mHandler.obtainMessage();
-                    message.obj = uploadedUrl;
-                    message.what = 0;
-                    mHandler.sendMessage(message);
+                    Uri photoUri = task.getResult().getDownloadUrl();
+                    changeProfileImage(mAuth.getCurrentUser(), photoUri);
 
                 } else {
+                    Toast.makeText(ProfileMainActivity.this, "프로필 사진 변경 실패 : " + task.getException(), Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "Image upload task was not successful.",
                             task.getException());
                 }
-
-                hideLoadingDialog();
             }
         });
     }
