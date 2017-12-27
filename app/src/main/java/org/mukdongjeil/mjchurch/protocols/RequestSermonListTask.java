@@ -2,6 +2,7 @@ package org.mukdongjeil.mjchurch.protocols;
 
 import android.text.TextUtils;
 
+import net.htmlparser.jericho.Attributes;
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
@@ -12,6 +13,7 @@ import org.mukdongjeil.mjchurch.models.Sermon;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +72,7 @@ public class RequestSermonListTask extends RequestBaseTask {
                 Sermon item = new Sermon();
                 item.sermonType = sermonType;
                 item.contentUrl = linkAttr;
-                item.bbsNo = linkAttr.substring(linkAttr.lastIndexOf("=") + 1);
+                item.bbsNo = Integer.parseInt(linkAttr.substring(linkAttr.lastIndexOf("=") + 1));
                 serverSermonList.add(item);
             }
         }
@@ -81,7 +83,7 @@ public class RequestSermonListTask extends RequestBaseTask {
                 boolean isExistItem = false;
                 if (localItemList.size() > 0) {
                     for (Sermon localItem : localItemList) {
-                        if (localItem.bbsNo.equals(serverItem.bbsNo)) {
+                        if (localItem.bbsNo == serverItem.bbsNo) {
                             isExistItem = true;
                             onSermonResultListener.onResult(true, localItem);
                             break;
@@ -131,6 +133,7 @@ public class RequestSermonListTask extends RequestBaseTask {
             }
 
             Element contentElement = source.getFirstElementByClass("contents bbs_list");
+            Logger.e(TAG, "contentElement : " + contentElement);
             if (contentElement == null) {
                 Logger.e(TAG, "contentElement is null");
                 Logger.i(TAG, "source : " + source.toString());
@@ -148,6 +151,17 @@ public class RequestSermonListTask extends RequestBaseTask {
 
             // extract preacher and chapterInfo
             Element temp = contentElement.getFirstElementByClass("bbs_substance_p");
+            Element iframe = temp.getFirstElement(HTMLElementName.IFRAME);
+            if (iframe != null) {
+                Logger.e(TAG, "iframe element : " + iframe.toString());
+                item.videoUrl = iframe.getAttributeValue("src");
+                if (item.videoUrl != null && item.videoUrl.contains("youtube")) {
+                    item.mediaType = Const.MEDIA_TYPE_VIDEO;
+                } else {
+                    item.mediaType = Const.MEDIA_TYPE_AUDIO;
+                    item.videoUrl = null;
+                }
+            }
 
             for (Element element : temp.getAllElements(HTMLElementName.STRONG)) {
                 String tempStr = element.toString().replaceAll("&nbsp;", " ");

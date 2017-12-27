@@ -11,7 +11,7 @@ import io.realm.annotations.PrimaryKey;
 public class Sermon extends RealmObject {
 
     @PrimaryKey
-    public String bbsNo;
+    public int bbsNo;
 
     public int sermonType;
     public String titleWithDate;
@@ -20,10 +20,12 @@ public class Sermon extends RealmObject {
     public String preacher;
     public String chapterInfo;
     public String audioUrl;
+    public String videoUrl;
     public String docUrl;
     public long downloadQueryId;
     public int downloadStatus;
     public int downloadPercent;
+    public int mediaType;
 
     @Ignore
     public int playStatus;

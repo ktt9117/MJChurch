@@ -8,9 +8,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.wang.avi.AVLoadingIndicatorView;
 
+import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.R;
+import org.mukdongjeil.mjchurch.utils.CommonUtils;
 import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.models.DownloadStatus;
 import org.mukdongjeil.mjchurch.models.Sermon;
@@ -26,6 +30,7 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
 
     private ArrayList<Sermon> mList;
     private OnRowButtonClickListener mOnRowButtonClickListener;
+    private RequestManager mGlide;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgPreacher;
@@ -53,9 +58,10 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
         void onDownloadClicked(Sermon item, int position);
     }
 
-    public SermonListAdapter(ArrayList<Sermon> items, OnRowButtonClickListener listener) {
+    public SermonListAdapter(ArrayList<Sermon> items, OnRowButtonClickListener listener, RequestManager glide) {
         this.mList = items;
         this.mOnRowButtonClickListener = listener;
+        this.mGlide = glide;
     }
 
     @Override
@@ -75,11 +81,21 @@ public class SermonListAdapter extends RecyclerView.Adapter<SermonListAdapter.Vi
         final int index = position;
         holder.item = item;
         holder.titleWithDate.setText(item.titleWithDate);
+        holder.btnDownload.setVisibility(View.VISIBLE);
 
         if (!TextUtils.isEmpty(item.preacher) && item.preacher.contains("김희준")) {
             holder.imgPreacher.setImageResource(R.drawable.preacher_heejun);
         } else {
-            holder.imgPreacher.setImageResource(R.mipmap.ic_launcher);
+            if (item.mediaType == Const.MEDIA_TYPE_VIDEO) {
+                holder.btnDownload.setVisibility(View.GONE);
+                mGlide.load(CommonUtils.getYoutubeThumbnailUrl(item.videoUrl))
+                        .placeholder(R.drawable.preacher_heejun)
+                        .error(R.mipmap.ic_launcher)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(holder.imgPreacher);
+            } else {
+                holder.imgPreacher.setImageResource(R.mipmap.ic_launcher);
+            }
         }
 
         switch (item.playStatus) {

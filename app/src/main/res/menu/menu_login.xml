@@ -2,8 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_btn_login"
+    <item android:id="@+id/google_sign_in"
+        android:actionLayout="@layout/view_btn_google_login"
+        android:icon="@drawable/common_google_signin_btn_icon_light"
         app:showAsAction="ifRoom"
-        android:title="@string/login" />
+        android:title="@string/common_signin_button_text" />
 
 </menu>

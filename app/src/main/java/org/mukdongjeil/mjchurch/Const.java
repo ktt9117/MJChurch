@@ -15,7 +15,8 @@ public class Const {
     public static final File DIR_PUB_DOWNLOAD = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     public static final int DEFAULT_IMG_RESOURCE = R.drawable.ic_progressring;
 
-    public static final String FIRE_DATA_MESSAGE_CHILD = "messages";
+    private static final String FIRE_DATA_MESSAGE_CHILD = "messages";
+    private static final String FIRE_DATA_MESSAGE_CHILD_DEV = "messagesDev";
     public static final String FIRE_DATA_USER_CHILD = "users";
 
     public static final String MIME_TYPE_IMAGES = "image/*";
@@ -24,6 +25,10 @@ public class Const {
     public static final String SIMPLE_DATETIME_FORMAT = "yyyyMMdd-hhmmss";
     public static final String ALBUM_NAME = "/묵동제일앨범";
     public static final String TEMP_FILE_NAME = "/tmp_share_image.jpg";
+    public static final String YOUTUBE_THUMB_URL_PREFIX = "http://img.youtube.com/vi/";
+    public static final String YOUTUBE_THUMB_URL_POSTFIX = "/0.jpg";
+    public static final int MEDIA_TYPE_AUDIO = 0;
+    public static final int MEDIA_TYPE_VIDEO = 1;
 
     public static final String CHATROOM_TOPIC = "chat_room_topic";
     public static final String INTENT_ACTION_OPEN_CHAT = "open_chat";
@@ -146,20 +151,28 @@ public class Const {
         }
     }
 
-    public static final String getWorshipContentUrl(int worshipType, int pageNo, String contentNo) {
+    public static final String getWorshipContentUrl(int worshipType, int pageNo, int bbsNo) {
         switch (worshipType) {
             case WORSHIP_TYPE_WEDNESDAY:
-                return WORSHIP_CONTENT_URL + WEDNESDAY_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
+                return WORSHIP_CONTENT_URL + WEDNESDAY_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + bbsNo;
 
             case WORSHIP_TYPE_SUNDAY_AFTERNOON:
-                return WORSHIP_CONTENT_URL + SUNDAY_AFTERNOON_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
+                return WORSHIP_CONTENT_URL + SUNDAY_AFTERNOON_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + bbsNo;
 
             case WORSHIP_TYPE_FRIDAY:
-                return WORSHIP_CONTENT_URL + FRIDAY_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
+                return WORSHIP_CONTENT_URL + FRIDAY_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + bbsNo;
 
             case WORSHIP_TYPE_SUNDAY_MORNING:
             default:
-                return WORSHIP_CONTENT_URL + SUNDAY_MORNING_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + contentNo;
+                return WORSHIP_CONTENT_URL + SUNDAY_MORNING_WORSHIP_ID + WORSHIP_CONTENT_EXT1_URL + pageNo + WORSHIP_CONTENT_EXT2_URL + bbsNo;
+        }
+    }
+
+    public static final String getMessageDatabaseUri() {
+        if (DEBUG_MODE) {
+            return FIRE_DATA_MESSAGE_CHILD_DEV;
+        } else {
+            return FIRE_DATA_MESSAGE_CHILD;
         }
     }
 }

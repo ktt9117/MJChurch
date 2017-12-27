@@ -29,12 +29,14 @@
     <string name="email">E-mail</string>
     <string name="password">Password</string>
     <string name="login_with_email">E-mail 로그인</string>
+    <string name="login_with_google">구글 로그인</string>
     <string name="login">로그인</string>
     <string name="logout">로그아웃</string>
     <string name="do_logout">로그아웃하기</string>
     <string name="login_success">로그인 완료\n메시지를 전송할 수 있습니다.</string>
     <string name="login_unavailable">로그인 불가</string>
     <string name="login_required">메시지를 전송하려면 로그인 해야 합니다</string>
+    <string name="login_failed">로그인에 실패했습니다\n관리자에게 문의 바랍니다</string>
     <string name="auth_problem_occured">일시적인 로그인 문제가 발생했습니다\n다시 로그인 해주시기 바랍니다</string>
     <string name="notification">알림</string>
     <string name="notification_on">알림받기</string>

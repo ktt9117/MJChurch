@@ -109,7 +109,7 @@ public class MediaService extends Service {
         if (mRealm != null) mRealm.close();
     }
 
-    public void startPlayer(String bbsNo) throws IOException {
+    public void startPlayer(int bbsNo) throws IOException {
         Logger.i(TAG, "startPlayer called");
 
         mCurrentItem = DataService.getSermon(mRealm, bbsNo);
