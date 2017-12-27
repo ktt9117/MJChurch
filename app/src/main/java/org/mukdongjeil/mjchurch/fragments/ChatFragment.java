@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -30,7 +29,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -61,8 +59,6 @@ import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.activities.ProfileMainActivity;
 import org.mukdongjeil.mjchurch.adapters.ChatAdapter;
 import org.mukdongjeil.mjchurch.models.ChatMessage;
-import org.mukdongjeil.mjchurch.models.User;
-import org.mukdongjeil.mjchurch.services.FirebaseDataHelper;
 import org.mukdongjeil.mjchurch.utils.ExHandler;
 import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
@@ -87,7 +83,6 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     private DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().getRoot();
     private FirebaseAuth mAuth;
     private GoogleApiClient mGoogleApiClient;
-    private User mUserMySelf;
 
     private EditText mMessageField;
     private Button mBtnSend;
@@ -255,34 +250,52 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                 if (data != null) {
                     final Uri uri = data.getData();
                     Logger.d(TAG, "Uri: " + uri.toString());
+                    StorageReference storageReference = FirebaseStorage.getInstance()
+                            .getReference(mAuth.getCurrentUser().getUid())
+                            .child(uri.getLastPathSegment());
 
-                    final FirebaseUser user = mAuth.getCurrentUser();
-                    final ChatMessage tempChatMessage = new ChatMessage();
-                    tempChatMessage.name = user.getDisplayName();
-                    tempChatMessage.email = user.getEmail();
-                    tempChatMessage.imgUrl = LOADING_IMAGE_URL;
-                    tempChatMessage.avatarUrl = user.getPhotoUrl().toString();
+                    showLoadingDialog();
+                    storageReference.putFile(uri).addOnCompleteListener(getActivity(),
+                            new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                    closeLoadingDialog();
+                                    if (task.isSuccessful()) {
+                                        sendImageMessage(task.getResult().getDownloadUrl().toString());
 
-                    mRef.child(Const.getMessageDatabaseUri()).push()
-                        .setValue(tempChatMessage, new DatabaseReference.CompletionListener() {
-                            @Override
-                            public void onComplete(DatabaseError databaseError,
-                                                   DatabaseReference databaseReference) {
-                                if (databaseError == null) {
-                                    String key = databaseReference.getKey();
-                                    StorageReference storageReference =
-                                            FirebaseStorage.getInstance()
-                                                    .getReference(mAuth.getCurrentUser().getUid())
-                                                    .child(key)
-                                                    .child(uri.getLastPathSegment());
-
-                                    putImageInStorage(storageReference, uri, key);
-                                } else {
-                                    Log.w(TAG, "Unable to write message to database.",
-                                            databaseError.toException());
+                                    } else {
+                                        Log.w(TAG, "Image upload task was not successful.",
+                                                task.getException());
+                                    }
                                 }
-                            }
-                        });
+                            });
+
+//                    final ChatMessage tempChatMessage = new ChatMessage();
+//                    tempChatMessage.name = user.getDisplayName();
+//                    tempChatMessage.email = user.getEmail();
+//                    tempChatMessage.imgUrl = LOADING_IMAGE_URL;
+//                    tempChatMessage.avatarUrl = user.getPhotoUrl().toString();
+//
+//                    mRef.child(Const.getMessageDatabaseUri()).push()
+//                        .setValue(tempChatMessage, new DatabaseReference.CompletionListener() {
+//                            @Override
+//                            public void onComplete(DatabaseError databaseError,
+//                                                   DatabaseReference databaseReference) {
+//                                if (databaseError == null) {
+//                                    String key = databaseReference.getKey();
+//                                    StorageReference storageReference =
+//                                            FirebaseStorage.getInstance()
+//                                                    .getReference(mAuth.getCurrentUser().getUid())
+//                                                    .child(key)
+//                                                    .child(uri.getLastPathSegment());
+//
+//                                    putImageInStorage(storageReference, uri, key);
+//                                } else {
+//                                    Log.w(TAG, "Unable to write message to database.",
+//                                            databaseError.toException());
+//                                }
+//                            }
+//                        });
                 }
             }
         }
@@ -296,6 +309,11 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                 break;
             }
             case R.id.btn_add_image: {
+                if (mAuth.getCurrentUser() == null) {
+                    Toast.makeText(getActivity(), R.string.login_required, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType(Const.MIME_TYPE_IMAGES);
@@ -321,9 +339,13 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         mLinearLayoutManager = new LinearLayoutManager(context);
         mLinearLayoutManager.setStackFromEnd(true);
 
+        String emailAddress = null;
+        if (mAuth != null && mAuth.getCurrentUser() != null) {
+            emailAddress = mAuth.getCurrentUser().getEmail();
+        }
+
         mMessageList = new ArrayList<>();
-        mChatAdapter = new ChatAdapter(getActivity(), mMessageList, mGlide,
-                mUserMySelf != null ? mUserMySelf.email : null,
+        mChatAdapter = new ChatAdapter(getActivity(), mMessageList, mGlide, emailAddress,
                 new ChatAdapter.OnRowItemClickedListener() {
                     @Override
                     public void onRowItemClicked(View view) {
@@ -351,48 +373,12 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
         mRecyclerView.setAdapter(mChatAdapter);
     }
 
-    private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
-        storageReference.putFile(uri).addOnCompleteListener(getActivity(), new OnCompleteListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if (task.isSuccessful()) {
-                    final FirebaseUser user = mAuth.getCurrentUser();
-                    final ChatMessage chatMessage = new ChatMessage();
-                    chatMessage.name = user.getDisplayName();
-                    chatMessage.email = user.getEmail();
-                    chatMessage.imgUrl = task.getResult().getDownloadUrl().toString();
-                    chatMessage.avatarUrl = user.getPhotoUrl().toString();
-                    mRef.child(Const.getMessageDatabaseUri()).child(key)
-                            .setValue(chatMessage);
-                } else {
-                    Log.w(TAG, "Image upload task was not successful.",
-                            task.getException());
-                }
-            }
-        });
-    }
-
     private void setUserInformation(FirebaseUser user) {
         if (user != null) {
-            mUserMySelf = new User();
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            if (TextUtils.isEmpty(name)) {
-                mUserMySelf.name = email;
-            } else {
-                mUserMySelf.name = name;
-            }
-
-            mUserMySelf.email = email;
-            if (user.getPhotoUrl() != null) {
-                mUserMySelf.photoUrl = user.getPhotoUrl().toString();
-            }
-
             if (mChatAdapter != null) {
                 mChatAdapter.setMyEmailAddress(mAuth.getCurrentUser().getEmail());
             }
         } else {
-            mUserMySelf = null;
             if (mChatAdapter != null) {
                 mChatAdapter.setMyEmailAddress(null);
             }
@@ -429,6 +415,29 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                 mMessageField.setText("");
             }
         });
+    }
+
+    private void sendImageMessage(String imageUrl) {
+        showLoadingDialog();
+        final FirebaseUser user = mAuth.getCurrentUser();
+        final ChatMessage chatMessage = new ChatMessage();
+        chatMessage.name = user.getDisplayName();
+        chatMessage.email = user.getEmail();
+        chatMessage.imgUrl = imageUrl;
+        chatMessage.avatarUrl = user.getPhotoUrl().toString();
+        mRef.child(Const.getMessageDatabaseUri()).push().setValue(chatMessage,
+            new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    closeLoadingDialog();
+                    if (databaseError != null) {
+                        Toast.makeText(getActivity(), databaseError.getDetails(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    Toast.makeText(getActivity(), "이미지 전송 완료", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     private void showProfileActivity() {
