@@ -17,8 +17,7 @@ public class Const {
 
     private static final String FIRE_DATA_MESSAGE_CHILD = "messages";
     private static final String FIRE_DATA_MESSAGE_CHILD_DEV = "messagesDev";
-    public static final String FIRE_DATA_USER_CHILD = "users";
-
+    
     public static final String MIME_TYPE_IMAGES = "image/*";
     public static final String FILE_EXT_JPG = ".jpg";
     public static final String SAVE_IMAGE_PREFIX = "/img_";

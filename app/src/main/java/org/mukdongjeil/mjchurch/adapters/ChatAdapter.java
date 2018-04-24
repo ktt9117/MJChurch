@@ -23,11 +23,13 @@ import com.google.firebase.storage.StorageReference;
 
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.models.ChatMessage;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import me.himanshusoni.chatmessageview.ChatMessageView;
@@ -124,8 +126,20 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
             holder.tvMessage.setVisibility(TextView.GONE);
         }
 
-        String date = new SimpleDateFormat("MM-dd aa hh:mm", Locale.KOREA)
-                .format(new Date(chatMessage.timeStamp));
+        Date tempDate = new Date(chatMessage.timeStamp);
+        long diffOfDays = TimeUnit.DAYS.convert(System.currentTimeMillis()
+                - chatMessage.timeStamp, TimeUnit.MILLISECONDS);
+        Logger.e(TAG, "diffOfDays : " + diffOfDays);
+        String format;
+        if (diffOfDays < 1) {
+            format = "오늘 aa hh:mm";
+        } else if (diffOfDays < 2) {
+            format = "어제 aa hh:mm";
+        } else {
+            format = "MM월dd일 aa hh:mm";
+        }
+
+        String date = new SimpleDateFormat(format, Locale.KOREA).format(tempDate);
         holder.tvTime.setText(date);
 
         if (!TextUtils.isEmpty(chatMessage.imgUrl)) {

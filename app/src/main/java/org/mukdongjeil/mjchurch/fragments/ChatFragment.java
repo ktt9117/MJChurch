@@ -48,7 +48,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -305,7 +305,8 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     public void onClick(View v) {
         switch(v.getId()) {
             case R.id.btn_send: {
-                sendMessage();
+//                sendMessage();
+                loadMoreMessages();
                 break;
             }
             case R.id.btn_add_image: {
@@ -528,10 +529,49 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
     }
 
     private void loadMessages() {
-        Query query = mRef.child(Const.getMessageDatabaseUri()).limitToLast(100);
-        query.addChildEventListener(mChildEventListener);
+        mRef.child(Const.getMessageDatabaseUri()).limitToLast(10)
+//                .addChildEventListener(mChildEventListener);
+        .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (isFirstItemAdded == false) {
+                    closeLoadingDialog();
+                    mHandler.removeMessages(MSG_WHAT_LOGOUT);
+                    isFirstItemAdded = true;
+                }
+
+                Logger.e(TAG, "onDataChange : " + dataSnapshot.getValue());
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    mLastMessageKey = snapshot.getKey();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
+    private void loadMoreMessages() {
+        Logger.e(TAG, "mLastMessageKey : " + mLastMessageKey);
+//        mRef.removeEventListener(mChildEventListener);
+        mRef.child(Const.getMessageDatabaseUri()).startAt(0).endAt(10)
+//                .addChildEventListener(mChildEventListener);
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Logger.e(TAG, "onDataChange : " + dataSnapshot.getValue());
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+    }
+
+    private String mLastMessageKey;
     private ChildEventListener mChildEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -540,6 +580,10 @@ public class ChatFragment extends BaseFragment implements View.OnClickListener {
                 closeLoadingDialog();
                 mHandler.removeMessages(MSG_WHAT_LOGOUT);
                 isFirstItemAdded = true;
+            }
+
+            if (mLastMessageKey == null) {
+                mLastMessageKey = dataSnapshot.getKey();
             }
 
             mMessageList.add(dataSnapshot.getValue(ChatMessage.class));
