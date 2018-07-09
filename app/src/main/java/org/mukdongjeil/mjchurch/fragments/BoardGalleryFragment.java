@@ -13,17 +13,17 @@ import android.widget.GridView;
 
 import com.bumptech.glide.Glide;
 
+import org.mukdongjeil.mjchurch.Const;
 import org.mukdongjeil.mjchurch.MainActivity;
 import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.adapters.BoardGridAdapter;
-import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.utils.DisplayUtil;
-import org.mukdongjeil.mjchurch.utils.ExHandler;
-import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 import org.mukdongjeil.mjchurch.models.Gallery;
 import org.mukdongjeil.mjchurch.protocols.RequestBaseTask;
 import org.mukdongjeil.mjchurch.protocols.RequestListTask;
 import org.mukdongjeil.mjchurch.services.DataService;
+import org.mukdongjeil.mjchurch.utils.DisplayUtil;
+import org.mukdongjeil.mjchurch.utils.ExHandler;
+import org.mukdongjeil.mjchurch.utils.PreferenceUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,6 @@ public class BoardGalleryFragment extends LoadingMenuBaseFragment {
     private BoardGridAdapter mAdapter;
     private int mPageNo;
     private List<Gallery> mItemList;
-    private boolean mHasMorePage;
     private boolean mIsDetached = false;
     private int mColumnWidth;
 
@@ -83,15 +82,7 @@ public class BoardGalleryFragment extends LoadingMenuBaseFragment {
 
                         mItemList.addAll(list);
                         mAdapter.notifyDataSetChanged();
-                        if (list.size() < Const.GALLERY_LIST_COUNT_PER_PAGE) {
-                            mHasMorePage = false;
-                        }
-                    } else {
-                        mHasMorePage = false;
-                    }
 
-                    if (mHasMorePage) {
-                        mHandler.sendEmptyMessage(HANDLE_WHAT_GET_CONTENTS);
                     }
 
                     hideActionBarProgressDelayed(2000);
@@ -119,7 +110,7 @@ public class BoardGalleryFragment extends LoadingMenuBaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_grid_board, container, false);
-        mGridView = (GridView) v.findViewById(R.id.gridview);
+        mGridView = v.findViewById(R.id.gridview);
 
         int displayWidth = DisplayUtil.getDisplaySizeWidth(getActivity());
         mColumnWidth = displayWidth / 3;
@@ -132,7 +123,6 @@ public class BoardGalleryFragment extends LoadingMenuBaseFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mPageNo = 0;
-        mHasMorePage = true;
 
         mBoardType = (getArguments() != null) ?
                 getArguments().getInt(Const.INTENT_KEY_SELECTED_MENU_INDEX) : BoardFragment.BOARD_TYPE_GALLERY;
@@ -180,7 +170,6 @@ public class BoardGalleryFragment extends LoadingMenuBaseFragment {
         super.onDetach();
         mHandler.removeMessages(HANDLE_WHAT_GET_CONTENTS);
         mIsDetached = true;
-        mHasMorePage = false;
     }
 
     final private AdapterView.OnItemClickListener mOnGridItemClickListener = new AdapterView.OnItemClickListener() {

@@ -19,6 +19,7 @@
     <string name="worship_friday">금요 기도회</string>
 
     <string name="download_start">설교 다운로드를 시작합니다\n진행상황은 상단 알림바를 확인하세요</string>
+    <string name="download_failed">설교 다운로드가 실패했습니다\n이런 현상이 계속되는 경우 앱 관리자에게 문의해 주세요.</string>
     <string name="download_done">다운로드 됨</string>
     <string name="downloading">다운로드 중 %1$d%</string>
     <string name="worship_download_complete_message">설교 다운로드가 완료되었습니</string>

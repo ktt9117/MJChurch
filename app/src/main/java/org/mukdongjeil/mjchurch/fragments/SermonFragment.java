@@ -435,15 +435,16 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
             @Override
             public void onResult(boolean isGranted) {
                 Logger.i(TAG, "onResult isGranted : " + isGranted);
-                if (isGranted) {
-                    try {
-                        mService.startPlayer(item.bbsNo);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
+                if (!isGranted) {
                     Toast.makeText(getActivity(), R.string.read_phone_state_permission_required,
                             Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                try {
+                    mService.startPlayer(item.bbsNo);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -454,22 +455,40 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
                 new MainActivity.PermissionCheckResultListener() {
             @Override
             public void onResult(boolean isGranted) {
-                if (isGranted) {
-                    final DownloadManager downloadManager =
-                            (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
-                    DownloadUtil.requestDownload(getActivity(), downloadManager, item);
-                    mRealm.beginTransaction();
-                    item.downloadPercent = 0;
-                    mRealm.commitTransaction();
-                    Logger.e(TAG, "call notifyItemChanged position : " + position);
-
-                    new DownloadThread(downloadManager,
-                            item.downloadQueryId, mOnProgressChangeListener).start();
-
-                } else {
+                if (!isGranted) {
                     Toast.makeText(getActivity(), R.string.write_external_strage_permission_required,
                             Toast.LENGTH_LONG).show();
+                    return;
                 }
+
+                final DownloadManager downloadManager =
+                        (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
+                final long res = DownloadUtil.requestDownload(downloadManager, item);
+                if (res == -1) {
+                    Toast.makeText(getActivity(), R.string.download_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                Toast.makeText(getActivity(), R.string.download_start, Toast.LENGTH_LONG).show();
+                mRealm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        Sermon queryItem = DataService.getSermon(realm, item.bbsNo);
+                        if (queryItem != null) {
+                            queryItem.downloadPercent = 0;
+                            queryItem.downloadStatus = DownloadStatus.START.ordinal();
+                            queryItem.downloadQueryId = res;
+                            Logger.i(TAG, "update current item's download status to START");
+                        } else {
+                            Logger.e(TAG, "cannot update current item's download status caused by query result is not exists");
+                        }
+
+                        realm.close();
+                    }
+                });
+
+                new DownloadThread(downloadManager, item.downloadQueryId, mOnProgressChangeListener).start();
+                Logger.e(TAG, "call notifyItemChanged position : " + position);
             }
         });
     }
@@ -525,11 +544,13 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
         private DownloadManager downloadManager;
         private OnProgressChangeListener listener;
         private long downloadQueryId;
+        private int failCount;
 
         public DownloadThread(DownloadManager manager, long downloadQueryId, OnProgressChangeListener listener) {
             this.downloadManager = manager;
             this.downloadQueryId = downloadQueryId;
             this.listener = listener;
+            this.failCount = 0;
         }
 
         @Override
@@ -554,10 +575,16 @@ public class SermonFragment extends LoadingMenuBaseFragment implements SermonLis
                     listener.onProgressChanged(downloadQueryId, progress);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    failCount++;
                 } finally {
                     if (cursor != null) {
                         cursor.close();
                     }
+                }
+
+                if (failCount > 4) {
+                    Logger.i(TAG, "Download cancel becaused by cursor exception count over 5");
+                    downloading = false;
                 }
 
                 try {

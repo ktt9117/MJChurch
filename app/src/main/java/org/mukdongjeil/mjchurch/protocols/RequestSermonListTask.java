@@ -2,18 +2,16 @@ package org.mukdongjeil.mjchurch.protocols;
 
 import android.text.TextUtils;
 
-import net.htmlparser.jericho.Attributes;
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
 
 import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.utils.Logger;
 import org.mukdongjeil.mjchurch.models.Sermon;
+import org.mukdongjeil.mjchurch.utils.Logger;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -158,9 +156,14 @@ public class RequestSermonListTask extends RequestBaseTask {
                 if (item.videoUrl != null && item.videoUrl.contains("youtube")) {
                     item.mediaType = Const.MEDIA_TYPE_VIDEO;
                 } else {
-                    item.mediaType = Const.MEDIA_TYPE_AUDIO;
-                    item.videoUrl = null;
+                    Logger.e(TAG, "Currently audio is not support type.");
+                    return;
+//                    item.mediaType = Const.MEDIA_TYPE_AUDIO;
+//                    item.videoUrl = null;
                 }
+            } else {
+                Logger.e(TAG, "There is no audio or video url");
+                return;
             }
 
             for (Element element : temp.getAllElements(HTMLElementName.STRONG)) {
@@ -193,8 +196,9 @@ public class RequestSermonListTask extends RequestBaseTask {
             }
 
             // extract attached file
-            List<Element> fileElement = contentElement.getAllElementsByClass("attch_file");
-            for (Element elem : fileElement) {
+            List<Element> aTagElements = contentElement.getAllElements(HTMLElementName.A);
+            for (Element elem : aTagElements) {
+                Logger.i(TAG, "elem : " + elem.toString());
                 String href = elem.getFirstElement(HTMLElementName.A).getAttributeValue("href");
                 if (elem.getFirstElement(HTMLElementName.A).getAttributeValue("href").contains(".mp3")) {
                     item.audioUrl = href;

@@ -27,17 +27,13 @@ exports.addWelcomeMessages = functions.auth.user().onCreate(event => {
     const user = event.data;
     console.log('A new user signed in for the first time.');
     const fullName = user.displayName || user.email;
-    const writer = {
-        email: 'admin@mjchurch.org',
-        name: '관리자'
-    }
 
     // Saves the new welcome message into the database
     // Which then displays it in the FriendlyChat clients.
     return admin.database().ref('messages').push({
         body: `${fullName}님이 가입하셨습니다! 환영합니다!`,
         timeStamp: Date.now(),
-        writer: writer
+        email: 'kimsungjoong9@gmail.com'
     });
 });
 

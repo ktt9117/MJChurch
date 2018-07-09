@@ -25,7 +25,6 @@ import android.widget.Toast;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.mukdongjeil.mjchurch.activities.BaseActivity;
-import org.mukdongjeil.mjchurch.fragments.BoardPagerFragment;
 import org.mukdongjeil.mjchurch.fragments.ChatFragment;
 import org.mukdongjeil.mjchurch.fragments.ImagePagerFragment;
 import org.mukdongjeil.mjchurch.fragments.SermonFragment;
@@ -162,12 +161,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 bundle.putStringArray(Const.INTENT_KEY_PAGE_URLS, Const.TRAINING_MENU_URLS);
                 newFragment.setArguments(bundle);
                 break;
-            case R.id.nav_board:
-                newFragment = new BoardPagerFragment();
-                break;
-            case R.id.nav_chat:
-                newFragment = new ChatFragment();
-                break;
+//            case R.id.nav_board:
+//                newFragment = new BoardPagerFragment();
+//                break;
+//            case R.id.nav_chat:
+//                newFragment = new ChatFragment();
+//                break;
             case R.id.nav_worship_sunday_morning:
                 newFragment = new SermonFragment();
                 bundle = new Bundle();
@@ -175,6 +174,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 bundle.putInt(Const.INTENT_KEY_WORSHIP_TYPE, Const.WORSHIP_TYPE_SUNDAY_MORNING);
                 newFragment.setArguments(bundle);
                 break;
+                /*
             case R.id.nav_worship_sunday_afternoon:
                 newFragment = new SermonFragment();
                 bundle = new Bundle();
@@ -196,6 +196,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 bundle.putInt(Const.INTENT_KEY_WORSHIP_TYPE, Const.WORSHIP_TYPE_FRIDAY);
                 newFragment.setArguments(bundle);
                 break;
+                */
         }
 
         // notify to main fragment container for replace content

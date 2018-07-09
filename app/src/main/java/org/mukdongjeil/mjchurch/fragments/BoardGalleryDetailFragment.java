@@ -102,9 +102,9 @@ public class BoardGalleryDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         final View v = inflater.inflate(R.layout.fragment_board_gallery_detail, container, false);
-        mPager = (ExViewPager) v.findViewById(R.id.gallery_detail_pager);
-        mPagerIndicator = (CirclePageIndicator) v.findViewById(R.id.pager_indicator);
-        mProgressBar = (AVLoadingIndicatorView) v.findViewById(R.id.detail_page_progress);
+        mPager = v.findViewById(R.id.gallery_detail_pager);
+        mPagerIndicator = v.findViewById(R.id.pager_indicator);
+        mProgressBar = v.findViewById(R.id.detail_page_progress);
         v.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

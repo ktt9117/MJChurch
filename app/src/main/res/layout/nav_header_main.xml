@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:textColor="#52a8b3"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        android:text="2017년"/>
+        android:text="2018년"/>
 
     <TextView
         android:id="@+id/txt_title"
@@ -33,7 +33,7 @@
         android:layout_toRightOf="@id/txt_title"
         android:layout_alignBaseline="@id/txt_title"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:text="모이기를 힘쓰는 교회" />
+        android:text="희년을 감사하는 교회" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -41,6 +41,6 @@
         android:layout_below="@id/txt_title"
         android:textColor="#56595c"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:text="(사 2:3)"/>
+        android:text="(레25:10)"/>
 
 </RelativeLayout>

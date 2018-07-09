@@ -5,17 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
-import android.widget.Toast;
+import android.text.TextUtils;
 
-import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.Const;
-import org.mukdongjeil.mjchurch.models.DownloadStatus;
 import org.mukdongjeil.mjchurch.models.Sermon;
-import org.mukdongjeil.mjchurch.services.DataService;
 
 import java.io.File;
-
-import io.realm.Realm;
 
 /**
  * Created by Kim SungJoong on 2015-09-14.
@@ -40,34 +35,20 @@ public class DownloadUtil {
         return isExistsDownloadFile;
     }
 
-    public static long requestDownload(Context context, DownloadManager downloadManager, final Sermon item) {
-        Logger.e(TAG, "try to download");
-        Toast.makeText(context, R.string.download_start, Toast.LENGTH_LONG).show();
-        Uri downloadUri = Uri.parse(Const.BASE_URL + item.audioUrl);
-        DownloadManager.Request request = new DownloadManager.Request(downloadUri);
+    public static long requestDownload(DownloadManager downloadManager, final Sermon item) {
+        if (TextUtils.isEmpty(item.audioUrl)) {
+            return -1;
+        }
+
+        String downloadUrl = Const.BASE_URL + item.audioUrl;
+        Logger.e(TAG, "try to download : " + downloadUrl);
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
         request.setTitle("설교 다운로드");
         request.setDescription(item.titleWithDate);
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, item.bbsNo + StringUtils.FILE_EXTENSION_MP3);
 
         final long downloadQueryId = downloadManager.enqueue(request);
-
-        Realm realm = Realm.getDefaultInstance();
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                Sermon queryItem = DataService.getSermon(realm, item.bbsNo);
-                if (queryItem != null) {
-                    queryItem.downloadStatus = DownloadStatus.START.ordinal();
-                    queryItem.downloadQueryId = downloadQueryId;
-                    Logger.i(TAG, "update current item's download status to START");
-                } else {
-                    Logger.e(TAG, "cannot update current item's download status caused by query result is not exists");
-                }
-
-                realm.close();
-            }
-        });
-
         return downloadQueryId;
     }
 

@@ -40,8 +40,8 @@ public class ImagePagerFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_pager, container, false);
-        mPager = (ViewPager) v.findViewById(R.id.viewpager);
-        mTabs = (TabLayout) v.findViewById(R.id.tabs);
+        mPager = v.findViewById(R.id.viewpager);
+        mTabs = v.findViewById(R.id.tabs);
         return v;
     }
 

@@ -127,6 +127,10 @@ public class MediaService extends Service {
             Logger.i(TAG, "Local File Playing...");
 
         } else {
+            if (TextUtils.isEmpty(mCurrentItem.audioUrl)) {
+                Logger.e(TAG, "Cannot play audio caused by audioUrl is empty");
+                return;
+            }
             String audioUri = Const.BASE_URL + mCurrentItem.audioUrl;
             mPlayer.setDataSource(audioUri);
             Logger.i(TAG, "Server File Streaming audioUri : " + audioUri);

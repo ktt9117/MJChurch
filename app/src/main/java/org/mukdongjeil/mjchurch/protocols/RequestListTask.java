@@ -140,6 +140,7 @@ public class RequestListTask extends RequestBaseTask {
                     itemList.add(item);
                 }
             }
+
             listener.onResult(itemList, OnResultListener.POSITION_NONE);
 
         } else {

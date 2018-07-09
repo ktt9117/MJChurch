@@ -10,8 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.mukdongjeil.mjchurch.R;
 import org.mukdongjeil.mjchurch.Const;
+import org.mukdongjeil.mjchurch.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +32,8 @@ public class BoardPagerFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_pager, container, false);
-        mPager = (ViewPager) v.findViewById(R.id.viewpager);
-        mTabs = (TabLayout) v.findViewById(R.id.tabs);
+        mPager = v.findViewById(R.id.viewpager);
+        mTabs = v.findViewById(R.id.tabs);
         mTabs.setTabMode(TabLayout.MODE_FIXED);
         return v;
     }
@@ -48,20 +48,20 @@ public class BoardPagerFragment extends BaseFragment {
     private void setupPagerAdapter() {
         BoardPagerAdapter adapter = new BoardPagerAdapter(getChildFragmentManager());
 
-        BoardFragment boardFragment = new BoardFragment();
-        adapter.addFragment(boardFragment, BOARD_TAP_NAMES[0]);
+//        BoardFragment boardFragment = new BoardFragment();
+//        adapter.addFragment(boardFragment, BOARD_TAP_NAMES[0]);
 
         BoardGalleryFragment albumFragment = new BoardGalleryFragment();
         Bundle albumArgs = new Bundle();
         albumArgs.putInt(Const.INTENT_KEY_SELECTED_MENU_INDEX, 18);
         albumFragment.setArguments(albumArgs);
         adapter.addFragment(albumFragment, BOARD_TAP_NAMES[1]);
-
-        BoardGalleryFragment newPeopleFragment = new BoardGalleryFragment();
-        Bundle newPeopleArgs = new Bundle();
-        newPeopleArgs.putInt(Const.INTENT_KEY_SELECTED_MENU_INDEX, 19);
-        newPeopleFragment.setArguments(newPeopleArgs);
-        adapter.addFragment(newPeopleFragment, BOARD_TAP_NAMES[2]);
+//
+//        BoardGalleryFragment newPeopleFragment = new BoardGalleryFragment();
+//        Bundle newPeopleArgs = new Bundle();
+//        newPeopleArgs.putInt(Const.INTENT_KEY_SELECTED_MENU_INDEX, 19);
+//        newPeopleFragment.setArguments(newPeopleArgs);
+//        adapter.addFragment(newPeopleFragment, BOARD_TAP_NAMES[2]);
 
         mTabs.setupWithViewPager(mPager);
         mPager.setAdapter(adapter);

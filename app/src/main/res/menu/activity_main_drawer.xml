@@ -10,6 +10,7 @@
             android:id="@+id/nav_training"
             android:icon="@drawable/ic_list_training"
             android:title="@string/menu_training" />
+        <!--
         <item
             android:id="@+id/nav_board"
             android:icon="@drawable/ic_list_board"
@@ -18,7 +19,7 @@
             android:id="@+id/nav_chat"
             android:icon="@drawable/ic_list_chat"
             android:title="@string/menu_chat" />
-
+        -->
     </group>
 
 
@@ -30,6 +31,7 @@
                     android:id="@+id/nav_worship_sunday_morning"
                     android:icon="@drawable/ic_list_worship"
                     android:title="@string/worship_sunday_morning" />
+                <!--
                 <item
                     android:id="@+id/nav_worship_sunday_afternoon"
                     android:icon="@drawable/ic_list_book"
@@ -42,6 +44,7 @@
                     android:id="@+id/nav_worship_friday"
                     android:icon="@drawable/ic_list_pray"
                     android:title="@string/worship_friday" />
+                 -->
             </menu>
         </item>
     </group>
